@@ -1,4 +1,4 @@
-package pooltable.PoolTable.models;
+package pooltable.PoolTable.model;
 
 /**
  * Cue class
