@@ -184,10 +184,7 @@ public class Detector {
 		double a = Y/X;
 		double b = Y - (a*X);
 
-		// X = 0
-		// X = max
-
-
+		
 
 		return new Line();
 
