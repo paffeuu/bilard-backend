@@ -18,7 +18,7 @@ public class Main {
 		 
 		 System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
 
-        File input = new File("C:\\Users\\Borat\\Pictures\\pool.png");
+        File input = new File("C:\\Users\\Borat\\Pictures\\pool2.png");
         BufferedImage image = ImageIO.read(input);         
      	byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();            
      	Mat img = new Mat(image.getHeight(),image.getWidth(), CvType.CV_8UC3);
