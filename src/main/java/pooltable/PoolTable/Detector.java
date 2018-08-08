@@ -10,6 +10,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.springframework.stereotype.Service;
 import pooltable.exceptions.DetectorException;
 
 /* obsuga obrazu wejsciowego w formacie .jpg
@@ -29,14 +30,22 @@ import pooltable.exceptions.DetectorException;
  *
  */
 
+@Service
 public class Detector {
 
 	private Mat sourceImg;
 	private Mat outputImg;
 	private List<Line> staticLines;
+	private Mat cannyImg;
 
-	public Detector() {
-		staticLines = new ArrayList<>();
+	public Detector() {}
+
+	public Mat getCannyImg() {
+		return cannyImg;
+	}
+
+	public void setCannyImg(Mat cannyImg) {
+		this.cannyImg = cannyImg;
 	}
 
 	public Mat getSourceImg() {
@@ -126,68 +135,122 @@ public class Detector {
 
 	}
 
-	private Mat getLines() throws DetectorException {
+	private Mat getEdges(Mat source) throws DetectorException {
 		Mat dst = new Mat(), cdst = new Mat(), cdstP;
+		List <Mat> layers = new ArrayList<>();
 
 		try {
-			Imgproc.Canny(sourceImg, dst, 50, 200, 3, false);
+			Imgproc.blur(source, source, new Size(4,4));
+
+			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
+			Core.split(source, layers);
+			Imgproc.Canny(layers.get(1), dst, 50, 200, 3, false);
+
 		} catch (NullPointerException e){
 			throw new DetectorException("Could not read source stream.", e);
 		}
 
-		Imgproc.cvtColor(dst, cdst, Imgproc.COLOR_GRAY2BGR);
-		cdstP = cdst.clone();
-		Mat linesP = new Mat();
-		Imgproc.HoughLinesP(dst, linesP, 1, Math.PI/180, 50, 50, 10);
-
-		return linesP;
+		return dst;
 	}
 
-	public void saveStaticLines() throws DetectorException {
+	public void saveStaticImage() throws DetectorException {
+		cannyImg = getEdges(sourceImg);
+	}
 
-		Mat linesP = getLines();
+	public Line findStickLine(Mat source) throws DetectorException {
+
+		Line tempLine = null;
+
+		Mat substractedImg = new Mat();
+		Mat linesP = getEdges(source);
+
+		Core.subtract(linesP, cannyImg, substractedImg);
+//		Imgcodecs.imwrite("WithStick.png", linesP);
+//		Imgcodecs.imwrite("NoStick.png", cannyImg);
+//		Imgcodecs.imwrite("STICK.png", substractedImg);
+
+
+		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 50, 50, 10);
 
 		for (int x = 0; x < linesP.rows(); x++){
 			double line[] = linesP.get(x, 0);
-			staticLines.add(new Line(new Point(line[0], line[1]), new Point(line[2], line[3])));
-			//Imgproc.line(cdstP, new Point(line[0], line[1]), new Point(line[2], line[3]), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
+
+			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
 		}
 
-		//Imgcodecs.imwrite("OUT.png", cdstP);
-	}
-
-	public Line findStickLine() throws DetectorException {
-
-		Mat newLines = new Mat();
-		Mat linesP = getLines();
-
-		for (int x = 0; x < linesP.rows(); x++){
-			double line[] = linesP.get(x, 0);
-			Line tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
-			if (!staticLines.contains(tempLine)){
-				System.out.println(x + " nowa linia + " + tempLine.toString());
-				Imgproc.line(newLines, new Point(line[0], line[1]), new Point(line[2], line[3]), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
-				Imgcodecs.imwrite("OUT.png", newLines);
-
-				return tempLine;
-			}
-		}
-
-		return null;
+		return tempLine;
 	}
 
 	public Line getExtendedStickLine(Line stickLine){
 
+		Line extendedLine = new Line();
+
 		double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
 		double X = (stickLine.getBegin().x - stickLine.getEnd().x);
 
-		double a = Y/X;
-		double b = Y - (a*X);
+		if (X == 0){
+			Point maxTop = new Point(stickLine.getBegin().x, 0);
+			Point maxBot = new Point(stickLine.getBegin().x, sourceImg.height());
 
-		
+			extendedLine.setBegin(maxTop);
+			extendedLine.setEnd(maxBot);
+		} else if (Y == 0){
+			Point maxLeft = new Point(0, stickLine.getBegin().y);
+			Point maxRight = new Point(sourceImg.width(), stickLine.getBegin().y);
 
-		return new Line();
+			extendedLine.setBegin(maxLeft);
+			extendedLine.setEnd(maxRight);
+		} else {
+			double a = Y/X;
+			double b = stickLine.getBegin().y - (a*stickLine.getBegin().x);
 
+			System.out.println("detector:: getExtendedStickLine");
+			System.out.println(stickLine.toString());
+			System.out.println("a: "+ a + " b: " + b);
+			System.out.println("------------------------");
+
+			Point maxTop = new Point(stickLine.getBegin().x, 0);
+			maxTop.y = 0;
+			maxTop.x = -(b / a);
+
+			Point maxBot = new Point(stickLine.getBegin().x, sourceImg.height());
+			maxBot.y = sourceImg.height();
+			maxBot.x = (-b + sourceImg.height()) / a;
+
+			Point maxLeft = new Point();
+			maxLeft.x = 0;
+			maxLeft.y = b;
+
+			Point maxRight = new Point();
+			maxRight.x = sourceImg.width();
+			maxRight.y = a * sourceImg.width() + b;
+
+			if (maxTop.x >= 0 && maxTop.x <= sourceImg.width()){
+				System.out.println("TOP " + maxTop);
+				extendedLine.setPoint(maxTop);
+			}
+
+			if (maxLeft.y >= 0 && maxLeft.y <= sourceImg.height()){
+				System.out.println("Left" + maxLeft);
+				extendedLine.setPoint(maxLeft);
+			}
+
+			if (maxBot.x >= 0 && maxBot.x <= sourceImg.width()){
+				System.out.println("Bot");
+				extendedLine.setPoint(maxBot);
+			}
+
+			if (maxRight.y >= 0 && maxRight.y <= sourceImg.height()){
+				System.out.println("Right");
+				extendedLine.setPoint(maxRight);
+			}
+
+		}
+
+		System.out.println(extendedLine.getBegin());
+		System.out.println(extendedLine.getEnd());
+
+		return extendedLine;
 	}
 
 }
