@@ -18,16 +18,16 @@ public class Main {
 		 
 		 System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
 
-        File input = new File("C:\\Users\\Nats\\Desktop\\pool3.png");
+        File input = new File("C:\\Users\\Borat\\Pictures\\pool.png");
         BufferedImage image = ImageIO.read(input);         
      	byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();            
      	Mat img = new Mat(image.getHeight(),image.getWidth(), CvType.CV_8UC3);
-     	img.put(0, 0, data); 
-     	
+     	img.put(0, 0, data);
+
      	Detector detec = new Detector();
-     	detec.setSourseImg(img);
+     	detec.setSourceImg(img);
      	detec.drawBalls();
-     	
-     	Imgcodecs.imwrite("C:\\Users\\Nats\\Desktop\\input.jpg", detec.getOutputImg());
+
+     	Imgcodecs.imwrite("C:\\Users\\Borat\\Pictures\\pool1edited.png", detec.getSourceImg());
 	}
 }
