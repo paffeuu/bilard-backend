@@ -5,7 +5,7 @@ import org.opencv.videoio.VideoCapture;
 
 public class SnapshotGetterService {
     private VideoCapture capture;
-    private Mat lastSnapshot = null;
+    private Mat lastSnapshot = new Mat();
 
     public SnapshotGetterService() {
         this.capture = new VideoCapture();
@@ -13,12 +13,16 @@ public class SnapshotGetterService {
     }
 
     public Mat getLiveSnapshot() {
-        Mat toReturn = new Mat();
-        this.capture.read(this.lastSnapshot);
-        return this.lastSnapshot;
+        if (this.capture.isOpened()) {
+            this.capture.read(this.lastSnapshot);
+            return this.lastSnapshot;
+        } else {
+            return null;
+        }
     }
 
     public Mat getLastSnapshot() {
         return this.lastSnapshot;
     }
+
 }
