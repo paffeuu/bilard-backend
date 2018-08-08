@@ -4,7 +4,7 @@ import org.opencv.core.Core;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages={"imageProcessingServices","pooltable"})
 public class PoolTableApplication {
     static {
         String opencvpath = System.getProperty("user.dir") + "\\lib\\";

@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -11,6 +12,7 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
+import pooltable.PoolTable.model.Ball;
 
 public class Main {
 
@@ -27,6 +29,8 @@ public class Main {
      	Detector detec = new Detector();
      	detec.setSourceImg(img);
      	detec.drawBalls();
+
+     	ArrayList<Ball> balls = detec.createListOfBalls();
 
      	Imgcodecs.imwrite("C:\\Users\\Borat\\Pictures\\pool1edited.png", detec.getSourceImg());
 	}

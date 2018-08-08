@@ -2,7 +2,10 @@ package imageProcessingServices;
 
 import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
+import org.springframework.stereotype.Service;
 
+
+@Service
 public class SnapshotGetterService {
     private VideoCapture capture;
     private Mat lastSnapshot;
@@ -24,6 +27,16 @@ public class SnapshotGetterService {
 
     public Mat getLastSnapshot() {
         return this.lastSnapshot;
+    }
+    public VideoCapture getCapture() {
+        return this.capture;
+    }
+
+    public void setCapture(VideoCapture caputre) {
+        this.capture = caputre;
+    }
+    public void setLastSnapshot(Mat snap) {
+        this.lastSnapshot = snap;
     }
 
 }

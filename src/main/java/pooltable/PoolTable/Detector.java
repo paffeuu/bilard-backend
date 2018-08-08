@@ -9,6 +9,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.photo.Photo;
+import pooltable.PoolTable.model.Ball;
 
 /* obsuga obrazu wejsciowego w formacie .jpg
  * 
@@ -123,4 +124,23 @@ public class Detector {
 		}
 	}
 
+	public ArrayList<Ball> createListOfBalls() {
+		int x,y,r;
+		Mat circles = detectBalls();
+		ArrayList<Ball> balls = new ArrayList<>();
+
+		for (int i = 1; i <= circles.cols(); i++) {
+			// read ball coordinates
+			double[] data = circles.get(0, i);
+
+			x = (int) data[0];
+			y = (int) data[1];
+			r = (int) data[2];
+
+			Ball ball = new Ball(i,x,y,r);
+			balls.add(ball);
+		}
+
+		return balls;
+	}
 }
