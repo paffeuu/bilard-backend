@@ -4,7 +4,9 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ImageUndistorterService {
     private Mat cameraMatrix = Mat.zeros(3, 3, CvType.CV_64F);
     private Mat distCoeffs = Mat.zeros(8, 1, CvType.CV_64F);
