@@ -5,10 +5,11 @@ import org.opencv.videoio.VideoCapture;
 
 public class SnapshotGetterService {
     private VideoCapture capture;
-    private Mat lastSnapshot = new Mat();
+    private Mat lastSnapshot;
 
     public SnapshotGetterService() {
         this.capture = new VideoCapture();
+        this.lastSnapshot = new Mat();
         capture.open("rtsp://hot:kamerabilardowa@192.168.253.214:554/Streaming/Channels/1?transportmode=unicast&profile=Profile_1");
     }
 
