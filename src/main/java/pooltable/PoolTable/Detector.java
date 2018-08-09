@@ -252,9 +252,6 @@ public class Detector {
 		return extendedLine;
 	}
 
-		}
-	}
-
 	public ArrayList<Ball> createListOfBalls() {
 		int x,y,r;
 		Mat circles = detectBalls();
