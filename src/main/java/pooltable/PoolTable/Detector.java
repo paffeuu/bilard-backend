@@ -6,13 +6,12 @@ import java.util.List;
 import imageProcessingServices.ImageUndistorterService;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import pooltable.PoolTable.model.Line;
 import pooltable.exceptions.DetectorException;
-import org.opencv.photo.Photo;
 import pooltable.PoolTable.model.Ball;
 
 /* obsuga obrazu wejsciowego w formacie .jpg
@@ -74,11 +73,7 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	public Mat detectBalls() {
-
-		//undisortion
-		ImageUndistorterService source = new ImageUndistorterService();
-		sourceImg = source.undistort(sourceImg);
+	private Mat detectBalls() {
 
 		// blur image
 		Imgproc.blur(sourceImg, outputImg, new Size(1, 1));
@@ -109,7 +104,7 @@ public class Detector {
 		return circles;
 	}
 
-	public void drawBalls() {
+	private void drawBalls() {
 
 		// get balls coordinates
 		Mat detectedBalls = detectBalls();
@@ -172,12 +167,12 @@ public class Detector {
 		return dst;
 	}
 
-	public Line findStickLine(Mat source) throws DetectorException {
+	public Line findStickLine() throws DetectorException {
 
 		Line tempLine = null;
 
 		Mat substractedImg = new Mat();
-		Mat linesP = getEdges(source);
+		Mat linesP = getEdges(sourceImg);
 
 		Core.subtract(linesP, cannyImg, substractedImg);
 
@@ -250,9 +245,6 @@ public class Detector {
 		}
 
 		return extendedLine;
-	}
-
-		}
 	}
 
 	public ArrayList<Ball> createListOfBalls() {
