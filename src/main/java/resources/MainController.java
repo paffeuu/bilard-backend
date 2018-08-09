@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import pooltable.PoolTable.Detector;
 import pooltable.PoolTable.model.PoolTable;
 import pooltable.exceptions.DetectorException;
 
