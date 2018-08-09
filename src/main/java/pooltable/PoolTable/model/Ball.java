@@ -7,6 +7,7 @@ public class Ball {
     private int id;
     private double x;
     private double y;
+    private double radius;
 
     /**
      * Ball Constructor
@@ -15,7 +16,7 @@ public class Ball {
      * @param x  position X
      * @param y  position Y
      */
-    public Ball(int id, double x, double y) {
+    public Ball(int id, double x, double y, double radius) {
         this.id = id;
         this.x = x;
         this.y = y;
