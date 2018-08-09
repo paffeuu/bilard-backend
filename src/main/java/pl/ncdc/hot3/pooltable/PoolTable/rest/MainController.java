@@ -15,10 +15,10 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 
 
 @RestController
-@RequestMapping(path="/pooltable")
+@RequestMapping(path = "/pooltable")
 public class MainController {
     @Autowired
-    private SnapshotGetterService snap;
+    private SnapshotGetterService snapshotGetterService;
     @Autowired
     private ImageUndistorterService undistorter;
 
@@ -29,24 +29,39 @@ public class MainController {
 
     @RequestMapping(value = "/get-snapshot", method = RequestMethod.GET)
     public ResponseEntity<PoolTable> getPoolTableImage() throws DetectorException {
-        Mat undistorted = undistorter.undistort(snap.getLiveSnapshot());
-
-        MatOfByte matOfByte = new MatOfByte();
-
-        Imgcodecs.imencode(".jpg", undistorted, matOfByte);
-
         PoolTable table = new PoolTable();
 
-        detector.setSourceImg(undistorted);
-        table.setBalls(detector.createListOfBalls());
-        table.setCue(detector.findStickLine());
-        table.setTableImage(matOfByte.toArray());
+        if (!snapshotGetterService.isOpening()) {
+            Mat in = snapshotGetterService.getLiveSnapshot();
+            if (in != null && !in.empty()) {
+                MatOfByte matOfByte = new MatOfByte();
+                try {
+                    Mat result = undistorter.undistort(in);
+                    detector.setSourceImg(result.clone());
+                    table.setBalls(detector.createListOfBalls());
+                    table.setCue(detector.findStickLine());
 
-        return ResponseEntity.ok(table);
+                    Imgcodecs.imencode(".jpg", result, matOfByte);
+                    table.setTableImage(matOfByte.toArray());
+                    return ResponseEntity.ok(table);
+
+                } catch (Exception e) {
+                    System.out.println("error");
+                    return ResponseEntity.ok(table);
+                }
+            } else {
+                snapshotGetterService.reset();
+                System.out.println("in empty or null");
+                return ResponseEntity.ok(table);
+            }
+        } else {
+            System.out.println("is opening");
+            return ResponseEntity.ok(table);
+        }
     }
 
     @GetMapping("/test")
-    public PoolTable test(){
+    public PoolTable test() {
         return new PoolTable();
     }
 }
