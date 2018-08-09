@@ -1,22 +1,21 @@
-package resources;
+package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
-import imageProcessingServices.ImageUndistorterService;
-import imageProcessingServices.SnapshotGetterService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import pooltable.PoolTable.model.PoolTable;
-import pooltable.exceptions.DetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
+import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 
 
-@Controller
+@RestController
 @RequestMapping(path="/pooltable")
-
 public class MainController {
     @Autowired
     private SnapshotGetterService snap;
@@ -28,7 +27,7 @@ public class MainController {
 
     @CrossOrigin(origins = "http://localhost:4200")
 
-    @RequestMapping(produces = MediaType.IMAGE_JPEG_VALUE, value = "/get-snapshot", method = RequestMethod.GET)
+    @RequestMapping(value = "/get-snapshot", method = RequestMethod.GET)
     public ResponseEntity<PoolTable> getPoolTableImage() throws DetectorException {
         Mat undistorted = undistorter.undistort(snap.getLiveSnapshot());
 
@@ -44,5 +43,10 @@ public class MainController {
         table.setTableImage(matOfByte.toArray());
 
         return ResponseEntity.ok(table);
+    }
+
+    @GetMapping("/test")
+    public PoolTable test(){
+        return new PoolTable();
     }
 }

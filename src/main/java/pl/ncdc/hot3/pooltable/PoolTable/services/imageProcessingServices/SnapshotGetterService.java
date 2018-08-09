@@ -1,4 +1,4 @@
-package imageProcessingServices;
+package pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices;
 
 import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
