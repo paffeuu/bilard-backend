@@ -10,6 +10,8 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pooltable.exceptions.DetectorException;
 
@@ -33,12 +35,20 @@ import pooltable.exceptions.DetectorException;
 @Service
 public class Detector {
 
+	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
+
 	private Mat sourceImg;
 	private Mat outputImg;
-	private List<Line> staticLines;
 	private Mat cannyImg;
 
-	public Detector() {}
+	public Detector() {
+		try {
+			sourceImg = Imgcodecs.imread(ProjectProperties.EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
+			cannyImg = getEdges(sourceImg);
+		} catch (DetectorException e) {
+			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
+		}
+	}
 
 	public Mat getCannyImg() {
 		return cannyImg;
@@ -62,14 +72,6 @@ public class Detector {
 
 	public void setOutputImg(Mat outputImg) {
 		this.outputImg = outputImg;
-	}
-
-	public List<Line> getStaticLines() {
-		return staticLines;
-	}
-
-	public void setStaticLines(List<Line> staticLines) {
-		this.staticLines = staticLines;
 	}
 
 	public Mat detectBalls() {
@@ -153,10 +155,6 @@ public class Detector {
 		return dst;
 	}
 
-	public void saveStaticImage() throws DetectorException {
-		cannyImg = getEdges(sourceImg);
-	}
-
 	public Line findStickLine(Mat source) throws DetectorException {
 
 		Line tempLine = null;
@@ -165,10 +163,6 @@ public class Detector {
 		Mat linesP = getEdges(source);
 
 		Core.subtract(linesP, cannyImg, substractedImg);
-//		Imgcodecs.imwrite("WithStick.png", linesP);
-//		Imgcodecs.imwrite("NoStick.png", cannyImg);
-//		Imgcodecs.imwrite("STICK.png", substractedImg);
-
 
 		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 50, 50, 10);
 
@@ -204,11 +198,6 @@ public class Detector {
 			double a = Y/X;
 			double b = stickLine.getBegin().y - (a*stickLine.getBegin().x);
 
-			System.out.println("detector:: getExtendedStickLine");
-			System.out.println(stickLine.toString());
-			System.out.println("a: "+ a + " b: " + b);
-			System.out.println("------------------------");
-
 			Point maxTop = new Point(stickLine.getBegin().x, 0);
 			maxTop.y = 0;
 			maxTop.x = -(b / a);
@@ -226,29 +215,22 @@ public class Detector {
 			maxRight.y = a * sourceImg.width() + b;
 
 			if (maxTop.x >= 0 && maxTop.x <= sourceImg.width()){
-				System.out.println("TOP " + maxTop);
 				extendedLine.setPoint(maxTop);
 			}
 
 			if (maxLeft.y >= 0 && maxLeft.y <= sourceImg.height()){
-				System.out.println("Left" + maxLeft);
 				extendedLine.setPoint(maxLeft);
 			}
 
 			if (maxBot.x >= 0 && maxBot.x <= sourceImg.width()){
-				System.out.println("Bot");
 				extendedLine.setPoint(maxBot);
 			}
 
 			if (maxRight.y >= 0 && maxRight.y <= sourceImg.height()){
-				System.out.println("Right");
 				extendedLine.setPoint(maxRight);
 			}
 
 		}
-
-		System.out.println(extendedLine.getBegin());
-		System.out.println(extendedLine.getEnd());
 
 		return extendedLine;
 	}

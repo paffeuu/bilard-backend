@@ -23,39 +23,27 @@ public class DetectorTest {
     }
 
     @Test
-    public void getStickShouldReturnDetectedStickFor2SourceViews() throws DetectorException {
+    public void getStickShouldReturnDetectedStickForImageWithExtraLine() throws DetectorException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        String fileUrl = ProjectProperties.BASE_PATH + "Photo1.png";
         String fileUrl2 = ProjectProperties.BASE_PATH + "Photo2a.png";
 
-        Mat sourceImg = Imgcodecs.imread(fileUrl, Imgcodecs.IMREAD_COLOR);
         Mat sourceWithStickImg = Imgcodecs.imread(fileUrl2, Imgcodecs.IMREAD_COLOR);
 
         Detector detector = new Detector();
 
-        detector.setSourceImg(sourceImg);
-        detector.saveStaticImage();
-
-        detector.setSourceImg(sourceWithStickImg);
-
-        Line line = detector.findStickLine(detector.getSourceImg());
+        Line line = detector.findStickLine(sourceWithStickImg);
 
         Assert.assertNotNull(line);
     }
 
     @Test
-    public void getExtendedStickShouldReturnLineForInputStick() throws DetectorException {
+    public void getExtendedStickShouldReturnExtendedLineForInputStick() throws DetectorException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        String fileUrl = ProjectProperties.BASE_PATH + "Photo1.png";
         String fileUrl2 = ProjectProperties.BASE_PATH + "Photo2d.png";
 
-        Mat sourceImg = Imgcodecs.imread(fileUrl, Imgcodecs.IMREAD_COLOR);
         Mat sourceWithStickImg = Imgcodecs.imread(fileUrl2, Imgcodecs.IMREAD_COLOR);
 
         Detector detector = new Detector();
-
-        detector.setSourceImg(sourceImg);
-        detector.saveStaticImage();
 
         Line line = detector.findStickLine(sourceWithStickImg);
 
@@ -68,7 +56,7 @@ public class DetectorTest {
 
         Assert.assertNotNull(extendedLine);
 
-        Mat sourceClone = sourceImg.clone();
+        Mat sourceClone = detector.getSourceImg().clone();
         Imgproc.line(sourceClone, extendedLine.getBegin(), extendedLine.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
         Imgcodecs.imwrite("line.png", sourceWithStickImg);
         Imgcodecs.imwrite("extendedLine.png", sourceClone);
@@ -78,16 +66,11 @@ public class DetectorTest {
     @Test
     public void saveStaticLinesShouldFindOneMoreLineForSecondSource() throws DetectorException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        String fileUrl = ProjectProperties.BASE_PATH + "Photo1.png";
         String fileUrl2 = ProjectProperties.BASE_PATH + "Photo2d.png";
 
-        Mat sourceImg = Imgcodecs.imread(fileUrl, Imgcodecs.IMREAD_COLOR);
         Mat sourceWithStickImg = Imgcodecs.imread(fileUrl2, Imgcodecs.IMREAD_COLOR);
 
         Detector detector = new Detector();
-
-        detector.setSourceImg(sourceImg);
-        detector.saveStaticImage();
 
         Line line = detector.findStickLine(sourceWithStickImg);
 
