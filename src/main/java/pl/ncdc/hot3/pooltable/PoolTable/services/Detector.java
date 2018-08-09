@@ -42,6 +42,9 @@ public class Detector {
 	private Mat cannyImg;
 
 	public Detector() {
+		this.outputImg = new Mat();
+		this.cannyImg = new Mat();
+
 		try {
 			sourceImg = Imgcodecs.imread(ProjectProperties.EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
 			cannyImg = getEdges(sourceImg);
@@ -253,7 +256,7 @@ public class Detector {
 		Mat circles = detectBalls();
 		ArrayList<Ball> balls = new ArrayList<>();
 
-		for (int i = 1; i <= circles.cols(); i++) {
+		for (int i = 1; i < circles.cols(); i++) {
 			// read ball coordinates
 			double[] data = circles.get(0, i);
 

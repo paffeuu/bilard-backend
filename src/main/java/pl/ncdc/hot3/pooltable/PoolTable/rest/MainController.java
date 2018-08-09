@@ -27,7 +27,7 @@ public class MainController {
 
     @CrossOrigin(origins = "http://localhost:4200")
 
-    @RequestMapping(produces = MediaType.IMAGE_JPEG_VALUE, value = "/get-snapshot", method = RequestMethod.GET)
+    @RequestMapping(value = "/get-snapshot", method = RequestMethod.GET)
     public ResponseEntity<PoolTable> getPoolTableImage() throws DetectorException {
         Mat undistorted = undistorter.undistort(snap.getLiveSnapshot());
 
