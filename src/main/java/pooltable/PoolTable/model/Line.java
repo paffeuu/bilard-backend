@@ -1,4 +1,4 @@
-package pooltable.PoolTable;
+package pooltable.PoolTable.model;
 
 
 import org.opencv.core.Point;

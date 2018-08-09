@@ -7,7 +7,10 @@ import java.util.ArrayList;
  */
 public class PoolTable {
     private ArrayList<Ball> balls;
-    private Cue cue;
+    private Line cue;
+    private byte[] tableImage;
+
+    public PoolTable(){}
 
     /**
      * PoolTable constructor
@@ -15,7 +18,7 @@ public class PoolTable {
      * @param balls Array of Balls
      * @param cue Cue
      */
-    public PoolTable(ArrayList<Ball> balls, Cue cue) {
+    public PoolTable(ArrayList<Ball> balls, Line cue) {
         this.balls = balls;
         this.cue = cue;
     }
@@ -43,7 +46,7 @@ public class PoolTable {
      *
      * @return Cue
      */
-    public Cue getCue() {
+    public Line getCue() {
         return cue;
     }
 
@@ -52,7 +55,15 @@ public class PoolTable {
      *
      * @param cue Cue
      */
-    public void setCue(Cue cue) {
+    public void setCue(Line cue) {
         this.cue = cue;
+    }
+
+    public byte[] getTableImage() {
+        return tableImage;
+    }
+
+    public void setTableImage(byte[] tableImage) {
+        this.tableImage = tableImage;
     }
 }

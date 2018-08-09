@@ -7,9 +7,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import pooltable.PoolTable.model.Line;
 import pooltable.exceptions.DetectorException;
-
-import java.util.ArrayList;
 
 public class DetectorTest {
 
