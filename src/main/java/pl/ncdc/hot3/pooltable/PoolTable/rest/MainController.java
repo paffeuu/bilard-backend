@@ -1,5 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
+import pl.ncdc.hot3.pooltable.PoolTable.services.Drawer;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
 import org.opencv.core.Mat;
@@ -21,7 +22,8 @@ public class MainController {
     private SnapshotGetterService snap;
     @Autowired
     private ImageUndistorterService undistorter;
-
+    @Autowired
+    private Drawer drawer;
     @Autowired
     private Detector detector;
 
@@ -33,13 +35,13 @@ public class MainController {
 
         MatOfByte matOfByte = new MatOfByte();
 
-        Imgcodecs.imencode(".jpg", undistorted, matOfByte);
-
         PoolTable table = new PoolTable();
 
-        detector.setSourceImg(undistorted);
+        detector.setSourceImg(undistorted.clone());
         table.setBalls(detector.createListOfBalls());
         table.setCue(detector.findStickLine());
+        drawer.draw(undistorted, table.getCue());
+        Imgcodecs.imencode(".jpg", undistorted, matOfByte);
         table.setTableImage(matOfByte.toArray());
 
         return ResponseEntity.ok(table);

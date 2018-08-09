@@ -3,6 +3,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -14,23 +15,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
-
-/* obsuga obrazu wejsciowego w formacie .jpg
- * 
- * Convert to Mat
- * 	BufferedImage image = ImageIO.read(input);         
- 	byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();            
- 	Mat img = new Mat(image.getHeight(),image.getWidth(), CvType.CV_8UC3);
- 	img.put(0, 0, data); 
- 	
- 	convert to grey
- 	Imgproc.cvtColor(img, gray, Imgproc.COLOR_BGR2GRAY);
- 	
- 	
- 	Imgcodecs.imwrite("C:\\Files\\input.jpg", img);
- 	File input = new File("C:\\Files\\pool1.png");
- *
- */
 
 @Service
 public class Detector {
@@ -77,10 +61,10 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	private Mat detectBalls() {
-
+	public Mat detectBalls() {
 		// blur image
 		Imgproc.blur(sourceImg, outputImg, new Size(1, 1));
+		Imgcodecs.imwrite("C\\Users\\Borat\\Pictures\\IMAGE.png",sourceImg);
 
 		// convert to hsv
 		Imgproc.cvtColor(outputImg, outputImg, Imgproc.COLOR_BGR2HSV);
@@ -109,7 +93,6 @@ public class Detector {
 	}
 
 	public void drawBalls() {
-
 		// get balls coordinates
 		Mat detectedBalls = detectBalls();
 
@@ -150,7 +133,11 @@ public class Detector {
 			int radius = 10;
 			Imgproc.circle(outputImg, center, radius, new Scalar(0, 0, 255), 1);
 		}
+	}
 
+	private void getBallTrace(Ball firstFrameBall, Ball secondFrameBall) {
+		Imgproc.line(sourceImg, new Point(firstFrameBall.getX(),firstFrameBall.getY()),
+				new Point(secondFrameBall.getX(),secondFrameBall.getY()),new Scalar(150,150,150),4);
 	}
 
 	private Mat getEdges(Mat source) throws DetectorException {
