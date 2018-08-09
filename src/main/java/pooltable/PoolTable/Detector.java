@@ -8,6 +8,10 @@ import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import pooltable.exceptions.DetectorException;
 import org.opencv.photo.Photo;
 import pooltable.PoolTable.model.Ball;
 
@@ -28,14 +32,30 @@ import pooltable.PoolTable.model.Ball;
  *
  */
 
+@Service
 public class Detector {
+
+	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
 	private Mat sourceImg;
 	private Mat outputImg;
+	private Mat cannyImg;
 
 	public Detector() {
-		outputImg = new Mat();
-		sourceImg = new Mat();
+		try {
+			sourceImg = Imgcodecs.imread(ProjectProperties.EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
+			cannyImg = getEdges(sourceImg);
+		} catch (DetectorException e) {
+			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
+		}
+	}
+
+	public Mat getCannyImg() {
+		return cannyImg;
+	}
+
+	public void setCannyImg(Mat cannyImg) {
+		this.cannyImg = cannyImg;
 	}
 
 	public Mat getSourceImg() {
@@ -121,6 +141,117 @@ public class Detector {
 				int radius = 20;
 				Imgproc.circle(sourceImg, center, radius, new Scalar(0, 0, 255), 1);
 			}
+			
+			Point center = new Point(x, y);
+
+			// draw circle center
+			Imgproc.circle(outputImg, center, 3, new Scalar(0, 255, 0), -1);
+			
+			// draw circle outline
+			int radius = 10;
+			Imgproc.circle(outputImg, center, radius, new Scalar(0, 0, 255), 1);
+		}
+
+	}
+
+	private Mat getEdges(Mat source) throws DetectorException {
+		Mat dst = new Mat(), cdst = new Mat(), cdstP;
+		List <Mat> layers = new ArrayList<>();
+
+		try {
+			Imgproc.blur(source, source, new Size(4,4));
+
+			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
+			Core.split(source, layers);
+			Imgproc.Canny(layers.get(1), dst, 50, 200, 3, false);
+
+		} catch (NullPointerException e){
+			throw new DetectorException("Could not read source stream.", e);
+		}
+
+		return dst;
+	}
+
+	public Line findStickLine(Mat source) throws DetectorException {
+
+		Line tempLine = null;
+
+		Mat substractedImg = new Mat();
+		Mat linesP = getEdges(source);
+
+		Core.subtract(linesP, cannyImg, substractedImg);
+
+		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 50, 50, 10);
+
+		for (int x = 0; x < linesP.rows(); x++){
+			double line[] = linesP.get(x, 0);
+
+			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
+		}
+
+		return tempLine;
+	}
+
+	public Line getExtendedStickLine(Line stickLine){
+
+		Line extendedLine = new Line();
+
+		double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
+		double X = (stickLine.getBegin().x - stickLine.getEnd().x);
+
+		if (X == 0){
+			Point maxTop = new Point(stickLine.getBegin().x, 0);
+			Point maxBot = new Point(stickLine.getBegin().x, sourceImg.height());
+
+			extendedLine.setBegin(maxTop);
+			extendedLine.setEnd(maxBot);
+		} else if (Y == 0){
+			Point maxLeft = new Point(0, stickLine.getBegin().y);
+			Point maxRight = new Point(sourceImg.width(), stickLine.getBegin().y);
+
+			extendedLine.setBegin(maxLeft);
+			extendedLine.setEnd(maxRight);
+		} else {
+			double a = Y/X;
+			double b = stickLine.getBegin().y - (a*stickLine.getBegin().x);
+
+			Point maxTop = new Point(stickLine.getBegin().x, 0);
+			maxTop.y = 0;
+			maxTop.x = -(b / a);
+
+			Point maxBot = new Point(stickLine.getBegin().x, sourceImg.height());
+			maxBot.y = sourceImg.height();
+			maxBot.x = (-b + sourceImg.height()) / a;
+
+			Point maxLeft = new Point();
+			maxLeft.x = 0;
+			maxLeft.y = b;
+
+			Point maxRight = new Point();
+			maxRight.x = sourceImg.width();
+			maxRight.y = a * sourceImg.width() + b;
+
+			if (maxTop.x >= 0 && maxTop.x <= sourceImg.width()){
+				extendedLine.setPoint(maxTop);
+			}
+
+			if (maxLeft.y >= 0 && maxLeft.y <= sourceImg.height()){
+				extendedLine.setPoint(maxLeft);
+			}
+
+			if (maxBot.x >= 0 && maxBot.x <= sourceImg.width()){
+				extendedLine.setPoint(maxBot);
+			}
+
+			if (maxRight.y >= 0 && maxRight.y <= sourceImg.height()){
+				extendedLine.setPoint(maxRight);
+			}
+
+		}
+
+		return extendedLine;
+	}
+
 		}
 	}
 

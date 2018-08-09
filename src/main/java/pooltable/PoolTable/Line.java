@@ -23,6 +23,21 @@ public class Line {
         return end;
     }
 
+    public void setBegin(Point begin) {
+        this.begin = begin;
+    }
+
+    public void setEnd(Point end) {
+        this.end = end;
+    }
+
+    public void setPoint(Point point){
+        if (this.begin != null)
+            this.end = point;
+        else
+            this.begin = point;
+    }
+
     @Override
     public String toString() {
         return "Line{" +
