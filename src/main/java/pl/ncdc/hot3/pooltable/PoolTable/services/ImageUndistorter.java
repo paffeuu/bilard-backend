@@ -1,17 +1,15 @@
-package imageProcessingServices;
+package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import org.springframework.stereotype.Service;
 
-@Service
-public class ImageUndistorterService {
+public class ImageUndistorter {
     private Mat cameraMatrix = Mat.zeros(3, 3, CvType.CV_64F);
     private Mat distCoeffs = Mat.zeros(8, 1, CvType.CV_64F);
     private Mat undistorted = new Mat();
-    public ImageUndistorterService() {
+    public ImageUndistorter() {
         cameraMatrix.put(2, 2, 1);
         cameraMatrix.put(0, 0, 1755.73196841084);
         cameraMatrix.put(0, 2, 1024);

@@ -1,4 +1,4 @@
-package pooltable.PoolTable;
+package pl.ncdc.hot3.pooltable.PoolTable;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

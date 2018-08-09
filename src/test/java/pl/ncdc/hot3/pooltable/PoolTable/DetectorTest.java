@@ -1,4 +1,4 @@
-package pooltable.PoolTable;
+package pl.ncdc.hot3.pooltable.PoolTable;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -7,8 +7,9 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import pooltable.PoolTable.model.Line;
-import pooltable.exceptions.DetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 
 public class DetectorTest {
 

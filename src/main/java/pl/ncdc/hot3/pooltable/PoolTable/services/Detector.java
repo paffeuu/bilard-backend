@@ -1,18 +1,19 @@
-package pooltable.PoolTable;
+package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import imageProcessingServices.ImageUndistorterService;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import pooltable.PoolTable.model.Line;
-import pooltable.exceptions.DetectorException;
-import pooltable.PoolTable.model.Ball;
+import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 
 /* obsuga obrazu wejsciowego w formacie .jpg
  * 
@@ -161,7 +162,7 @@ public class Detector {
 			Imgproc.Canny(layers.get(1), dst, 50, 200, 3, false);
 
 		} catch (NullPointerException e){
-			throw new DetectorException("Could not read source stream.", e);
+			throw new LinesDetectorException("Could not read source stream.", e);
 		}
 
 		return dst;

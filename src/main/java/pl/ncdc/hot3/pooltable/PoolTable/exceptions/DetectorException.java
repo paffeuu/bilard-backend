@@ -1,4 +1,4 @@
-package pooltable.exceptions;
+package pl.ncdc.hot3.pooltable.PoolTable.exceptions;
 
 public class DetectorException extends Exception {
     public DetectorException() {

@@ -1,4 +1,4 @@
-package pooltable.PoolTable;
+package pl.ncdc.hot3.pooltable.PoolTable;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -12,7 +12,8 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
-import pooltable.PoolTable.model.Ball;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 
 public class Main {
 
