@@ -104,7 +104,7 @@ public class Detector {
 		return circles;
 	}
 
-	private void drawBalls() {
+	public void drawBalls() {
 
 		// get balls coordinates
 		Mat detectedBalls = detectBalls();

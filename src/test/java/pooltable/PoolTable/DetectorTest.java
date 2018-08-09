@@ -18,7 +18,7 @@ public class DetectorTest {
         Detector detector = new Detector();
 
         detector.setSourceImg(null);
-        detector.findStickLine(detector.getSourceImg());
+        detector.findStickLine();
     }
 
     @Test
@@ -30,7 +30,8 @@ public class DetectorTest {
 
         Detector detector = new Detector();
 
-        Line line = detector.findStickLine(sourceWithStickImg);
+        detector.setSourceImg(sourceWithStickImg);
+        Line line = detector.findStickLine();
 
         Assert.assertNotNull(line);
     }
@@ -44,7 +45,8 @@ public class DetectorTest {
 
         Detector detector = new Detector();
 
-        Line line = detector.findStickLine(sourceWithStickImg);
+        detector.setSourceImg(sourceWithStickImg);
+        Line line = detector.findStickLine();
 
         Line extendedLine = null;
 
@@ -71,7 +73,8 @@ public class DetectorTest {
 
         Detector detector = new Detector();
 
-        Line line = detector.findStickLine(sourceWithStickImg);
+        detector.setSourceImg(sourceWithStickImg);
+        Line line = detector.findStickLine();
 
         Assert.assertNotNull(line);
 
