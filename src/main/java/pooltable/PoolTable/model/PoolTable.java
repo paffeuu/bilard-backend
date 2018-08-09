@@ -1,10 +1,12 @@
 package pooltable.PoolTable.model;
 
+import java.util.ArrayList;
+
 /**
  * PoolTable class
  */
 public class PoolTable {
-    private Ball[] balls;
+    private ArrayList<Ball> balls;
     private Cue cue;
 
     /**
@@ -13,7 +15,7 @@ public class PoolTable {
      * @param balls Array of Balls
      * @param cue Cue
      */
-    public PoolTable(Ball[] balls, Cue cue) {
+    public PoolTable(ArrayList<Ball> balls, Cue cue) {
         this.balls = balls;
         this.cue = cue;
     }
@@ -23,7 +25,7 @@ public class PoolTable {
      *
      * @return Balls
      */
-    public Ball[] getBalls() {
+    public ArrayList<Ball> getBalls() {
         return balls;
     }
 
@@ -32,7 +34,7 @@ public class PoolTable {
      *
      * @param balls Balls
      */
-    public void setBalls(Ball[] balls) {
+    public void setBalls(ArrayList<Ball> balls) {
         this.balls = balls;
     }
 

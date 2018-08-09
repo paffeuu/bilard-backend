@@ -3,14 +3,13 @@ package pooltable.PoolTable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
+import imageProcessingServices.ImageUndistorterService;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
-import pooltable.exceptions.DetectorException;
+import org.opencv.photo.Photo;
+import pooltable.PoolTable.model.Ball;
 
 /* obsuga obrazu wejsciowego w formacie .jpg
  * 
@@ -33,10 +32,10 @@ public class Detector {
 
 	private Mat sourceImg;
 	private Mat outputImg;
-	private List<Line> staticLines;
 
 	public Detector() {
-		staticLines = new ArrayList<>();
+		outputImg = new Mat();
+		sourceImg = new Mat();
 	}
 
 	public Mat getSourceImg() {
@@ -48,24 +47,24 @@ public class Detector {
 	}
 
 	public Mat getOutputImg() {
-		return this.sourceImg;
+		return this.outputImg;
 	}
 
 	public void setOutputImg(Mat outputImg) {
 		this.outputImg = outputImg;
 	}
 
-	public List<Line> getStaticLines() {
-		return staticLines;
-	}
-
-	public void setStaticLines(List<Line> staticLines) {
-		this.staticLines = staticLines;
-	}
-
 	public Mat detectBalls() {
 
-		Imgproc.blur(outputImg, sourceImg, new Size(3, 3)); // blur image
+		//undisortion
+		ImageUndistorterService source = new ImageUndistorterService();
+		sourceImg = source.undistort(sourceImg);
+
+		// blur image
+		Imgproc.blur(sourceImg, outputImg, new Size(1, 1));
+
+		// convert to hsv
+		Imgproc.cvtColor(outputImg, outputImg, Imgproc.COLOR_BGR2HSV);
 
 		// split into planes
 		List<Mat> planes = new ArrayList<>(3);
@@ -73,22 +72,19 @@ public class Detector {
 
 		// canny - detect edges
 		Mat edges = new Mat();
-		int lowThreshold = 40;
+		int highThreshold = 105;
 		int ratio = 3;
-
-		Imgproc.Canny(planes.get(1), edges, lowThreshold, lowThreshold * ratio);
+		Imgproc.Canny(planes.get(2), edges, highThreshold/ratio, highThreshold);
 
 		// detect circles
 		Mat circles = new Mat(); // contains balls coordinates
+		int maxRadius = 22;
+		int minRadius = 16;
+		int minDistance = 36;
+		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistance,
+				120, 10, minRadius, maxRadius);
 
-		int maxRadius = 10;
-		int minRadius = 7;
-		int minDistance = maxRadius;
-
-		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistance, 120, 10, minRadius,
-				maxRadius);
-
-		System.out.println(circles);
+		System.out.println(circles.dump());
 
 		return circles;
 	}
@@ -96,98 +92,55 @@ public class Detector {
 	public void drawBalls() {
 
 		// get balls coordinates
-		Mat detectedBalls = new Mat();
-		detectedBalls = detectBalls();
+		Mat detectedBalls = detectBalls();
 
-		double x = 0.0;
-		double y = 0.0;
-		int r = 0;
+		int x,y,r;
+		int j = 0;
+		int leftBand = 175;
+		int rightBand = sourceImg.width() - 105;
+		int topBand = 350;
+		int bottomBand = sourceImg.height() - 300;
+
 
 		for (int i = 0; i < detectedBalls.cols(); i++) {
 			// read ball coordinates
-			double[] data2 = detectedBalls.get(0, i);
+			double[] data = detectedBalls.get(0, i);
 
-			for (int j = 0; j < data2.length; j++) {
-				x = data2[0];
-				y = data2[1];
-				r = (int) data2[2];
+				x = (int) data[0];
+				y = (int) data[1];
+				r = (int) data[2];
+			if((x > leftBand && x < rightBand) && (y > topBand && y < bottomBand)) {
+				j++;
+				System.out.println("id: "+ j +" x: " + data[0] + " y: " + data[1] + " radius: " + r);
+				Point center = new Point(x, y);
 
-				System.out.println("x: " + data2[0] + " y: " + data2[1] + " radius: " + data2[2]);
-			}
-			Point center = new Point(x, y);
+				// draw circle center
+				Imgproc.circle(sourceImg, center, 3, new Scalar(0, 255, 0), -1);
 
-			// draw circle center
-			Imgproc.circle(outputImg, center, 3, new Scalar(0, 255, 0), -1);
-			
-			// draw circle outline
-			int radius = 10;
-			Imgproc.circle(outputImg, center, radius, new Scalar(0, 0, 255), 1);
-		}
-
-	}
-
-	private Mat getLines() throws DetectorException {
-		Mat dst = new Mat(), cdst = new Mat(), cdstP;
-
-		try {
-			Imgproc.Canny(sourceImg, dst, 50, 200, 3, false);
-		} catch (NullPointerException e){
-			throw new DetectorException("Could not read source stream.", e);
-		}
-
-		Imgproc.cvtColor(dst, cdst, Imgproc.COLOR_GRAY2BGR);
-		cdstP = cdst.clone();
-		Mat linesP = new Mat();
-		Imgproc.HoughLinesP(dst, linesP, 1, Math.PI/180, 50, 50, 10);
-
-		return linesP;
-	}
-
-	public void saveStaticLines() throws DetectorException {
-
-		Mat linesP = getLines();
-
-		for (int x = 0; x < linesP.rows(); x++){
-			double line[] = linesP.get(x, 0);
-			staticLines.add(new Line(new Point(line[0], line[1]), new Point(line[2], line[3])));
-			//Imgproc.line(cdstP, new Point(line[0], line[1]), new Point(line[2], line[3]), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
-		}
-
-		//Imgcodecs.imwrite("OUT.png", cdstP);
-	}
-
-	public Line findStickLine() throws DetectorException {
-
-		Mat newLines = new Mat();
-		Mat linesP = getLines();
-
-		for (int x = 0; x < linesP.rows(); x++){
-			double line[] = linesP.get(x, 0);
-			Line tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
-			if (!staticLines.contains(tempLine)){
-				System.out.println(x + " nowa linia + " + tempLine.toString());
-				Imgproc.line(newLines, new Point(line[0], line[1]), new Point(line[2], line[3]), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
-				Imgcodecs.imwrite("OUT.png", newLines);
-
-				return tempLine;
+				// draw circle outline
+				int radius = 20;
+				Imgproc.circle(sourceImg, center, radius, new Scalar(0, 0, 255), 1);
 			}
 		}
-
-		return null;
 	}
 
-	public Line getExtendedStickLine(Line stickLine){
+	public ArrayList<Ball> createListOfBalls() {
+		int x,y,r;
+		Mat circles = detectBalls();
+		ArrayList<Ball> balls = new ArrayList<>();
 
-		double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
-		double X = (stickLine.getBegin().x - stickLine.getEnd().x);
+		for (int i = 1; i <= circles.cols(); i++) {
+			// read ball coordinates
+			double[] data = circles.get(0, i);
 
-		double a = Y/X;
-		double b = Y - (a*X);
+			x = (int) data[0];
+			y = (int) data[1];
+			r = (int) data[2];
 
-		
+			Ball ball = new Ball(i,x,y,r);
+			balls.add(ball);
+		}
 
-		return new Line();
-
+		return balls;
 	}
-
 }
