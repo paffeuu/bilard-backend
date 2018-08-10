@@ -103,7 +103,7 @@ public class Detector {
 		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistance,
 				120, 10, minRadius, maxRadius);
 
-		System.out.println(circles.dump());
+		//.println(circles.dump());
 
 		return circles;
 	}
@@ -130,7 +130,7 @@ public class Detector {
 				r = (int) data[2];
 			if((x > leftBand && x < rightBand) && (y > topBand && y < bottomBand)) {
 				j++;
-				System.out.println("id: "+ j +" x: " + data[0] + " y: " + data[1] + " radius: " + r);
+				//System.out.println("id: "+ j +" x: " + data[0] + " y: " + data[1] + " radius: " + r);
 				Point center = new Point(x, y);
 
 				// draw circle center

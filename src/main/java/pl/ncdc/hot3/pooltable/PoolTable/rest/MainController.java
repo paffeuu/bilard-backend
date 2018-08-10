@@ -1,6 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -62,6 +63,17 @@ public class MainController {
 
     @GetMapping("/test")
     public PoolTable test() {
-        return new PoolTable();
+        PoolTable p = new PoolTable();
+        MatOfByte m = new MatOfByte();
+        try {
+            OpenCVBufforFlushService.setIsNotNeeded(false);
+            Thread.sleep(250);
+            Imgcodecs.imwrite("test.jpg", OpenCVBufforFlushService.getLastFrame());
+            Imgcodecs.imencode(".jpg", OpenCVBufforFlushService.getLastFrame(), m);
+            p.setTableImage(m.toArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return p;
     }
 }
