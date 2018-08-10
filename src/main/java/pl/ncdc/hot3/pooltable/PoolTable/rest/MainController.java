@@ -4,6 +4,7 @@ import org.opencv.imgproc.Imgproc;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Drawer;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -49,6 +50,7 @@ public class MainController {
                     Imgcodecs.imencode(".jpg", result, matOfByte);
                     table.setTableImage(matOfByte.toArray());
                     return ResponseEntity.ok(table);
+
                 } catch (Exception e) {
                     System.out.println("error");
                     return ResponseEntity.ok(table);
@@ -64,8 +66,26 @@ public class MainController {
         }
     }
 
-    @GetMapping("/test")
-    public PoolTable test() {
-        return new PoolTable();
+    @CrossOrigin(origins = "http://localhost:4200")
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
+    public ResponseEntity<PoolTable> test() {
+        PoolTable table = new PoolTable();
+        MatOfByte matOfByte = new MatOfByte();
+        Mat result = undistorter.undistort(OpenCVBufforFlushService.getLastFrame());
+        try {
+            detector.setSourceImg(result.clone());
+            table.setBalls(detector.createListOfBalls(result.clone()));
+            table.setCue(detector.findStickLine());
+            Line line = detector.getExtendedStickLine(table.getCue());
+            drawer.draw(result, line);
+            Imgcodecs.imencode(".jpg", result, matOfByte);
+            table.setTableImage(matOfByte.toArray());
+            return ResponseEntity.ok(table);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("wyslane");
+        //OpenCVBufforFlushService.setIsNotNeeded(true);
+        return ResponseEntity.ok(table);
     }
 }
