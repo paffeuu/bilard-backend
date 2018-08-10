@@ -105,11 +105,8 @@ public class Detector {
 
 		// detect circles
 		Mat circles = new Mat(); // contains balls coordinates
-		int maxRadius = 22;
-		int minRadius = 16;
-		int minDistance = 36;
-		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistance,
-				105, 12, minRadius, maxRadius);
+		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistanceForBalls,
+				105, 12, minRadiusForBall, maxRadiusForBall);
 
 		return circles;
 	}
