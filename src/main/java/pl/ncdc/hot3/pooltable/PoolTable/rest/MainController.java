@@ -40,7 +40,7 @@ public class MainController {
                 try {
                     Mat result = undistorter.undistort(in);
                     detector.setSourceImg(result.clone());
-                    table.setBalls(detector.createListOfBalls(result));
+                    table.setBalls(detector.createListOfBalls(result.clone()));
                     table.setCue(detector.findStickLine());
                     drawer.draw(result, table.getCue());
                     Imgcodecs.imencode(".jpg", result, matOfByte);
