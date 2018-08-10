@@ -3,6 +3,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -15,25 +16,10 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 
-/* obsuga obrazu wejsciowego w formacie .jpg
- * 
- * Convert to Mat
- * 	BufferedImage image = ImageIO.read(input);         
- 	byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();            
- 	Mat img = new Mat(image.getHeight(),image.getWidth(), CvType.CV_8UC3);
- 	img.put(0, 0, data); 
- 	
- 	convert to grey
- 	Imgproc.cvtColor(img, gray, Imgproc.COLOR_BGR2GRAY);
- 	
- 	
- 	Imgcodecs.imwrite("C:\\Files\\input.jpg", img);
- 	File input = new File("C:\\Files\\pool1.png");
- *
- */
-
 @Service
 public class Detector {
+
+	private final String EMPTY_TABLE_IMG = "src/main/resources/emptyTable.png";
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
@@ -41,15 +27,40 @@ public class Detector {
 	private Mat outputImg;
 	private Mat cannyImg;
 
+
+	final double leftBand;
+	final double rightBand;
+	final double topBand;
+	final double bottomBand;
+
+	final int maxRadiusForBall = 22;
+	final int minRadiusForBall = 16;
+	final int minDistanceForBalls = 36;
+	final int highThreshold = 105;
+	final int ratio = 3;
+
 	public Detector() {
 		this.outputImg = new Mat();
 		this.cannyImg = new Mat();
 
+		double sourceWidth = 0;
+		double sourceHeight = 0;
+
 		try {
-			sourceImg = Imgcodecs.imread(ProjectProperties.EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
+			sourceImg = Imgcodecs.imread(EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
 			cannyImg = getEdges(sourceImg);
+
+			sourceWidth = sourceImg.width();
+			sourceHeight = sourceImg.height();
+
+
 		} catch (DetectorException e) {
 			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
+		} finally {
+			leftBand = 175;
+			rightBand = sourceWidth - 105;
+			topBand = 350;
+			bottomBand = sourceHeight - 300;
 		}
 	}
 
@@ -77,88 +88,35 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	private Mat detectBalls() {
-
+	public Mat detectBalls(Mat image) {
 		// blur image
-		Imgproc.blur(sourceImg, outputImg, new Size(1, 1));
+		Imgproc.blur(image, image, new Size(5, 5));
 
 		// convert to hsv
-		Imgproc.cvtColor(outputImg, outputImg, Imgproc.COLOR_BGR2HSV);
+		Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2HSV);
 
 		// split into planes
 		List<Mat> planes = new ArrayList<>(3);
-		Core.split(outputImg, planes);
+		Core.split(image, planes);
 
 		// canny - detect edges
 		Mat edges = new Mat();
-		int highThreshold = 105;
-		int ratio = 3;
 		Imgproc.Canny(planes.get(2), edges, highThreshold/ratio, highThreshold);
 
 		// detect circles
 		Mat circles = new Mat(); // contains balls coordinates
-		int maxRadius = 22;
-		int minRadius = 16;
-		int minDistance = 36;
-		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistance,
-				120, 10, minRadius, maxRadius);
-
-
+		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistanceForBalls,
+				105, 12, minRadiusForBall, maxRadiusForBall);
 
 		return circles;
 	}
 
-	public void drawBalls() {
-
-		// get balls coordinates
-		Mat detectedBalls = detectBalls();
-
-		int x,y,r;
-		int j = 0;
-		int leftBand = 175;
-		int rightBand = sourceImg.width() - 105;
-		int topBand = 350;
-		int bottomBand = sourceImg.height() - 300;
-
-
-		for (int i = 0; i < detectedBalls.cols(); i++) {
-			// read ball coordinates
-			double[] data = detectedBalls.get(0, i);
-
-				x = (int) data[0];
-				y = (int) data[1];
-				r = (int) data[2];
-			if((x > leftBand && x < rightBand) && (y > topBand && y < bottomBand)) {
-				j++;
-				//System.out.println("id: "+ j +" x: " + data[0] + " y: " + data[1] + " radius: " + r);
-				Point center = new Point(x, y);
-
-				// draw circle center
-				Imgproc.circle(sourceImg, center, 3, new Scalar(0, 255, 0), -1);
-
-				// draw circle outline
-				int radius = 20;
-				Imgproc.circle(sourceImg, center, radius, new Scalar(0, 0, 255), 1);
-			}
-			
-			Point center = new Point(x, y);
-
-			// draw circle center
-			Imgproc.circle(outputImg, center, 3, new Scalar(0, 255, 0), -1);
-			
-			// draw circle outline
-			int radius = 10;
-			Imgproc.circle(outputImg, center, radius, new Scalar(0, 0, 255), 1);
-		}
-
-	}
-
 	private Mat getEdges(Mat source) throws DetectorException {
-		Mat dst = new Mat(), cdst = new Mat(), cdstP;
+		Mat dst = new Mat();
 		List <Mat> layers = new ArrayList<>();
 
 		try {
-			Imgproc.blur(source, source, new Size(4,4));
+			Imgproc.blur(source, source, new Size(6,6));
 
 			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
 			Core.split(source, layers);
@@ -186,6 +144,9 @@ public class Detector {
 			double line[] = linesP.get(x, 0);
 
 			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
+			if (isPointInsideBand(tempLine.getBegin()) || isPointInsideBand(tempLine.getEnd())){
+				return tempLine;
+			}
 		}
 
 		return tempLine;
@@ -251,9 +212,9 @@ public class Detector {
 		return extendedLine;
 	}
 
-	public ArrayList<Ball> createListOfBalls() {
+	public ArrayList<Ball> createListOfBalls(Mat image) {
 		int x,y,r;
-		Mat circles = detectBalls();
+		Mat circles = detectBalls(image);
 		ArrayList<Ball> balls = new ArrayList<>();
 
 		for (int i = 1; i < circles.cols(); i++) {
@@ -269,5 +230,15 @@ public class Detector {
 		}
 
 		return balls;
+	}
+
+
+	private boolean isPointInsideBand(Point point){
+		if (point.x > leftBand && point.x < rightBand) {
+			if (point.y > topBand && point.y < bottomBand) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

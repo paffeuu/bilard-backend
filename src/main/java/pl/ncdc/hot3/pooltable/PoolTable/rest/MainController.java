@@ -1,5 +1,8 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
+import org.opencv.imgproc.Imgproc;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Drawer;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
@@ -22,7 +25,8 @@ public class MainController {
     private SnapshotGetterService snapshotGetterService;
     @Autowired
     private ImageUndistorterService undistorter;
-
+    @Autowired
+    private Drawer drawer;
     @Autowired
     private Detector detector;
 
@@ -37,14 +41,12 @@ public class MainController {
             if (in != null && !in.empty()) {
                 MatOfByte matOfByte = new MatOfByte();
                 try {
-                    System.out.println("before undsitort");
                     Mat result = undistorter.undistort(in);
-                    System.out.println("after undi");
-                    //detector.setSourceImg(result.clone());
-                    //table.setBalls(detector.createListOfBalls());
-                    //table.setCue(detector.findStickLine());
-                    System.out.println("after detect");
-
+                    detector.setSourceImg(result.clone());
+                    table.setBalls(detector.createListOfBalls(result.clone()));
+                    table.setCue(detector.findStickLine());
+                    Line line = detector.getExtendedStickLine(table.getCue());
+                    drawer.draw(result, line);
                     Imgcodecs.imencode(".jpg", result, matOfByte);
                     table.setTableImage(matOfByte.toArray());
                     return ResponseEntity.ok(table);
