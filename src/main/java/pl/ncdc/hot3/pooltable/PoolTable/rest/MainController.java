@@ -38,7 +38,7 @@ public class MainController {
         PoolTable table = new PoolTable();
 
         detector.setSourceImg(undistorted.clone());
-        table.setBalls(detector.createListOfBalls());
+        table.setBalls(detector.createListOfBalls(undistorted));
         table.setCue(detector.findStickLine());
         drawer.draw(undistorted, table.getCue());
         Imgcodecs.imencode(".jpg", undistorted, matOfByte);

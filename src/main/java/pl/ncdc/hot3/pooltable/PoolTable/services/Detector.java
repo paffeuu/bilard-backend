@@ -61,17 +61,16 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	public Mat detectBalls() {
+	public Mat detectBalls(Mat image) {
 		// blur image
-		Imgproc.blur(sourceImg, outputImg, new Size(1, 1));
-		Imgcodecs.imwrite("C\\Users\\Borat\\Pictures\\IMAGE.png",sourceImg);
+		Imgproc.blur(image, image, new Size(5, 5));
 
 		// convert to hsv
-		Imgproc.cvtColor(outputImg, outputImg, Imgproc.COLOR_BGR2HSV);
+		Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2HSV);
 
 		// split into planes
 		List<Mat> planes = new ArrayList<>(3);
-		Core.split(outputImg, planes);
+		Core.split(image, planes);
 
 		// canny - detect edges
 		Mat edges = new Mat();
@@ -85,59 +84,9 @@ public class Detector {
 		int minRadius = 16;
 		int minDistance = 36;
 		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistance,
-				120, 10, minRadius, maxRadius);
-
-		System.out.println(circles.dump());
+				105, 12, minRadius, maxRadius);
 
 		return circles;
-	}
-
-	public void drawBalls() {
-		// get balls coordinates
-		Mat detectedBalls = detectBalls();
-
-		int x,y,r;
-		int j = 0;
-		int leftBand = 175;
-		int rightBand = sourceImg.width() - 105;
-		int topBand = 350;
-		int bottomBand = sourceImg.height() - 300;
-
-
-		for (int i = 0; i < detectedBalls.cols(); i++) {
-			// read ball coordinates
-			double[] data = detectedBalls.get(0, i);
-
-				x = (int) data[0];
-				y = (int) data[1];
-				r = (int) data[2];
-			if((x > leftBand && x < rightBand) && (y > topBand && y < bottomBand)) {
-				j++;
-				System.out.println("id: "+ j +" x: " + data[0] + " y: " + data[1] + " radius: " + r);
-				Point center = new Point(x, y);
-
-				// draw circle center
-				Imgproc.circle(sourceImg, center, 3, new Scalar(0, 255, 0), -1);
-
-				// draw circle outline
-				int radius = 20;
-				Imgproc.circle(sourceImg, center, radius, new Scalar(0, 0, 255), 1);
-			}
-			
-			Point center = new Point(x, y);
-
-			// draw circle center
-			Imgproc.circle(outputImg, center, 3, new Scalar(0, 255, 0), -1);
-			
-			// draw circle outline
-			int radius = 10;
-			Imgproc.circle(outputImg, center, radius, new Scalar(0, 0, 255), 1);
-		}
-	}
-
-	private void getBallTrace(Ball firstFrameBall, Ball secondFrameBall) {
-		Imgproc.line(sourceImg, new Point(firstFrameBall.getX(),firstFrameBall.getY()),
-				new Point(secondFrameBall.getX(),secondFrameBall.getY()),new Scalar(150,150,150),4);
 	}
 
 	private Mat getEdges(Mat source) throws DetectorException {
@@ -238,9 +187,9 @@ public class Detector {
 		return extendedLine;
 	}
 
-	public ArrayList<Ball> createListOfBalls() {
+	public ArrayList<Ball> createListOfBalls(Mat image) {
 		int x,y,r;
-		Mat circles = detectBalls();
+		Mat circles = detectBalls(image);
 		ArrayList<Ball> balls = new ArrayList<>();
 
 		for (int i = 1; i < circles.cols(); i++) {

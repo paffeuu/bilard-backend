@@ -8,10 +8,7 @@ import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
-import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
-
-import java.util.ArrayList;
 
 @Service
 public class Drawer {
@@ -20,7 +17,7 @@ public class Drawer {
     private Detector detector;
 
     public Mat drawBalls(Mat img) {
-        Mat detectedBalls = detector.detectBalls();
+        Mat detectedBalls = detector.detectBalls(img.clone());
 
         int x,y,r;
         int leftBand = 175;
