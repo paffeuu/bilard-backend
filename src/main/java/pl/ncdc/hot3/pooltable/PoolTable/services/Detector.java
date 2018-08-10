@@ -103,7 +103,7 @@ public class Detector {
 		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistance,
 				120, 10, minRadius, maxRadius);
 
-		//.println(circles.dump());
+
 
 		return circles;
 	}

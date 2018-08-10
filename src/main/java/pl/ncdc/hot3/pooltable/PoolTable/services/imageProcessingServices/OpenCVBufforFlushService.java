@@ -15,7 +15,7 @@ import java.util.concurrent.BlockingQueue;
 public class OpenCVBufforFlushService {
     private static VideoCapture capture = new VideoCapture();
     private static Vector<Mat> frameVector = new Vector<Mat>();
-    private static boolean isNotNeeded = false;
+    private static boolean isNotNeeded = true;
 
     @Scheduled(fixedRate = 250)
     public static void getFrame() {
@@ -28,9 +28,15 @@ public class OpenCVBufforFlushService {
             Mat newFrame = new Mat();
             try {
                 capture.read(newFrame);
+                if ( frameVector.size() >= 26) {
+                    for ( int i =0; i< 24; i++) {
+                        frameVector.remove(0);
+                    }
+                }
                 frameVector.add(newFrame);
                 //Imgcodecs.imwrite("test.jpg", lastFrame);
                 System.out.println("przeczytal");
+                //OpenCVBufforFlushService.setIsNotNeeded(false);
             } catch ( Exception e) {
                 e.printStackTrace();
             }

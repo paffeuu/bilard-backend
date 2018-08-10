@@ -37,10 +37,13 @@ public class MainController {
             if (in != null && !in.empty()) {
                 MatOfByte matOfByte = new MatOfByte();
                 try {
+                    System.out.println("before undsitort");
                     Mat result = undistorter.undistort(in);
-                    detector.setSourceImg(result.clone());
-                    table.setBalls(detector.createListOfBalls());
-                    table.setCue(detector.findStickLine());
+                    System.out.println("after undi");
+                    //detector.setSourceImg(result.clone());
+                    //table.setBalls(detector.createListOfBalls());
+                    //table.setCue(detector.findStickLine());
+                    System.out.println("after detect");
 
                     Imgcodecs.imencode(".jpg", result, matOfByte);
                     table.setTableImage(matOfByte.toArray());
@@ -61,19 +64,20 @@ public class MainController {
         }
     }
 
-    @GetMapping("/test")
+    @CrossOrigin(origins = "http://localhost:4200")
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
     public PoolTable test() {
         PoolTable p = new PoolTable();
         MatOfByte m = new MatOfByte();
         try {
-            OpenCVBufforFlushService.setIsNotNeeded(false);
-            Thread.sleep(250);
-            Imgcodecs.imwrite("test.jpg", OpenCVBufforFlushService.getLastFrame());
+            //Imgcodecs.imwrite("test.jpg", OpenCVBufforFlushService.getLastFrame());
             Imgcodecs.imencode(".jpg", OpenCVBufforFlushService.getLastFrame(), m);
             p.setTableImage(m.toArray());
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("wyslane");
+        //OpenCVBufforFlushService.setIsNotNeeded(true);
         return p;
     }
 }
