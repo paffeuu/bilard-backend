@@ -68,19 +68,24 @@ public class MainController {
 
     @CrossOrigin(origins = "http://localhost:4200")
     @RequestMapping(value = "/test", method = RequestMethod.GET)
-    public PoolTable test() {
-        PoolTable p = new PoolTable();
-        MatOfByte m = new MatOfByte();
+    public ResponseEntity<PoolTable> test() {
+        PoolTable table = new PoolTable();
+        MatOfByte matOfByte = new MatOfByte();
         Mat result = undistorter.undistort(OpenCVBufforFlushService.getLastFrame());
         try {
-            //Imgcodecs.imwrite("test.jpg", OpenCVBufforFlushService.getLastFrame());
-            Imgcodecs.imencode(".jpg", result, m);
-            p.setTableImage(m.toArray());
+            detector.setSourceImg(result.clone());
+            table.setBalls(detector.createListOfBalls(result.clone()));
+            table.setCue(detector.findStickLine());
+            Line line = detector.getExtendedStickLine(table.getCue());
+            drawer.draw(result, line);
+            Imgcodecs.imencode(".jpg", result, matOfByte);
+            table.setTableImage(matOfByte.toArray());
+            return ResponseEntity.ok(table);
         } catch (Exception e) {
             e.printStackTrace();
         }
         System.out.println("wyslane");
         //OpenCVBufforFlushService.setIsNotNeeded(true);
-        return p;
+        return ResponseEntity.ok(table);
     }
 }
