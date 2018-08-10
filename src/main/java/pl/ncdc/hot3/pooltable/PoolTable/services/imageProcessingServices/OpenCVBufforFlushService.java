@@ -13,38 +13,45 @@ import java.util.concurrent.BlockingQueue;
 
 @Component
 public class OpenCVBufforFlushService {
+
+    private static int counter = 0;
     private static VideoCapture capture = new VideoCapture();
-    private static Vector<Mat> frameVector = new Vector<Mat>();
     private static boolean isNotNeeded = true;
 
-    @Scheduled(fixedRate = 250)
+    private static Mat[] framesArray = new Mat[10];
+
+    @Scheduled(fixedRate = 125)
     public static void getFrame() {
         if (isNotNeeded) {
+
             if (!capture.isOpened()) {
-                System.out.println("open");
                 capture.open("rtsp://hot:kamerabilardowa@192.168.253.214:554/Streaming/Channels/1?transportmode=unicast&profile=Profile_1");
             }
-            System.out.println("czyta");
             Mat newFrame = new Mat();
             try {
                 capture.read(newFrame);
-                if ( frameVector.size() >= 26) {
-                    for ( int i =0; i< 24; i++) {
-                        frameVector.remove(0);
-                    }
+                if (!newFrame.empty()){
+                    counter++;
+                    framesArray[counter%10] = newFrame;
+                    System.out.println("przeczytal klatka: "+ counter);
+                }else {
+                    capture = new VideoCapture();
+                    System.gc();
                 }
-                frameVector.add(newFrame);
-                //Imgcodecs.imwrite("test.jpg", lastFrame);
-                System.out.println("przeczytal");
-                //OpenCVBufforFlushService.setIsNotNeeded(false);
+                if (counter % 200 == 0){
+                    capture = new VideoCapture();
+                    System.gc();
+                }
             } catch ( Exception e) {
                 e.printStackTrace();
             }
         }
     }
+
     public static Mat getLastFrame() {
-        return frameVector.get(frameVector.size()-2);
+        return framesArray[counter%10];
     }
+
     public static void setIsNotNeeded(boolean b) {
         isNotNeeded = b;
     }

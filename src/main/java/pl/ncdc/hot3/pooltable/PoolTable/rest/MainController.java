@@ -69,9 +69,10 @@ public class MainController {
     public PoolTable test() {
         PoolTable p = new PoolTable();
         MatOfByte m = new MatOfByte();
+        Mat result = undistorter.undistort(OpenCVBufforFlushService.getLastFrame());
         try {
             //Imgcodecs.imwrite("test.jpg", OpenCVBufforFlushService.getLastFrame());
-            Imgcodecs.imencode(".jpg", OpenCVBufforFlushService.getLastFrame(), m);
+            Imgcodecs.imencode(".jpg", result, m);
             p.setTableImage(m.toArray());
         } catch (Exception e) {
             e.printStackTrace();
