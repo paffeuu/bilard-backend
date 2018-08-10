@@ -1,5 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
+import org.opencv.imgproc.Imgproc;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Drawer;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
@@ -42,7 +44,8 @@ public class MainController {
                     detector.setSourceImg(result.clone());
                     table.setBalls(detector.createListOfBalls(result.clone()));
                     table.setCue(detector.findStickLine());
-                    drawer.draw(result, table.getCue());
+                    Line line = detector.getExtendedStickLine(table.getCue());
+                    drawer.draw(result, line);
                     Imgcodecs.imencode(".jpg", result, matOfByte);
                     table.setTableImage(matOfByte.toArray());
                     return ResponseEntity.ok(table);
