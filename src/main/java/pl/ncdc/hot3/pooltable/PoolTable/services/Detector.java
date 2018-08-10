@@ -3,6 +3,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -14,23 +15,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
-
-/* obsuga obrazu wejsciowego w formacie .jpg
- * 
- * Convert to Mat
- * 	BufferedImage image = ImageIO.read(input);         
- 	byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();            
- 	Mat img = new Mat(image.getHeight(),image.getWidth(), CvType.CV_8UC3);
- 	img.put(0, 0, data); 
- 	
- 	convert to grey
- 	Imgproc.cvtColor(img, gray, Imgproc.COLOR_BGR2GRAY);
- 	
- 	
- 	Imgcodecs.imwrite("C:\\Files\\input.jpg", img);
- 	File input = new File("C:\\Files\\pool1.png");
- *
- */
 
 @Service
 public class Detector {
@@ -78,7 +62,6 @@ public class Detector {
 			topBand = 350;
 			bottomBand = sourceHeight - 300;
 		}
-
 	}
 
 	public Mat getCannyImg() {
@@ -105,17 +88,16 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	private Mat detectBalls() {
-
+	public Mat detectBalls(Mat image) {
 		// blur image
-		Imgproc.blur(sourceImg, outputImg, new Size(1, 1));
+		Imgproc.blur(image, image, new Size(5, 5));
 
 		// convert to hsv
-		Imgproc.cvtColor(outputImg, outputImg, Imgproc.COLOR_BGR2HSV);
+		Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2HSV);
 
 		// split into planes
 		List<Mat> planes = new ArrayList<>(3);
-		Core.split(outputImg, planes);
+		Core.split(image, planes);
 
 		// canny - detect edges
 		Mat edges = new Mat();
@@ -123,51 +105,13 @@ public class Detector {
 
 		// detect circles
 		Mat circles = new Mat(); // contains balls coordinates
-		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistanceForBalls,
-				120, 10, minRadiusForBall, maxRadiusForBall);
+		int maxRadius = 22;
+		int minRadius = 16;
+		int minDistance = 36;
+		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistance,
+				105, 12, minRadius, maxRadius);
 
 		return circles;
-	}
-
-	public void drawBalls() {
-
-		// get balls coordinates
-		Mat detectedBalls = detectBalls();
-
-		int x,y,r;
-		int j = 0;
-
-
-		for (int i = 0; i < detectedBalls.cols(); i++) {
-			// read ball coordinates
-			double[] data = detectedBalls.get(0, i);
-
-				x = (int) data[0];
-				y = (int) data[1];
-				r = (int) data[2];
-			if((x > leftBand && x < rightBand) && (y > topBand && y < bottomBand)) {
-				j++;
-				System.out.println("id: "+ j +" x: " + data[0] + " y: " + data[1] + " radius: " + r);
-				Point center = new Point(x, y);
-
-				// draw circle center
-				Imgproc.circle(sourceImg, center, 3, new Scalar(0, 255, 0), -1);
-
-				// draw circle outline
-				int radius = 20;
-				Imgproc.circle(sourceImg, center, radius, new Scalar(0, 0, 255), 1);
-			}
-			
-			Point center = new Point(x, y);
-
-			// draw circle center
-			Imgproc.circle(outputImg, center, 3, new Scalar(0, 255, 0), -1);
-			
-			// draw circle outline
-			int radius = 10;
-			Imgproc.circle(outputImg, center, radius, new Scalar(0, 0, 255), 1);
-		}
-
 	}
 
 	private Mat getEdges(Mat source) throws DetectorException {
@@ -197,16 +141,10 @@ public class Detector {
 
 		Core.subtract(linesP, cannyImg, substractedImg);
 
-		Imgcodecs.imwrite("TEST_findStickLine_lines.png", linesP);
-		Imgcodecs.imwrite("TEST_findStickLine_cannySource.png", cannyImg);
-		Imgcodecs.imwrite("TEST_findStickLine_SUB.png", substractedImg);
-
-
 		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 50, 50, 10);
 
 		for (int x = 0; x < linesP.rows(); x++){
 			double line[] = linesP.get(x, 0);
-
 
 			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
 			if (isPointInsideBand(tempLine.getBegin()) || isPointInsideBand(tempLine.getEnd())){
@@ -277,9 +215,9 @@ public class Detector {
 		return extendedLine;
 	}
 
-	public ArrayList<Ball> createListOfBalls() {
+	public ArrayList<Ball> createListOfBalls(Mat image) {
 		int x,y,r;
-		Mat circles = detectBalls();
+		Mat circles = detectBalls(image);
 		ArrayList<Ball> balls = new ArrayList<>();
 
 		for (int i = 1; i < circles.cols(); i++) {
