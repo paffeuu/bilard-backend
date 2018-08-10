@@ -7,11 +7,16 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 
 public class DetectorTest {
+
+    String BASE_PATH = "src/main/resources/";
+
 
     @Test(expected = DetectorException.class)
     public void getLinesShouldThrowExceptionWhenSourceNull() throws DetectorException {
@@ -25,7 +30,7 @@ public class DetectorTest {
     @Test
     public void getStickShouldReturnDetectedStickForImageWithExtraLine() throws DetectorException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        String fileUrl2 = ProjectProperties.BASE_PATH + "Photo2a.png";
+        String fileUrl2 = BASE_PATH + "jacek1.png";
 
         Mat sourceWithStickImg = Imgcodecs.imread(fileUrl2, Imgcodecs.IMREAD_COLOR);
 
@@ -40,7 +45,7 @@ public class DetectorTest {
     @Test
     public void getExtendedStickShouldReturnExtendedLineForInputStick() throws DetectorException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        String fileUrl2 = ProjectProperties.BASE_PATH + "Photo2d.png";
+        String fileUrl2 = BASE_PATH + "jacek1.png";
 
         Mat sourceWithStickImg = Imgcodecs.imread(fileUrl2, Imgcodecs.IMREAD_COLOR);
 
@@ -68,17 +73,43 @@ public class DetectorTest {
     @Test
     public void saveStaticLinesShouldFindOneMoreLineForSecondSource() throws DetectorException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        String fileUrl2 = ProjectProperties.BASE_PATH + "Photo2d.png";
+        String fileUrl2 = BASE_PATH + "jacek1.png";
 
         Mat sourceWithStickImg = Imgcodecs.imread(fileUrl2, Imgcodecs.IMREAD_COLOR);
+        Mat cleanImg = sourceWithStickImg.clone();
 
         Detector detector = new Detector();
 
         detector.setSourceImg(sourceWithStickImg);
         Line line = detector.findStickLine();
 
+        Imgproc.line(cleanImg, line.getBegin(), line.getEnd(), new Scalar(0, 0, 255), 5);
+
+        System.out.println(line.toString());
         Assert.assertNotNull(line);
 
+    }
+
+    @Test
+    public void shouldExtendLinesForMultipleSourcesAndSaveForPreview() throws DetectorException {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        String fileUrl = BASE_PATH + "jacek" ;
+
+        Detector detector = new Detector();
+
+        for (int i = 0; i < 7; i++){
+            String file = fileUrl + (i+1) + ".png";
+            String fileTemp = fileUrl + (i+1) + "-temp.png";
+
+            Mat sourceWithStickImg = Imgcodecs.imread(file, Imgcodecs.IMREAD_COLOR);
+
+            detector.setSourceImg(sourceWithStickImg.clone());
+            Line line = detector.findStickLine();
+            Line extendedLine = detector.getExtendedStickLine(line);
+
+            Imgproc.line(sourceWithStickImg, extendedLine.getBegin(), extendedLine.getEnd(), new Scalar(0, 0, 255), 5);
+            Imgcodecs.imwrite(fileTemp, sourceWithStickImg);
+        }
     }
 
 }

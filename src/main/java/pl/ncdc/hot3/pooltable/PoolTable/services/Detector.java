@@ -35,22 +35,50 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 @Service
 public class Detector {
 
+	private final String EMPTY_TABLE_IMG = "src/main/resources/emptyTable.png";
+
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
 	private Mat sourceImg;
 	private Mat outputImg;
 	private Mat cannyImg;
 
+
+	final double leftBand;
+	final double rightBand;
+	final double topBand;
+	final double bottomBand;
+
+	final int maxRadiusForBall = 22;
+	final int minRadiusForBall = 16;
+	final int minDistanceForBalls = 36;
+	final int highThreshold = 105;
+	final int ratio = 3;
+
 	public Detector() {
 		this.outputImg = new Mat();
 		this.cannyImg = new Mat();
 
+		double sourceWidth = 0;
+		double sourceHeight = 0;
+
 		try {
-			sourceImg = Imgcodecs.imread(ProjectProperties.EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
+			sourceImg = Imgcodecs.imread(EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
 			cannyImg = getEdges(sourceImg);
+
+			sourceWidth = sourceImg.width();
+			sourceHeight = sourceImg.height();
+
+
 		} catch (DetectorException e) {
 			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
+		} finally {
+			leftBand = 175;
+			rightBand = sourceWidth - 105;
+			topBand = 350;
+			bottomBand = sourceHeight - 300;
 		}
+
 	}
 
 	public Mat getCannyImg() {
@@ -91,19 +119,12 @@ public class Detector {
 
 		// canny - detect edges
 		Mat edges = new Mat();
-		int highThreshold = 105;
-		int ratio = 3;
 		Imgproc.Canny(planes.get(2), edges, highThreshold/ratio, highThreshold);
 
 		// detect circles
 		Mat circles = new Mat(); // contains balls coordinates
-		int maxRadius = 22;
-		int minRadius = 16;
-		int minDistance = 36;
-		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistance,
-				120, 10, minRadius, maxRadius);
-
-		System.out.println(circles.dump());
+		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistanceForBalls,
+				120, 10, minRadiusForBall, maxRadiusForBall);
 
 		return circles;
 	}
@@ -115,10 +136,6 @@ public class Detector {
 
 		int x,y,r;
 		int j = 0;
-		int leftBand = 175;
-		int rightBand = sourceImg.width() - 105;
-		int topBand = 350;
-		int bottomBand = sourceImg.height() - 300;
 
 
 		for (int i = 0; i < detectedBalls.cols(); i++) {
@@ -154,11 +171,11 @@ public class Detector {
 	}
 
 	private Mat getEdges(Mat source) throws DetectorException {
-		Mat dst = new Mat(), cdst = new Mat(), cdstP;
+		Mat dst = new Mat();
 		List <Mat> layers = new ArrayList<>();
 
 		try {
-			Imgproc.blur(source, source, new Size(4,4));
+			Imgproc.blur(source, source, new Size(6,6));
 
 			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
 			Core.split(source, layers);
@@ -180,12 +197,21 @@ public class Detector {
 
 		Core.subtract(linesP, cannyImg, substractedImg);
 
+		Imgcodecs.imwrite("TEST_findStickLine_lines.png", linesP);
+		Imgcodecs.imwrite("TEST_findStickLine_cannySource.png", cannyImg);
+		Imgcodecs.imwrite("TEST_findStickLine_SUB.png", substractedImg);
+
+
 		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 50, 50, 10);
 
 		for (int x = 0; x < linesP.rows(); x++){
 			double line[] = linesP.get(x, 0);
 
+
 			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
+			if (isPointInsideBand(tempLine.getBegin()) || isPointInsideBand(tempLine.getEnd())){
+				return tempLine;
+			}
 		}
 
 		return tempLine;
@@ -269,5 +295,15 @@ public class Detector {
 		}
 
 		return balls;
+	}
+
+
+	private boolean isPointInsideBand(Point point){
+		if (point.x > leftBand && point.x < rightBand) {
+			if (point.y > topBand && point.y < bottomBand) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
