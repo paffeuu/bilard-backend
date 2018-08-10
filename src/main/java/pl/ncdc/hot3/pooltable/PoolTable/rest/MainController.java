@@ -67,7 +67,7 @@ public class MainController {
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
-    @RequestMapping(value = "/test", method = RequestMethod.GET)
+    @RequestMapping(value = "/get-pool-table", method = RequestMethod.GET)
     public ResponseEntity<PoolTable> test() {
         PoolTable table = new PoolTable();
         MatOfByte matOfByte = new MatOfByte();
