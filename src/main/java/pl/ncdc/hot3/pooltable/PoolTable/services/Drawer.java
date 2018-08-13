@@ -35,10 +35,10 @@ public class Drawer {
                 Point center = new Point(x, y);
 
                 // draw circle center
-                Imgproc.circle(img, center, 3, new Scalar(0, 255, 0), -1);
+                Imgproc.circle(img, center, 3, new Scalar(0, 255, 0), 3);
 
                 // draw circle outline
-                Imgproc.circle(img, center, r, new Scalar(0, 0, 255), 1);
+                Imgproc.circle(img, center, r, new Scalar(0, 0, 255), 5);
             }
         }
 
