@@ -7,7 +7,6 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 
 @Service
@@ -46,16 +45,33 @@ public class Drawer {
         return img;
     }
 
-    public Mat drawExtendedCue(Mat img, pl.ncdc.hot3.pooltable.PoolTable.model.Line line) {
+    public Mat drawLine(Mat img, pl.ncdc.hot3.pooltable.PoolTable.model.Line line) {
         Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155,155,155), 4);
         return img;
     }
 
-    public Mat draw(Mat img, Line line) throws DetectorException {
+    public Mat draw(Mat img, Line line) {
         Mat balls = drawBalls(img);
-        Mat extendedCue = drawExtendedCue(img, line);
+        Mat extendedCue = drawLine(img, line);
         Mat all = new Mat();
         Core.add(balls, extendedCue, all);
         return all;
+    }
+
+    public Mat drawBandLines(Mat sourceImg){
+
+
+
+//        Point leftTopCorner = new Point(leftBand, topBand);
+//        Point leftBotCorner = new Point(leftBand, bottomBand);
+//        Point rightTopCorner = new Point(rightBand, topBand);
+//        Point rightBotCorner = new Point(rightBand, bottomBand);
+//
+//        Imgproc.line(sourceImg, leftTopCorner, leftBotCorner, new Scalar(0, 255, 0), 5);
+//        Imgproc.line(sourceImg, leftBotCorner, rightBotCorner, new Scalar(0, 255, 0), 5);
+//        Imgproc.line(sourceImg, rightBotCorner, rightTopCorner, new Scalar(0, 255, 0), 5);
+//        Imgproc.line(sourceImg, rightTopCorner, leftTopCorner, new Scalar(0, 255, 0), 5);
+//
+        return sourceImg;
     }
 }
