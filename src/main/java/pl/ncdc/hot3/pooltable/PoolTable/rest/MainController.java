@@ -77,7 +77,9 @@ public class MainController {
             table.setBalls(detector.createListOfBalls(result.clone()));
             table.setCue(detector.findStickLine());
             Line line = detector.getExtendedStickLine(table.getCue());
+            Line prediction = Line.predictTrajectoryAfterBump(line.getEnd(), line);
             drawer.draw(result, line);
+            drawer.draw(result, prediction);
             Imgcodecs.imencode(".jpg", result, matOfByte);
             table.setTableImage(matOfByte.toArray());
             return ResponseEntity.ok(table);

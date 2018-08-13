@@ -97,7 +97,23 @@ public class Line {
     }
 
     public static Line predictTrajectoryAfterBump(Point bumpPoint, Line line) {
-        Point halfDistance =  new Point(line.getBegin().x, line.getEnd().y);
+        double tableBandLeft = 165;
+        double tableBandRight = 1948;
+        double tableBandTop = 350;
+        double tableBandBottom = 1236;
+
+        Point halfDistance = new Point();
+
+        if (tableBandLeft == bumpPoint.x) {
+            halfDistance = new Point(line.getBegin().x, line.getEnd().y);
+        } else if (tableBandRight == bumpPoint.x) {
+            halfDistance = new Point(line.getEnd().x, line.getBegin().y);
+        } else if (tableBandTop == bumpPoint.y) {
+            halfDistance = new Point(line.getEnd().x, line.getBegin().y);
+        } else if (tableBandBottom == bumpPoint.y) {
+            halfDistance = new Point(line.getEnd().x, line.getBegin().y);
+        }
+
         double distanceX = Math.abs(line.getBegin().x - halfDistance.x);
         double distanceY = Math.abs(line.getBegin().y - halfDistance.y);
 
