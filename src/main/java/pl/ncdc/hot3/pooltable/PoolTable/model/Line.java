@@ -95,4 +95,15 @@ public class Line {
 
         return a;
     }
+
+    public static Line predictTrajectoryAfterBump(Point bumpPoint, Line line) {
+        Point halfDistance =  new Point(line.getEnd().x, line.getBegin().y);
+        double distanceX = Math.abs(line.getBegin().x - halfDistance.x);
+        double distanceY = Math.abs(line.getBegin().y - halfDistance.y);
+
+        return new Line(
+                bumpPoint,
+                new Point(halfDistance.x + distanceX, distanceY + halfDistance.y)
+        );
+    }
 }
