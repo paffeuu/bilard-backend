@@ -43,8 +43,8 @@ public class Line {
     @Override
     public String toString() {
         return "Line{" +
-                "begin=" + begin +
-                ", end=" + end +
+                "begin=" + begin.toString() +
+                ", end=" + end.toString() +
                 '}';
     }
 
