@@ -57,4 +57,21 @@ public class Drawer {
         Core.add(balls, extendedCue, all);
         return all;
     }
+
+    public Mat drawBandLines(Mat sourceImg){
+
+
+
+//        Point leftTopCorner = new Point(leftBand, topBand);
+//        Point leftBotCorner = new Point(leftBand, bottomBand);
+//        Point rightTopCorner = new Point(rightBand, topBand);
+//        Point rightBotCorner = new Point(rightBand, bottomBand);
+//
+//        Imgproc.line(sourceImg, leftTopCorner, leftBotCorner, new Scalar(0, 255, 0), 5);
+//        Imgproc.line(sourceImg, leftBotCorner, rightBotCorner, new Scalar(0, 255, 0), 5);
+//        Imgproc.line(sourceImg, rightBotCorner, rightTopCorner, new Scalar(0, 255, 0), 5);
+//        Imgproc.line(sourceImg, rightTopCorner, leftTopCorner, new Scalar(0, 255, 0), 5);
+//
+        return sourceImg;
+    }
 }

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Drawer;
 
 public class DetectorTest {
 
@@ -96,6 +97,7 @@ public class DetectorTest {
         String fileUrl = BASE_PATH + "jacek" ;
 
         Detector detector = new Detector();
+        Drawer drawer = new Drawer();
 
         for (int i = 0; i < 9; i++){
             String file = fileUrl + (i+1) + ".png";
@@ -111,7 +113,7 @@ public class DetectorTest {
             Imgproc.line(sourceWithStickImg, extendedLine.getBegin(), extendedLine.getEnd(), new Scalar(0, 0, 255), 5);
             Imgproc.line(sourceWithStickImg, line.getBegin(), line.getEnd(), new Scalar(0, 255, 0), 5);
 
-            Mat dst = detector.drawBandLines(sourceWithStickImg);
+            Mat dst = drawer.drawBandLines(sourceWithStickImg);
             Imgcodecs.imwrite(fileTemp, dst);
         }
     }
