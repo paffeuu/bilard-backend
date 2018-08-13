@@ -7,6 +7,15 @@ public class Ball {
     private int id;
     private double x;
     private double y;
+
+    public double getRadius() {
+        return radius;
+    }
+
+    public void setRadius(double radius) {
+        this.radius = radius;
+    }
+
     private double radius;
 
     /**
@@ -20,6 +29,7 @@ public class Ball {
         this.id = id;
         this.x = x;
         this.y = y;
+        this.radius = radius;
     }
 
     /**

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 public class ImageUndistorterService {
     private Mat cameraMatrix = Mat.zeros(3, 3, CvType.CV_64F);
     private Mat distCoeffs = Mat.zeros(8, 1, CvType.CV_64F);
-    private Mat undistorted = new Mat();
     public ImageUndistorterService() {
         cameraMatrix.put(2, 2, 1);
         cameraMatrix.put(0, 0, 1755.73196841084);
@@ -22,7 +21,8 @@ public class ImageUndistorterService {
     }
 
     public Mat undistort(Mat distorted) {
+        Mat undistorted = new Mat();
         Imgproc.undistort(distorted, undistorted, cameraMatrix, distCoeffs);
-        return this.undistorted;
+        return undistorted;
     }
 }

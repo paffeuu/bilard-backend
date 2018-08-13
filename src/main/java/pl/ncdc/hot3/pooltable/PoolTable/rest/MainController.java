@@ -42,11 +42,10 @@ public class MainController {
                 MatOfByte matOfByte = new MatOfByte();
                 try {
                     Mat result = undistorter.undistort(in);
-                    detector.setSourceImg(result.clone());
-                    table.setBalls(detector.createListOfBalls(result.clone()));
-                    table.setCue(detector.findStickLine());
+                    table.setBalls(detector.createListOfBalls(result));
+                    table.setCue(detector.findStickLine(result));
                     Line line = detector.getExtendedStickLine(table.getCue());
-                    drawer.draw(result, line);
+                    drawer.draw(result, line, table.getBalls());
                     Imgcodecs.imencode(".jpg", result, matOfByte);
                     table.setTableImage(matOfByte.toArray());
                     return ResponseEntity.ok(table);
@@ -73,11 +72,10 @@ public class MainController {
         MatOfByte matOfByte = new MatOfByte();
         Mat result = undistorter.undistort(OpenCVBufforFlushService.getLastFrame());
         try {
-            detector.setSourceImg(result.clone());
-            table.setBalls(detector.createListOfBalls(result.clone()));
-            table.setCue(detector.findStickLine());
+            table.setBalls(detector.createListOfBalls(result));
+            table.setCue(detector.findStickLine(result));
             Line line = detector.getExtendedStickLine(table.getCue());
-            drawer.draw(result, line);
+            drawer.draw(result, line, table.getBalls());
             Imgcodecs.imencode(".jpg", result, matOfByte);
             table.setTableImage(matOfByte.toArray());
             return ResponseEntity.ok(table);
