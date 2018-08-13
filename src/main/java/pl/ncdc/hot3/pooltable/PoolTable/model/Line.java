@@ -97,7 +97,7 @@ public class Line {
     }
 
     public static Line predictTrajectoryAfterBump(Point bumpPoint, Line line) {
-        Point halfDistance =  new Point(line.getEnd().x, line.getBegin().y);
+        Point halfDistance =  new Point(line.getBegin().x, line.getEnd().y);
         double distanceX = Math.abs(line.getBegin().x - halfDistance.x);
         double distanceY = Math.abs(line.getBegin().y - halfDistance.y);
 

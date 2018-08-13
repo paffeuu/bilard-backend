@@ -23,12 +23,12 @@ public class LineTest {
         Mat sourceImage = Imgcodecs.imread(sourceImagePath, Imgcodecs.IMREAD_COLOR);
 
         Line line1 = new Line(
-                new Point(1172, 897),
-                new Point(1131, 957)
+                new Point(500, 500),
+                new Point(0, 700)
         );
         Line line2 = new Line(
-                new Point(1379, 581),
-                new Point(1120, 951)
+                new Point(500, 490),
+                new Point(0, 700)
         );
 
         Line ext1 = detector.getExtendedStickLine(line1);
@@ -40,10 +40,10 @@ public class LineTest {
         Point bumpPoint = asd.getEnd();
         Line prediction = Line.predictTrajectoryAfterBump(bumpPoint, asd);
 
-        Imgproc.line(sourceImage, ext1.getBegin(), ext1.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
-        Imgproc.line(sourceImage, ext2.getBegin(), ext2.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
+        Imgproc.line(sourceImage, line1.getBegin(), line1.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
+        Imgproc.line(sourceImage, line2.getBegin(), line2.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
         Imgproc.line(sourceImage, asd.getBegin(), asd.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
-        Imgproc.line(sourceImage, asd.getEnd(), new Point(asd.getEnd().x, asd.getBegin().y), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
+        Imgproc.line(sourceImage, asd.getEnd(), new Point(asd.getBegin().x, asd.getEnd().y), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
         Imgproc.line(sourceImage, prediction.getBegin(), prediction.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
         Imgproc.circle(sourceImage, asd.getEnd(), 50, new Scalar(0, 255, 255), 3);
         Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
