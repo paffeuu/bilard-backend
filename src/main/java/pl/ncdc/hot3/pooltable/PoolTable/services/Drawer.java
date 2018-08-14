@@ -14,10 +14,9 @@ import java.util.ArrayList;
 @Service
 public class Drawer {
 
-	public void drawBalls(Mat img, ArrayList<Ball> balls) {
+	public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) {
 		double x, y;
 		int r;
-
 		for (int i = 0; i < balls.size(); i++) {
 			// read ball coordinates
 			Ball ball = balls.get(i);
@@ -32,7 +31,7 @@ public class Drawer {
 			Imgproc.circle(img, center, 3, new Scalar(0, 255, 0), 3);
 
 			// draw circle outline
-			Imgproc.circle(img, center, r, new Scalar(0, 0, 255), 5);
+			Imgproc.circle(img, center, r, scalar, 5);
 
 		}
 	}
@@ -42,7 +41,7 @@ public class Drawer {
 	}
 
 	public void draw(Mat img, Line line, ArrayList<Ball> listOfBalls) {
-		drawBalls(img, listOfBalls);
+		drawBalls(img, listOfBalls,  new Scalar(0, 0, 255));
 		drawExtendedCue(img, line);
 	}
 }

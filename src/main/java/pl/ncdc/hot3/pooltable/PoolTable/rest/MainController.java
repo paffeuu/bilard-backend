@@ -1,9 +1,12 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Drawer;
+import pl.ncdc.hot3.pooltable.PoolTable.services.PreviousPositionService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
 import org.opencv.core.Mat;
@@ -22,22 +25,27 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 @RequestMapping(path = "/pooltable")
 public class MainController {
     @Autowired
-    private SnapshotGetterService snapshotGetterService;
-    @Autowired
     private ImageUndistorterService undistorter;
     @Autowired
     private Drawer drawer;
     @Autowired
     private Detector detector;
+    @Autowired
+    private PreviousPositionService previousPositionService;
+    @Autowired
+    private MockupService mockupService;
+
+    private boolean showPrevious = true;
+    private int counter =0;
 
     @CrossOrigin(origins = "http://localhost:4200")
 
     @RequestMapping(value = "/get-snapshot", method = RequestMethod.GET)
     public ResponseEntity<PoolTable> getPoolTableImage() throws DetectorException {
         PoolTable table = new PoolTable();
-
+/*
         if (!snapshotGetterService.isOpening()) {
-            Mat in = snapshotGetterService.getLiveSnapshot();
+            Mat in =
             if (in != null && !in.empty()) {
                 MatOfByte matOfByte = new MatOfByte();
                 try {
@@ -63,6 +71,8 @@ public class MainController {
             System.out.println("is opening");
             return ResponseEntity.ok(table);
         }
+        */
+    return ResponseEntity.ok(table);
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
@@ -70,12 +80,25 @@ public class MainController {
     public ResponseEntity<PoolTable> test() {
         PoolTable table = new PoolTable();
         MatOfByte matOfByte = new MatOfByte();
-        Mat result = undistorter.undistort(OpenCVBufforFlushService.getLastFrame());
+       Mat result = undistorter.undistort(OpenCVBufforFlushService.getLastFrame());
+      //  Mat result = undistorter.undistort(mockupService.getLiveSnapshot());
+
         try {
             table.setBalls(detector.createListOfBalls(result));
+            if (OpenCVBufforFlushService.getCounter() % 4 == 0) {
+                previousPositionService.addPosition(table.getBalls());
+                previousPositionService.findLastStillPosition();
+            }
             table.setCue(detector.findStickLine(result));
             Line line = detector.getExtendedStickLine(table.getCue());
             drawer.draw(result, line, table.getBalls());
+
+            if (this.showPrevious) {
+                if (previousPositionService.getPreviousPosition() != null) {
+                    drawer.drawBalls(result, previousPositionService.getPreviousPosition(), new Scalar(255, 0, 255));
+                }
+            }
+
             Imgcodecs.imencode(".jpg", result, matOfByte);
             table.setTableImage(matOfByte.toArray());
             return ResponseEntity.ok(table);
@@ -85,5 +108,10 @@ public class MainController {
         System.out.println("wyslane");
         //OpenCVBufforFlushService.setIsNotNeeded(true);
         return ResponseEntity.ok(table);
+    }
+
+    @RequestMapping(value = "/set-visible", method = RequestMethod.GET)
+    public void setShowPrevious() {
+        this.showPrevious = !this.showPrevious;
     }
 }

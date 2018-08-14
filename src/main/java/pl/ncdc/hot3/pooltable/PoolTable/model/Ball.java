@@ -85,4 +85,18 @@ public class Ball {
     public void setY(double y) {
         this.y = y;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Ball)) {
+            return false;
+        }
+
+        Ball b = (Ball) o;
+
+        double xDelta = this.x - b.getX();
+        double yDelta = this.y - b.getY();
+
+        return (xDelta <= 15.0 && yDelta <= 15.0);
+    }
 }
