@@ -5,10 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
@@ -34,6 +31,7 @@ public class CueService {
     ){
         this.properties = properties;
         this.detector = detector;
+        this.lineService = lineService;
     }
 
     private double calcAbsoluteDistance(double value1, double value2){
@@ -41,13 +39,12 @@ public class CueService {
     }
 
     public Line predictTrajectoryAfterBump(Line line) throws LineServiceException {
-        line = lineService.getExtendedStickLineForOneSide(line);
 
         Point bumpPoint = line.getEnd();
         Point halfDistance = new Point(0, 0);
 
         if (calcAbsoluteDistance(properties.getTableBandLeft(), bumpPoint.x) <= 2) {
-            halfDistance = new Point(line.getEnd().x, line.getEnd().y);
+            halfDistance = new Point(line.getBegin().x, line.getEnd().y);
         } else if (calcAbsoluteDistance(properties.getTableBandRight(), bumpPoint.x) <= 2) {
             halfDistance = new Point(line.getBegin().x, line.getEnd().y);
         } else if (calcAbsoluteDistance(properties.getTableBandTop(), bumpPoint.y) <= 2) {
@@ -67,21 +64,24 @@ public class CueService {
         );
     }
 
-    public List<Line> getStickWithPredictions(int deep) throws DetectorException, CueServiceException, LineServiceException {
-        Line cue = detector.findStickLine();
-
+    public List<Line> getStickWithPredictions() {
         List <Line> predictions = new ArrayList<>();
 
-        if (cue != null) {
+        try {
+            Line cue = detector.findStickLine();
+
             predictions.add(cue);
 
-            for (int i = 0; i < deep; i++){
+            for (int i = 0; i < properties.getPredictionDepth(); i++){
                 Line pred = predictTrajectoryAfterBump(predictions.get(i));
                 predictions.add(pred);
             }
-        }
 
-        return predictions;
+        } catch (MissingCueLineException e) {
+            LOGGER.warn("Cannot found stick line.");
+        } finally {
+            return predictions;
+        }
     }
 
 }

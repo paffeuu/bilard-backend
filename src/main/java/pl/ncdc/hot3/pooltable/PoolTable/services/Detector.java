@@ -15,11 +15,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
@@ -41,33 +38,28 @@ public class Detector {
 	final int highThreshold = 105;
 	final int ratio = 3;
 	final int cueThickness = 17;
+    final double minDistance = 60;
 
-	@Autowired
 	private static Properties properties;
 
-	@Autowired
-	private CueService cueService;
-
-	@Autowired
 	private LineService lineService;
 
-	public Detector() {
+	@Autowired
+	public Detector(
+			LineService lineService,
+			Properties properties
+	) {
+		this.lineService = lineService;
 		this.properties = properties;
+
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 		this.outputImg = new Mat();
 		this.cannyImg = new Mat();
 
-		double sourceWidth = 0;
-		double sourceHeight = 0;
-
 		try {
 			sourceImg = Imgcodecs.imread(EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
 			cannyImg = getEdges(sourceImg);
-
-			sourceWidth = sourceImg.width();
-			sourceHeight = sourceImg.height();
-
 
 		} catch (DetectorException e) {
 			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
@@ -111,8 +103,6 @@ public class Detector {
 		List<Mat> planes = new ArrayList<>(3);
 		Core.split(image, planes);
 
-
-
 		// detect circles
 		Mat circles = new Mat(); // contains balls coordinates
 		Imgproc.HoughCircles(planes.get(2), circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistanceForBalls,
@@ -146,7 +136,7 @@ public class Detector {
 			r = data[i + 2];
 
 			// check if they are within table boundaries
-			if (isPointInsideBand(new Point(x, y))) {
+			if (properties.isPointInsideBand(new Point(x, y))) {
 
 				if (j == 0) {
 					filteredCircles.put(0, j, x, y, r);
@@ -188,31 +178,7 @@ public class Detector {
 		return dst;
 	}
 
-	private List<Line> getInnerLines() throws DetectorException {
-		Line tempLine = null;
-
-		Mat substractedImg = new Mat();
-		Mat linesP = getEdges(sourceImg);
-
-		Core.subtract(linesP, cannyImg, substractedImg);
-
-		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 70, 50, 10);
-
-		List <Line> linesList = new ArrayList<>();
-
-		for (int x = 0; x < linesP.rows(); x++){
-			double line[] = linesP.get(x, 0);
-
-			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
-			if (isPointInsideBand(tempLine.getBegin()) || isPointInsideBand(tempLine.getEnd())){
-				linesList.add(tempLine);
-			}
-		}
-
-		return linesList;
-	}
-
-	public Line findStickLine() throws DetectorException, CueServiceException, LineServiceException {
+	public Line findStickLine() throws MissingCueLineException, DetectorException, LineServiceException {
 
 		List <Line> linesList = getInnerLines();
 		Line cueLine = null;
@@ -220,7 +186,6 @@ public class Detector {
 		double dist;
 		double a1, a2, parallelTolerance = 0.2;
 
-		double minDistance = 50;
 		outerloop:
 		for (int i = 0; i < linesList.size() - 1; i++){
 			for (int j = 0; j < linesList.size(); j++){
@@ -242,10 +207,36 @@ public class Detector {
 			}
 		}
 
+		if (cueLine == null){
+			throw new MissingCueLineException("Could not find stick line.");
+		}
+
 		return cueLine;
 	}
 
+	private List<Line> getInnerLines() throws DetectorException {
+		Line tempLine = null;
 
+		Mat substractedImg = new Mat();
+		Mat linesP = getEdges(sourceImg);
+
+		Core.subtract(linesP, cannyImg, substractedImg);
+
+		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 70, 50, 10);
+
+		List <Line> linesList = new ArrayList<>();
+
+		for (int x = 0; x < linesP.rows(); x++){
+			double line[] = linesP.get(x, 0);
+
+			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
+			if (properties.isPointInsideBand(tempLine.getBegin()) || properties.isPointInsideBand(tempLine.getEnd())){
+				linesList.add(tempLine);
+			}
+		}
+
+		return linesList;
+	}
 
 	public ArrayList<Ball> createListOfBalls() {
 		int x,y,r;
@@ -267,18 +258,10 @@ public class Detector {
 		return balls;
 	}
 
-	public boolean isPointInsideBand(Point point){
-		return isPointInsideBand(point, new Properties());
-	}
+//	public boolean isPointInsideBand(Point point){
+//		return isPointInsideBand(point);
+//	}
 
-	public static boolean isPointInsideBand(Point point, Properties properties){
-		if (point.x >= properties.getTableBandLeft() - 5 && point.x <= properties.getTableBandRight() + 5) {
-			if (point.y >= properties.getTableBandTop() - 5 && point.y <= properties.getTableBandBottom() + 5) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 	private double getDistanceBetweenLines(Line line1, Line line2) {
 

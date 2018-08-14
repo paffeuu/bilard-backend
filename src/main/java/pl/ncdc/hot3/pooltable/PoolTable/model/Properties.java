@@ -1,5 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.model;
 
+import org.opencv.core.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,12 +34,15 @@ public class Properties {
     private double imageSourceWidth;
     private double imageSourceHeight;
 
+    // Predictions
+    private int predictionDepth;
 
     public Properties() {
         this.tableBandLeft = 165;
         this.tableBandRight = 1948;
         this.tableBandTop = 350;
         this.tableBandBottom = 1236;
+        this.predictionDepth = 10;
     }
 
     /**
@@ -58,6 +62,7 @@ public class Properties {
      * @param cannyRatio
      * @param imageSourceWidth
      * @param imageSourceHeight
+     * @param predictionDepth
      */
     public Properties(double tableBandLeft,
                       double tableBandRight,
@@ -72,7 +77,9 @@ public class Properties {
                       double cannyHighThreshold,
                       double cannyRatio,
                       double imageSourceWidth,
-                      double imageSourceHeight) {
+                      double imageSourceHeight,
+                      int predictionDepth
+    ) {
 
         this.tableBandLeft = tableBandLeft;
         this.tableBandRight = tableBandRight;
@@ -88,6 +95,7 @@ public class Properties {
         this.cannyRatio = cannyRatio;
         this.imageSourceWidth = imageSourceWidth;
         this.imageSourceHeight = imageSourceHeight;
+        this.predictionDepth = predictionDepth;
     }
 
     /**
@@ -340,5 +348,22 @@ public class Properties {
      */
     public void setImageSourceHeight(double imageSourceHeight) {
         this.imageSourceHeight = imageSourceHeight;
+    }
+
+    public int getPredictionDepth() {
+        return predictionDepth;
+    }
+
+    public void setPredictionDepth(int predictionDepth) {
+        this.predictionDepth = predictionDepth;
+    }
+
+    public boolean isPointInsideBand(Point point){
+        if (point.x >= this.getTableBandLeft() - 5 && point.x <= this.getTableBandRight() + 5) {
+            if (point.y >= this.getTableBandTop() - 5 && point.y <= this.getTableBandBottom() + 5) {
+                return true;
+            }
+        }
+        return false;
     }
 }

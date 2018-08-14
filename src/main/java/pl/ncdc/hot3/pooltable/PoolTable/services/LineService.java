@@ -11,15 +11,11 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
 @Service
 public class LineService {
-    @Autowired
     private Properties properties;
 
     @Autowired
-    private Detector detector;
-
-    public LineService(Properties properties, Detector detector) {
+    public LineService(Properties properties) {
         this.properties = properties;
-        this.detector = detector;
     }
 
     public LineService() {}
@@ -84,8 +80,6 @@ public class LineService {
         double horizontalMove = stickLine.getEnd().x - stickLine.getBegin().x;
         double verticalMove = stickLine.getEnd().y - stickLine.getBegin().y;
 
-        //System.out.println(stickLine);
-
         safeMoveLine(stickLine, horizontalMove, verticalMove);
 
         Line extendedLine = new Line();
@@ -102,38 +96,115 @@ public class LineService {
         Line botBand = new Line(leftBotCornerPoint, rightBotCornerPoint);
         Line leftBand = new Line(leftBotCornerPoint, leftTopCornerPoint);
 
+        double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
+        double X = (stickLine.getBegin().x - stickLine.getEnd().x);
+
+        double a = Y/X;
+        double b = stickLine.getBegin().y - (a*stickLine.getBegin().x);
+
         if (horizontalMove >= 0 && verticalMove <= 0){
 
             crosscutPoint1 = getCrosscutPointForLines(stickLine, topBand);
             crosscutPoint2 = getCrosscutPointForLines(stickLine, rightBand);
+
+            Point maxTop = new Point();
+            maxTop.y = properties.getTableBandTop();
+            maxTop.x = ((properties.getTableBandTop() - b) / a);
+
+            Point maxRight = new Point();
+            maxRight.x = properties.getTableBandRight();
+            maxRight.y = properties.getTableBandRight() * a + b;
+
+            crosscutPoint1 = maxTop;
+            crosscutPoint2 = maxRight;
+
+//            System.out.println("============================");
+//            System.out.println("lineService::getExtendedStickLineForOneSide()");
+//            System.out.println(stickLine.toString());
+//            System.out.println(crosscutPoint1);
+//            System.out.println(crosscutPoint2);
+//            System.out.println("----------------------------");
+//            System.out.println(maxTop);
+//            System.out.println(maxRight);
+//            System.out.println(properties.isPointInsideBand(crosscutPoint1) + ", " + properties.isPointInsideBand(maxTop));
+//            System.out.println(properties.isPointInsideBand(crosscutPoint2) + ", " + properties.isPointInsideBand(maxRight));
+//            System.out.println(properties.getTableBandLeft() + ", " + properties.getTableBandTop());
+//            System.out.println(", " + properties.getTableBandRight() + ", " + properties.getTableBandBottom());
+//            System.out.println("1===========================");
 
         } else if (horizontalMove < 0 && verticalMove > 0) {
 
             crosscutPoint1 = getCrosscutPointForLines(stickLine, leftBand);
             crosscutPoint2 = getCrosscutPointForLines(stickLine, botBand);
 
+            Point maxBot = new Point();
+            maxBot.y = properties.getTableBandBottom();
+            maxBot.x = (properties.getTableBandBottom() - b) / a;
+
+            Point maxLeft = new Point();
+            maxLeft.x = properties.getTableBandLeft();
+            maxLeft.y = properties.getTableBandLeft() * a + b;
+
+            crosscutPoint1 = maxLeft;
+            crosscutPoint2 = maxBot;
+ //           System.out.println("2===========================");
+//            System.out.println("lineService::getExtendedStickLineForOneSide()");
+//            System.out.println(stickLine.toString());
+//            System.out.println(crosscutPoint1);
+//            System.out.println(crosscutPoint2);
+//            System.out.println("----------------------------");
+//            System.out.println(maxLeft);
+//            System.out.println(maxBot);
+//            System.out.println(properties.isPointInsideBand(crosscutPoint1) + ", " + properties.isPointInsideBand(maxLeft));
+//            System.out.println(properties.isPointInsideBand(crosscutPoint2) + ", " + properties.isPointInsideBand(maxBot));
+//            System.out.println("============================");
+
         } else if (horizontalMove < 0 && verticalMove < 0) {
 
             crosscutPoint1 = getCrosscutPointForLines(stickLine, leftBand);
             crosscutPoint2 = getCrosscutPointForLines(stickLine, topBand);
+
+            Point maxTop = new Point();
+            maxTop.y = properties.getTableBandTop();
+            maxTop.x = ((properties.getTableBandTop() - b) / a);
+
+            Point maxLeft = new Point();
+            maxLeft.x = properties.getTableBandLeft();
+            maxLeft.y = properties.getTableBandLeft() * a + b;
+  //          System.out.println("33===========================");
+
+            crosscutPoint1 = maxLeft;
+            crosscutPoint2 = maxTop;
 
         } else if (horizontalMove >= 0 && verticalMove >= 0) {
 
             crosscutPoint1 = getCrosscutPointForLines(stickLine, rightBand);
             crosscutPoint2 = getCrosscutPointForLines(stickLine, botBand);
 
+            Point maxBot = new Point();
+            maxBot.y = properties.getTableBandBottom();
+            maxBot.x = (properties.getTableBandBottom() - b) / a;
+
+            Point maxRight = new Point();
+            maxRight.x = properties.getTableBandRight();
+            maxRight.y = properties.getTableBandRight() * a + b;
+  //          System.out.println("444===========================");
+
+            crosscutPoint1 = maxRight;
+            crosscutPoint2 = maxBot;
+
         }
 
         try {
-            if (detector.isPointInsideBand(crosscutPoint1)) {
+            if (properties.isPointInsideBand(crosscutPoint1)) {
                 extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint1);
-            } else if (detector.isPointInsideBand(crosscutPoint2)) {
+            } else if (properties.isPointInsideBand(crosscutPoint2)) {
                 extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint2);
             } else {
-                System.out.println(crosscutPoint1);
-                System.out.println(crosscutPoint2);
+
+
                 throw new ExtendLineException("Error while trying make extended line for one side. Both crosscut points out of the bands");
             }
         }
@@ -169,19 +240,19 @@ public class LineService {
         maxRight.x = properties.getTableBandRight();
         maxRight.y = properties.getTableBandRight() * a + b;
 
-        if (detector.isPointInsideBand(maxTop)){
+        if (properties.isPointInsideBand(maxTop)){
             extendedLine.setPoint(maxTop);
         }
 
-        if (detector.isPointInsideBand(maxLeft)){
+        if (properties.isPointInsideBand(maxLeft)){
             extendedLine.setPoint(maxLeft);
         }
 
-        if (detector.isPointInsideBand(maxBot)){
+        if (properties.isPointInsideBand(maxBot)){
             extendedLine.setPoint(maxBot);
         }
 
-        if (detector.isPointInsideBand(maxRight)){
+        if (properties.isPointInsideBand(maxRight)){
             extendedLine.setPoint(maxRight);
         }
 
@@ -231,7 +302,7 @@ public class LineService {
         return new Point(X, Y);
     }
 
-    public double calcCoordinate_A(Line line){
+    public static double calcCoordinate_A(Line line){
 
         if (line.getBegin().x == line.getEnd().x){
             line.setEnd(new Point(line.getEnd().x + 3, line.getEnd().y));

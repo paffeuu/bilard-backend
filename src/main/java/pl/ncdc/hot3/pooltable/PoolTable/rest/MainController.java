@@ -54,7 +54,7 @@ public class MainController {
             previousPositionService.findLastStillPosition();
         }
 
-        List<Line> cueAndPredictions = cueService.getStickWithPredictions(4);
+        List<Line> cueAndPredictions = cueService.getStickWithPredictions();
 
 
         if ( !cueAndPredictions.isEmpty() ) {
