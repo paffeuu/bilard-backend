@@ -2,6 +2,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.model;
 
 
 import org.opencv.core.Point;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
 
 public class Line {
 
@@ -96,13 +97,13 @@ public class Line {
         return a;
     }
 
-    public static Line predictTrajectoryAfterBump(Point bumpPoint, Line line) {
+    public static Line predictTrajectoryAfterBump(Point bumpPoint, Line line) throws LinesDetectorException {
         double tableBandLeft = 165;
         double tableBandRight = 1948;
         double tableBandTop = 350;
         double tableBandBottom = 1236;
 
-        Point halfDistance = new Point();
+        Point halfDistance;
 
         if (tableBandLeft == bumpPoint.x) {
             halfDistance = new Point(line.getBegin().x, line.getEnd().y);
@@ -112,6 +113,8 @@ public class Line {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
         } else if (tableBandBottom == bumpPoint.y) {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
+        } else {
+            throw new LinesDetectorException("Band not found");
         }
 
         double distanceX = (halfDistance.x - line.getBegin().x);
