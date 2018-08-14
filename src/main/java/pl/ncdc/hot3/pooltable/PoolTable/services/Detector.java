@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
@@ -211,7 +212,7 @@ public class Detector {
 		return linesList;
 	}
 
-	public Line findStickLine() throws DetectorException, CueServiceException {
+	public Line findStickLine() throws DetectorException, CueServiceException, LineServiceException {
 
 		List <Line> linesList = getInnerLines();
 		Line cueLine = null;

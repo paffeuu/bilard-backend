@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.ExtendLineException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
@@ -16,7 +17,14 @@ public class LineService {
     @Autowired
     private Detector detector;
 
-    public Line getDirectedLine(Line a, Line b) throws CueServiceException {
+    public LineService(Properties properties, Detector detector) {
+        this.properties = properties;
+        this.detector = detector;
+    }
+
+    public LineService() {}
+
+    public Line getDirectedLine(Line a, Line b) throws LineServiceException {
         Line extendedA = getExtendedStickLineForOneSide(a);
         Line extendedB = getExtendedStickLineForOneSide(b);
 

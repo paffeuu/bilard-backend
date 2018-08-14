@@ -3,6 +3,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.rest;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.services.*;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
@@ -40,7 +41,7 @@ public class MainController {
 
     @CrossOrigin(origins = "http://localhost:4200")
     @RequestMapping(value = "/get-pool-table", method = RequestMethod.GET)
-    public ResponseEntity<PoolTable> test() throws CueServiceException, DetectorException {
+    public ResponseEntity<PoolTable> test() throws CueServiceException, DetectorException, LineServiceException {
         PoolTable table = new PoolTable();
         MatOfByte matOfByte = new MatOfByte();
         Mat result = undistorter.undistort(OpenCVBufforFlushService.getLastFrame());

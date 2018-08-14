@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
@@ -60,7 +61,7 @@ public class CueService {
         );
     }
 
-    public List<Line> getStickWithPredictions(int deep) throws DetectorException, CueServiceException {
+    public List<Line> getStickWithPredictions(int deep) throws DetectorException, CueServiceException, LineServiceException {
         Line cue = detector.findStickLine();
 
         List <Line> predictions = new ArrayList<>();
