@@ -47,6 +47,9 @@ public class Detector {
 	@Autowired
 	private CueService cueService;
 
+	@Autowired
+	private LineService lineService;
+
 	public Detector() {
 		this.properties = properties;
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -220,13 +223,13 @@ public class Detector {
 			for (int j = 0; j < linesList.size(); j++){
 				if (i != j) {
 
-					a1 = calcCoordinate_A(linesList.get(i));
-					a2 = calcCoordinate_A(linesList.get(j));
+					a1 = lineService.calcCoordinate_A(linesList.get(i));
+					a2 = lineService.calcCoordinate_A(linesList.get(j));
 
 					if (Math.abs(a1 - a2) < parallelTolerance) {
 						dist = getDistanceBetweenLines(linesList.get(i), linesList.get(j));
 						if (dist < minDistance) {
-							cueLine = Line.getDirectedLine(linesList.get(i), linesList.get(j));
+							cueLine = lineService.getDirectedLine(linesList.get(i), linesList.get(j));
 
 							break outerloop;
 						}
@@ -237,19 +240,6 @@ public class Detector {
 		}
 
 		return cueLine;
-	}
-
-	public double calcCoordinate_A(Line line){
-
-		if (line.getBegin().x == line.getEnd().x){
-			line.setEnd(new Point(line.getEnd().x + 3, line.getEnd().y));
-		}
-
-		double Y = (line.getBegin().y - line.getEnd().y);
-		double X = (line.getBegin().x - line.getEnd().x);
-
-		return (Y/X);
-
 	}
 
 

@@ -3,9 +3,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.rest;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
-import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Drawer;
-import pl.ncdc.hot3.pooltable.PoolTable.services.PreviousPositionService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.*;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
@@ -16,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 
@@ -35,6 +32,8 @@ public class MainController {
     @Autowired
     private CueService cueService;
     @Autowired
+    private LineService lineService;
+    @Autowired
     private PreviousPositionService previousPositionService;
 
     @CrossOrigin(origins = "http://localhost:4200")
@@ -52,7 +51,7 @@ public class MainController {
                     detector.setSourceImg(result.clone());
                     table.setBalls(detector.createListOfBalls(result.clone()));
                     table.setCue(detector.findStickLine());
-                    Line line = cueService.getExtendedStickLineForOneSide(table.getCue());
+                    Line line = lineService.getExtendedStickLineForOneSide(table.getCue());
                     Line prediction = cueService.predictTrajectoryAfterBump(line.getEnd(), line);
                     drawer.draw(result, line, table.getBalls());
                     drawer.drawExtendedCue(result, prediction);
@@ -92,7 +91,7 @@ public class MainController {
 
             table.setCue(detector.findStickLine());
             if ( table.getCue() != null) {
-                Line line = cueService.getExtendedStickLineForOneSide(table.getCue());
+                Line line = lineService.getExtendedStickLineForOneSide(table.getCue());
                 Line prediction = cueService.predictTrajectoryAfterBump(line.getEnd(), line);
                 drawer.draw(result, line, table.getBalls());
                 drawer.drawExtendedCue(result, prediction);
