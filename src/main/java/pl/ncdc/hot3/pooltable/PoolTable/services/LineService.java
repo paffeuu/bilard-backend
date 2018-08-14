@@ -25,8 +25,8 @@ public class LineService {
     public LineService() {}
 
     public Line getDirectedLine(Line a, Line b) throws LineServiceException {
-        Line extendedA = getExtendedStickLineForOneSide(a);
-        Line extendedB = getExtendedStickLineForOneSide(b);
+        Line extendedA = getExtendedStickLineForBothSides(a);
+        Line extendedB = getExtendedStickLineForBothSides(b);
 
         double distance1 = calculateDistanceBetweenPoints(extendedA.getBegin(), extendedB.getBegin());
         double distance2 = calculateDistanceBetweenPoints(extendedA.getBegin(), extendedB.getEnd());
@@ -60,7 +60,12 @@ public class LineService {
                 (extendedA.getEnd().y + extendedB.getEnd().y) / 2
         );
 
-        return getExtendedStickLineForBothSides(new Line(newLineStart, newLineEnd));
+
+        Line finalLine = new Line(newLineStart, newLineEnd);
+
+        //finalLine = getExtendedStickLineForOneSide(finalLine);
+
+        return finalLine;
     }
 
     public static double calculateDistanceBetweenPoints(Point a, Point b) {
@@ -78,6 +83,8 @@ public class LineService {
     public Line getExtendedStickLineForOneSide(Line stickLine) throws LineServiceException {
         double horizontalMove = stickLine.getEnd().x - stickLine.getBegin().x;
         double verticalMove = stickLine.getEnd().y - stickLine.getBegin().y;
+
+        //System.out.println(stickLine);
 
         safeMoveLine(stickLine, horizontalMove, verticalMove);
 
@@ -119,12 +126,14 @@ public class LineService {
 
         try {
             if (detector.isPointInsideBand(crosscutPoint1)) {
-                extendedLine.setBegin(stickLine.getEnd());
+                extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint1);
             } else if (detector.isPointInsideBand(crosscutPoint2)) {
-                extendedLine.setBegin(stickLine.getEnd());
+                extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint2);
             } else {
+                System.out.println(crosscutPoint1);
+                System.out.println(crosscutPoint2);
                 throw new ExtendLineException("Error while trying make extended line for one side. Both crosscut points out of the bands");
             }
         }
@@ -135,18 +144,60 @@ public class LineService {
         return extendedLine;
     }
 
-    public Line getExtendedStickLineForBothSides(Line stickLine) throws LineServiceException {
+    public Line getExtendedStickLineForBothSides(Line stickLine) throws ExtendLineException {
+        Line extendedLine = new Line();
 
-        Line extendedOneSide = getExtendedStickLineForOneSide(stickLine);
+        double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
+        double X = (stickLine.getBegin().x - stickLine.getEnd().x);
 
-        switchPoints(extendedOneSide);
+        double a = Y/X;
+        double b = stickLine.getBegin().y - (a*stickLine.getBegin().x);
 
-        Line extendedBothSides = getExtendedStickLineForOneSide(extendedOneSide);
+        Point maxTop = new Point();
+        maxTop.y = properties.getTableBandTop();
+        maxTop.x = ((properties.getTableBandTop() - b) / a);
 
-        switchPoints(extendedBothSides);
+        Point maxBot = new Point();
+        maxBot.y = properties.getTableBandBottom();
+        maxBot.x = (properties.getTableBandBottom() - b) / a;
 
-        return extendedBothSides;
+        Point maxLeft = new Point();
+        maxLeft.x = properties.getTableBandLeft();
+        maxLeft.y = properties.getTableBandLeft() * a + b;
+
+        Point maxRight = new Point();
+        maxRight.x = properties.getTableBandRight();
+        maxRight.y = properties.getTableBandRight() * a + b;
+
+        if (detector.isPointInsideBand(maxTop)){
+            extendedLine.setPoint(maxTop);
+        }
+
+        if (detector.isPointInsideBand(maxLeft)){
+            extendedLine.setPoint(maxLeft);
+        }
+
+        if (detector.isPointInsideBand(maxBot)){
+            extendedLine.setPoint(maxBot);
+        }
+
+        if (detector.isPointInsideBand(maxRight)){
+            extendedLine.setPoint(maxRight);
+        }
+
+        if (extendedLine.getBegin() == null) {
+            extendedLine.setBegin(new Point(0, 0));
+            throw new ExtendLineException("Extended line for both sides begin point is null.");
+        }
+
+        if (extendedLine.getEnd() == null) {
+            extendedLine.setEnd(new Point(0, 0));
+            throw new ExtendLineException("Extended line for both sides end point is null.");
+        }
+
+        return extendedLine;
     }
+
 
     private void safeMoveLine(Line origin, double horizontalMove, double verticalMove){
         Point newBegin = origin.getBegin();

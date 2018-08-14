@@ -36,20 +36,26 @@ public class CueService {
         this.detector = detector;
     }
 
-    public Line predictTrajectoryAfterBump(Line line)  {
+    private double calcAbsoluteDistance(double value1, double value2){
+        return Math.abs(value1 - value2);
+    }
+
+    public Line predictTrajectoryAfterBump(Line line) throws LineServiceException {
+        line = lineService.getExtendedStickLineForOneSide(line);
+
         Point bumpPoint = line.getEnd();
         Point halfDistance = new Point(0, 0);
 
-        if (properties.getTableBandLeft() == bumpPoint.x) {
+        if (calcAbsoluteDistance(properties.getTableBandLeft(), bumpPoint.x) <= 2) {
+            halfDistance = new Point(line.getEnd().x, line.getEnd().y);
+        } else if (calcAbsoluteDistance(properties.getTableBandRight(), bumpPoint.x) <= 2) {
             halfDistance = new Point(line.getBegin().x, line.getEnd().y);
-        } else if (properties.getTableBandRight() == bumpPoint.x) {
+        } else if (calcAbsoluteDistance(properties.getTableBandTop(), bumpPoint.y) <= 2) {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
-        } else if (properties.getTableBandTop() == bumpPoint.y) {
-            halfDistance = new Point(line.getEnd().x, line.getBegin().y);
-        } else if (properties.getTableBandBottom() == bumpPoint.y) {
+        } else if (calcAbsoluteDistance(properties.getTableBandBottom(), bumpPoint.y) <= 2) {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
         } else {
-           // throw new CueServiceException("Band not found");
+            LOGGER.warn("Cannot find predicted line. Bump point out of bands!");
         }
 
         double distanceX = (halfDistance.x - line.getBegin().x);
