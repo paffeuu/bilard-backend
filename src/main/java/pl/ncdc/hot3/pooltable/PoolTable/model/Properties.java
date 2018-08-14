@@ -1,10 +1,15 @@
 package pl.ncdc.hot3.pooltable.PoolTable.model;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 /**
  * Properties class
  */
+
+@Service
 public class Properties {
-    // Band
+    // Bands
     private double tableBandLeft;
     private double tableBandRight;
     private double tableBandTop;
@@ -27,6 +32,14 @@ public class Properties {
     // Image
     private double imageSourceWidth;
     private double imageSourceHeight;
+
+
+    public Properties() {
+        this.tableBandLeft = 165;
+        this.tableBandRight = 1948;
+        this.tableBandTop = 350;
+        this.tableBandBottom = 1236;
+    }
 
     /**
      * Properties constructor

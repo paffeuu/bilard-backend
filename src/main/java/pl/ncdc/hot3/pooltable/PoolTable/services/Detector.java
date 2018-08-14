@@ -10,13 +10,18 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
+@ContextConfiguration(classes = {Properties.class})
 @Service
 public class Detector {
 
@@ -28,12 +33,6 @@ public class Detector {
 	private Mat outputImg;
 	private Mat cannyImg;
 
-
-	final double leftBand;
-	final double rightBand;
-	final double topBand;
-	final double bottomBand;
-
 	final int maxRadiusForBall = 22;
 	final int minRadiusForBall = 16;
 	final int minDistanceForBalls = 36;
@@ -41,7 +40,13 @@ public class Detector {
 	final int ratio = 3;
 	final int cueThickness = 17;
 
+	@Autowired
+	private static Properties properties;
+
 	public Detector() {
+		this.properties = properties;
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
 		this.outputImg = new Mat();
 		this.cannyImg = new Mat();
 
@@ -58,11 +63,6 @@ public class Detector {
 
 		} catch (DetectorException e) {
 			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
-		} finally {
-			leftBand = 165;
-			rightBand = sourceWidth - 100;
-			topBand = 350;
-			bottomBand = sourceHeight - 300;
 		}
 	}
 
@@ -138,11 +138,6 @@ public class Detector {
 		Mat linesP = getEdges(sourceImg);
 
 		Core.subtract(linesP, cannyImg, substractedImg);
-		LOGGER.info("Saving 3 images for detector::getInnerLines()");
-		Imgcodecs.imwrite("1_lines.png", linesP);
-		Imgcodecs.imwrite("2_canny.png", cannyImg);
-		Imgcodecs.imwrite("3_sub.png", substractedImg);
-
 
 		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 70, 50, 10);
 
@@ -160,16 +155,10 @@ public class Detector {
 		return linesList;
 	}
 
-	static int counter = 1;
-
 	public Line findStickLine() throws DetectorException {
 
 		List <Line> linesList = getInnerLines();
 
-		Mat blackImage = new Mat(cannyImg.rows(), cannyImg.cols(), CvType.CV_8U);
-		Mat blackImageAllLines = new Mat(cannyImg.rows(), cannyImg.cols(), CvType.CV_8U);
-
-		int cueIndex = 0;
 		int cueLineIndex1 = 0, cueLineIndex2 = 0;
 		double dist;
 		double a1, a2, parallelTolerance = 0.2;
@@ -177,7 +166,6 @@ public class Detector {
 		double minDistance = 50;
 		outerloop:
 		for (int i = 0; i < linesList.size() - 1; i++){
-			Imgproc.line(blackImageAllLines, linesList.get(i).getBegin(), linesList.get(i).getEnd(), new Scalar(255, 0, 0));
 			for (int j = 0; j < linesList.size(); j++){
 				if (i != j) {
 
@@ -185,17 +173,10 @@ public class Detector {
 					a2 = calcCoordinate_A(linesList.get(j));
 
 					if (Math.abs(a1 - a2) < parallelTolerance) {
-
-						if (counter == 5) {
-							LOGGER.info("a1: " + a1 + ", a2: " + a2 + " = " + Math.abs(a1 - a2));
-						}
-
 						dist = getDistanceBetweenLines(linesList.get(i), linesList.get(j));
 						if (dist < minDistance) {
 							cueLineIndex1 = i;
 							cueLineIndex2 = j;
-							System.out.println(linesList.get(i) + ", " + linesList.get(j));
-							minDistance = dist;
 							break outerloop;
 						}
 					}
@@ -203,103 +184,24 @@ public class Detector {
 				}
 			}
 		}
-		Imgproc.line(blackImageAllLines, linesList.get(linesList.size()-1).getBegin(), linesList.get(linesList.size()-1).getEnd(), new Scalar(255, 0, 0));
-
-		Imgproc.line(blackImage, linesList.get(cueLineIndex1).getBegin(), linesList.get(cueLineIndex1).getEnd(), new Scalar(255, 0, 0), 5);
-		Imgproc.line(blackImage, linesList.get(cueLineIndex2).getBegin(), linesList.get(cueLineIndex2).getEnd(), new Scalar(255, 0, 0), 5);
-
-
-		Imgcodecs.imwrite("out_" + counter + ".png", blackImage);
-		Imgcodecs.imwrite("out_ALL_" + counter + ".png", blackImageAllLines);
-		counter++;
 
 		return linesList.get(cueLineIndex1);
 	}
 
-	private double calcCoordinate_A(Line line){
-
-		double Y = (line.getBegin().y - line.getEnd().y);
-		double X = (line.getBegin().x - line.getEnd().x);
+	public double calcCoordinate_A(Line line){
 
 		if (line.getBegin().x == line.getEnd().x){
 			line.setEnd(new Point(line.getEnd().x + 3, line.getEnd().y));
 		}
+
+		double Y = (line.getBegin().y - line.getEnd().y);
+		double X = (line.getBegin().x - line.getEnd().x);
 
 		return (Y/X);
 
 	}
 
 
-	public Line getExtendedStickLine(Line stickLine){
-
-		Line extendedLine = new Line();
-
-		double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
-		double X = (stickLine.getBegin().x - stickLine.getEnd().x);
-
-		if (X == 0){ // Vertical line
-			Point maxTop = new Point(stickLine.getBegin().x, 0);
-			Point maxBot = new Point(stickLine.getBegin().x, sourceImg.height());
-
-			extendedLine.setBegin(maxTop);
-			extendedLine.setEnd(maxBot);
-		} else if (Y == 0){ // Horizontal line
-			Point maxLeft = new Point(0, stickLine.getBegin().y);
-			Point maxRight = new Point(sourceImg.width(), stickLine.getBegin().y);
-
-			extendedLine.setBegin(maxLeft);
-			extendedLine.setEnd(maxRight);
-		} else { // Cross line
-
-			double a = Y/X;
-			double b = stickLine.getBegin().y - (a*stickLine.getBegin().x);
-
-			Point maxTop = new Point();
-			maxTop.y = topBand;
-			maxTop.x = ((topBand - b) / a);
-
-			Point maxBot = new Point();
-			maxBot.y = bottomBand;
-			maxBot.x = (bottomBand - b) / a;
-
-			Point maxLeft = new Point();
-			maxLeft.x = leftBand;
-			maxLeft.y = leftBand * a + b;
-
-			Point maxRight = new Point();
-			maxRight.x = rightBand;
-			maxRight.y = rightBand * a + b;
-
-			if (isPointInsideBand(maxTop)){
-				extendedLine.setPoint(maxTop);
-			}
-
-			if (isPointInsideBand(maxLeft)){
-				extendedLine.setPoint(maxLeft);
-			}
-
-			if (isPointInsideBand(maxBot)){
-				extendedLine.setPoint(maxBot);
-			}
-
-			if (isPointInsideBand(maxRight)){
-				extendedLine.setPoint(maxRight);
-			}
-
-			if (extendedLine.getBegin() == null) {
-				extendedLine.setBegin(new Point(0, 0));
-				LOGGER.warn("Extended line begin point is (0, 0)");
-			}
-
-			if (extendedLine.getEnd() == null) {
-				extendedLine.setEnd(new Point(0, 0));
-				LOGGER.warn("Extended line end point is (0, 0)");
-			}
-
-		}
-
-		return extendedLine;
-	}
 
 	public ArrayList<Ball> createListOfBalls(Mat image) {
 		int x,y,r;
@@ -321,10 +223,13 @@ public class Detector {
 		return balls;
 	}
 
+	public boolean isPointInsideBand(Point point){
+		return isPointInsideBand(point, new Properties());
+	}
 
-	private boolean isPointInsideBand(Point point){
-		if (point.x >= leftBand && point.x <= rightBand) {
-			if (point.y >= topBand && point.y <= bottomBand) {
+	public static boolean isPointInsideBand(Point point, Properties properties){
+		if (point.x >= properties.getTableBandLeft() - 5 && point.x <= properties.getTableBandRight() + 5) {
+			if (point.y >= properties.getTableBandTop() - 5 && point.y <= properties.getTableBandBottom() + 5) {
 				return true;
 			}
 		}
@@ -358,3 +263,5 @@ public class Detector {
 		return temp;
 	}
 }
+
+

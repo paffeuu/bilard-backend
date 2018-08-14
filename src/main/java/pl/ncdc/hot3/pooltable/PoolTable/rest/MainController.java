@@ -45,7 +45,8 @@ public class MainController {
                     detector.setSourceImg(result.clone());
                     table.setBalls(detector.createListOfBalls(result.clone()));
                     table.setCue(detector.findStickLine());
-                    Line line = detector.getExtendedStickLine(table.getCue());
+                    //Line line = detector.getExtendedStickLine(table.getCue());
+                    Line line = new Line();
                     drawer.draw(result, line);
                     Imgcodecs.imencode(".jpg", result, matOfByte);
                     table.setTableImage(matOfByte.toArray());
@@ -76,7 +77,8 @@ public class MainController {
             detector.setSourceImg(result.clone());
             table.setBalls(detector.createListOfBalls(result.clone()));
             table.setCue(detector.findStickLine());
-            Line line = detector.getExtendedStickLine(table.getCue());
+         //   Line line = detector.getExtendedStickLine(table.getCue());
+            Line line = new Line();
             drawer.draw(result, line);
             Imgcodecs.imencode(".jpg", result, matOfByte);
             table.setTableImage(matOfByte.toArray());
