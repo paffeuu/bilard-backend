@@ -12,11 +12,14 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
+
+import java.util.ArrayList;
 
 public class LineTest {
     String BASE_PATH = "src/main/resources/";
@@ -80,18 +83,30 @@ public class LineTest {
 
     @Test
     public void calculateCordinates() {
-//        double[] ret = lineService.calcAllCordinate(new Line(
-//                new Point(5, 6),
-//                new Point(7, 11)
-//        ));
-
         double[] ret = lineService.calcAllCordinate(new Line(
-                new Point(0, 3),
-                new Point(1, 5)
+                new Point(5, 6),
+                new Point(7, 11)
         ));
+
+//        double[] ret = lineService.calcAllCordinate(new Line(
+//                new Point(0, 3),
+//                new Point(1, 5)
+//        ));
 
         System.out.print(ret[0] + " | ");
         System.out.print(ret[1] + " | ");
         System.out.print(ret[2] + " | ");
+    }
+
+    @Test
+    public void stopAtBall() {
+        ArrayList<Ball> balls = new ArrayList<>();
+        balls.add(new Ball(0, 0, 0, 1));
+        Line line = new Line(
+                new Point(0, 1),
+                new Point(-2, 0)
+        );
+
+        lineService.stopLineAtFirstBall(line, balls);
     }
 }

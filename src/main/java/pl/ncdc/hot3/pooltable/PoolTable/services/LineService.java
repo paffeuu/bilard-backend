@@ -197,7 +197,11 @@ public class LineService {
 
     public Ball stopLineAtFirstBall(Line line, ArrayList<Ball> balls) {
         for (Ball ball : balls) {
-            double A = calcCoordinate_A(line);
+            double distance = calculateDistanceBetwenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+
+            if (distance <= properties.getBallMaxRadius()) {
+                return ball;
+            }
         }
 
         return null;
@@ -209,6 +213,14 @@ public class LineService {
         double a = Y / X;
         double b = line.getBegin().y - line.getBegin().x * a;
 
-        return new double[]{a, b, 1};
+        return new double[]{a, -1, b};
+    }
+
+    public double calculateDistanceBetwenPointAndLine(Point point, Line line) {
+        double[] cordinates = calcAllCordinate(line);
+
+        // http://matematyka.pisz.pl/strona/1249.html
+        return Math.abs(cordinates[0] * point.x + cordinates[1] * point.y + cordinates[2]) /
+                Math.sqrt(Math.pow(cordinates[0], 2) + Math.pow(cordinates[1] , 2));
     }
 }
