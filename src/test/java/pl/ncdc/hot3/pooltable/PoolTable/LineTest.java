@@ -40,35 +40,45 @@ public class LineTest {
                 new Point(1579, 581)
         );
 
-        Line ext1 = lineService.getExtendedStickLineForBothSides(line1);
-        Line ext2 = lineService.getExtendedStickLineForBothSides(line2);
-        Line asd = lineService.getDirectedLine(ext1, ext2);
-        System.out.print(asd.getEnd().x);
-        System.out.print(asd.getEnd().y);
+        Imgproc.circle(sourceImage, line1.getEnd(), 50, new Scalar(0, 255, 255), 3);
+        Imgproc.circle(sourceImage, line2.getEnd(), 50, new Scalar(0, 255, 255), 3);
+
+
+        Line asd = lineService.getDirectedLine(line1, line2);
+//        System.out.print(asd.getEnd().x);
+//        System.out.print(asd.getEnd().y);
 
         Point bumpPoint = asd.getEnd();
-        Line prediction = lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(bumpPoint, asd));
-        Line prediction2 = LineService.switchPoints(lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction.getEnd(), prediction)));
-        Line prediction3 = LineService.switchPoints(lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction2.getEnd(), prediction2)));
-        Line prediction4 = lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction3.getEnd(), prediction3));
-        Line prediction5 = LineService.switchPoints(lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction4.getEnd(), prediction4)));
-        Line prediction6 = LineService.switchPoints(lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction5.getEnd(), prediction5)));
+        Line prediction = cueService.predictTrajectoryAfterBump(bumpPoint, asd);
+        Line prediction2 = cueService.predictTrajectoryAfterBump(prediction.getEnd(), prediction);
+        Line prediction3 = cueService.predictTrajectoryAfterBump(prediction2.getEnd(), prediction2);
+        Line prediction4 = cueService.predictTrajectoryAfterBump(prediction3.getEnd(), prediction3);
+        Line prediction5 = cueService.predictTrajectoryAfterBump(prediction4.getEnd(), prediction4);
+        Line prediction6 = cueService.predictTrajectoryAfterBump(prediction5.getEnd(), prediction5);
+        Line prediction7 = cueService.predictTrajectoryAfterBump(prediction6.getEnd(), prediction6);
+//        Line prediction2 = LineService.switchPoints(lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction.getEnd(), prediction)));
+//        Line prediction3 = LineService.switchPoints(lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction2.getEnd(), prediction2)));
+//        Line prediction4 = lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction3.getEnd(), prediction3));
+//        Line prediction5 = LineService.switchPoints(lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction4.getEnd(), prediction4)));
+//        Line prediction6 = LineService.switchPoints(lineService.getExtendedStickLineForBothSides(cueService.predictTrajectoryAfterBump(prediction5.getEnd(), prediction5)));
 //        Line prediction7 = detector.getExtendedStickLine(Line.predictTrajectoryAfterBump(prediction6.getEnd(), prediction6));
 
         Imgproc.line(sourceImage, line1.getBegin(), line1.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
         Imgproc.line(sourceImage, line2.getBegin(), line2.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
         Imgproc.line(sourceImage, asd.getBegin(), asd.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
+        Imgproc.circle(sourceImage, asd.getEnd(), 50, new Scalar(0, 255, 255), 3);
 //        Imgproc.line(sourceImage, asd.getEnd(), new Point(asd.getBegin().x, asd.getEnd().y), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
         Imgproc.line(sourceImage, prediction.getBegin(), prediction.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
-        Imgproc.line(sourceImage, prediction2.getBegin(), prediction2.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
-        Imgproc.line(sourceImage, prediction3.getBegin(), prediction3.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
-        Imgproc.line(sourceImage, prediction4.getBegin(), prediction4.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
-        Imgproc.line(sourceImage, prediction5.getBegin(), prediction5.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
-        Imgproc.line(sourceImage, prediction6.getBegin(), prediction6.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
+//        Imgproc.line(sourceImage, prediction2.getBegin(), prediction2.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
+//        Imgproc.line(sourceImage, prediction3.getBegin(), prediction3.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
+//        Imgproc.line(sourceImage, prediction4.getBegin(), prediction4.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
+//        Imgproc.line(sourceImage, prediction5.getBegin(), prediction5.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
+//        Imgproc.line(sourceImage, prediction6.getBegin(), prediction6.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
 //        Imgproc.line(sourceImage, prediction7.getBegin(), prediction7.getEnd(), new Scalar(0, 255, 0), 3, Imgproc.LINE_AA, 0);
 //        Imgproc.circle(sourceImage, asd.getEnd(), 50, new Scalar(0, 255, 255), 3);
 //        Imgproc.circle(sourceImage, prediction.getEnd(), 50, new Scalar(0, 255, 255), 3);
 //        Imgproc.circle(sourceImage, prediction2.getEnd(), 50, new Scalar(0, 255, 255), 3);
+//        Imgproc.circle(sourceImage, asd.getEnd(), 50, new Scalar(0, 255, 255), 3);
 //        Imgproc.circle(sourceImage, new Point(prediction2.getBegin().x, prediction2.getEnd().y), 50, new Scalar(0, 255, 255), 3);
         Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
     }

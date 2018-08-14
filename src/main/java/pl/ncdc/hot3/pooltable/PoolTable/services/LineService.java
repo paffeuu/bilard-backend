@@ -1,7 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.opencv.core.Point;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
@@ -9,17 +8,18 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
 @Service
 public class LineService {
-    @Autowired
-    private Properties properties;
+    private Properties properties = new Properties();
 
-    @Autowired
-    private Detector detector;
+    private Detector detector = new Detector();
 
-    public Line getDirectedLine(Line a, Line b) {
-        double distance1 = calculateDistanceBetweenPoints(a.getBegin(), b.getBegin());
-        double distance2 = calculateDistanceBetweenPoints(a.getBegin(), b.getEnd());
-        double distance3 = calculateDistanceBetweenPoints(a.getEnd(), b.getBegin());
-        double distance4 = calculateDistanceBetweenPoints(a.getEnd(), b.getEnd());
+    public Line getDirectedLine(Line a, Line b) throws CueServiceException {
+        Line extendedA = getExtendedStickLineForOneSide(a);
+        Line extendedB = getExtendedStickLineForOneSide(b);
+
+        double distance1 = calculateDistanceBetweenPoints(extendedA.getBegin(), extendedB.getBegin());
+        double distance2 = calculateDistanceBetweenPoints(extendedA.getBegin(), extendedB.getEnd());
+        double distance3 = calculateDistanceBetweenPoints(extendedA.getEnd(), extendedB.getBegin());
+        double distance4 = calculateDistanceBetweenPoints(extendedA.getEnd(), extendedB.getEnd());
         double[] distances = {distance1, distance2, distance3, distance4};
         double minDistance = distance1;
 
@@ -30,25 +30,25 @@ public class LineService {
         }
 
         if (minDistance == distance1) {
-            a = switchPoints(a);
-            b = switchPoints(b);
+            extendedA = switchPoints(extendedA);
+            extendedB = switchPoints(extendedB);
         } else if(minDistance == distance2) {
-            a = switchPoints(a);
+            extendedA = switchPoints(extendedA);
         } else if (minDistance == distance3) {
-            b = switchPoints(b);
+            extendedB = switchPoints(extendedB);
         }
 
         Point newLineStart = new Point(
-                (a.getBegin().x + b.getBegin().x) / 2,
-                (a.getBegin().y + b.getBegin().y) / 2
+                (extendedA.getBegin().x + extendedB.getBegin().x) / 2,
+                (extendedA.getBegin().y + extendedB.getBegin().y) / 2
         );
 
         Point newLineEnd = new Point(
-                (a.getEnd().x + b.getEnd().x) / 2,
-                (a.getEnd().y + b.getEnd().y) / 2
+                (extendedA.getEnd().x + extendedB.getEnd().x) / 2,
+                (extendedA.getEnd().y + extendedB.getEnd().y) / 2
         );
 
-        return new Line(newLineStart, newLineEnd);
+        return getExtendedStickLineForBothSides(new Line(newLineStart, newLineEnd));
     }
 
     public static double calculateDistanceBetweenPoints(Point a, Point b) {
@@ -59,6 +59,15 @@ public class LineService {
         Point tmp = a.getBegin();
         a.setBegin(a.getEnd());
         a.setEnd(tmp);
+
+        return a;
+    }
+
+    public Line getExtendedStickLine(Line a) throws CueServiceException {
+        a = getExtendedStickLineForOneSide(a);
+        a = switchPoints(a);
+//        a = getExtendedStickLineForOneSide(a);
+//        a = switchPoints(a);
 
         return a;
     }
@@ -225,6 +234,5 @@ public class LineService {
         double X = (line.getBegin().x - line.getEnd().x);
 
         return (Y/X);
-
     }
 }
