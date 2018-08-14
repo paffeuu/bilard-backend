@@ -2,6 +2,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
 import org.opencv.imgproc.Imgproc;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
+import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Drawer;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
@@ -29,6 +30,9 @@ public class MainController {
     private Drawer drawer;
     @Autowired
     private Detector detector;
+
+    @Autowired
+    private CueService cueService;
 
     @CrossOrigin(origins = "http://localhost:4200")
 
@@ -76,10 +80,13 @@ public class MainController {
         try {
             detector.setSourceImg(result.clone());
             table.setBalls(detector.createListOfBalls(result.clone()));
-            table.setCue(detector.findStickLine());
-         //   Line line = detector.getExtendedStickLine(table.getCue());
+            Line cueLine = detector.findStickLine();
+            table.setCue(cueLine);
+            Line linePred = cueService.predictTrajectoryAfterBump(cueLine.getEnd(), cueLine);
+             //Line line = detector.getExtendedStickLine(table.getCue());
             Line line = new Line();
             drawer.draw(result, line);
+            drawer.draw(result, linePred);
             Imgcodecs.imencode(".jpg", result, matOfByte);
             table.setTableImage(matOfByte.toArray());
             return ResponseEntity.ok(table);

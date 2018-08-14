@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
@@ -42,6 +43,9 @@ public class Detector {
 
 	@Autowired
 	private static Properties properties;
+
+	@Autowired
+	private CueService cueService;
 
 	public Detector() {
 		this.properties = properties;
@@ -155,11 +159,11 @@ public class Detector {
 		return linesList;
 	}
 
-	public Line findStickLine() throws DetectorException {
+	public Line findStickLine() throws DetectorException, CueServiceException {
 
 		List <Line> linesList = getInnerLines();
+		Line cueLine = null;
 
-		int cueLineIndex1 = 0, cueLineIndex2 = 0;
 		double dist;
 		double a1, a2, parallelTolerance = 0.2;
 
@@ -175,8 +179,8 @@ public class Detector {
 					if (Math.abs(a1 - a2) < parallelTolerance) {
 						dist = getDistanceBetweenLines(linesList.get(i), linesList.get(j));
 						if (dist < minDistance) {
-							cueLineIndex1 = i;
-							cueLineIndex2 = j;
+							cueLine = Line.getDirectedLine(cueService.getExtendedStickLineForBothSides(linesList.get(i)), cueService.getExtendedStickLineForBothSides(linesList.get(j)));
+
 							break outerloop;
 						}
 					}
@@ -185,7 +189,7 @@ public class Detector {
 			}
 		}
 
-		return linesList.get(cueLineIndex1);
+		return cueLine;
 	}
 
 	public double calcCoordinate_A(Line line){

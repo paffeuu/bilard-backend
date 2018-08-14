@@ -54,7 +54,7 @@ public class DetectorTests {
     }
 
     @Test(expected = DetectorException.class)
-    public void getLinesShouldThrowExceptionWhenSourceNull() throws DetectorException {
+    public void getLinesShouldThrowExceptionWhenSourceNull() throws DetectorException, CueServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         Detector detector = new Detector();
 
@@ -63,7 +63,7 @@ public class DetectorTests {
     }
 
     @Test
-    public void getStickShouldReturnDetectedStickForImageWithExtraLine() throws DetectorException {
+    public void getStickShouldReturnDetectedStickForImageWithExtraLine() throws DetectorException, CueServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         String fileUrl2 = BASE_PATH + "jacek1.png";
 
@@ -93,7 +93,7 @@ public class DetectorTests {
         Line extendedLine = null;
 
         if (line != null){
-            extendedLine = cueService.getExtendedStickLineForBothSides_OLD(line);
+            extendedLine = cueService.getExtendedStickLineForBothSides(line);
         }else
             System.out.println("Linia jest nullem");
 
@@ -107,7 +107,7 @@ public class DetectorTests {
     }
 
     @Test
-    public void saveStaticLinesShouldFindOneMoreLineForSecondSource() throws DetectorException {
+    public void saveStaticLinesShouldFindOneMoreLineForSecondSource() throws DetectorException, CueServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         String fileUrl2 = BASE_PATH + "jacek1.png";
 

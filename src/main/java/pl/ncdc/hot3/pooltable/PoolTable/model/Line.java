@@ -97,32 +97,4 @@ public class Line {
         return a;
     }
 
-    public static Line predictTrajectoryAfterBump(Point bumpPoint, Line line) throws LinesDetectorException {
-        double tableBandLeft = 165;
-        double tableBandRight = 1948;
-        double tableBandTop = 350;
-        double tableBandBottom = 1236;
-
-        Point halfDistance;
-
-        if (tableBandLeft == bumpPoint.x) {
-            halfDistance = new Point(line.getBegin().x, line.getEnd().y);
-        } else if (tableBandRight == bumpPoint.x) {
-            halfDistance = new Point(line.getEnd().x, line.getBegin().y);
-        } else if (tableBandTop == bumpPoint.y) {
-            halfDistance = new Point(line.getEnd().x, line.getBegin().y);
-        } else if (tableBandBottom == bumpPoint.y) {
-            halfDistance = new Point(line.getEnd().x, line.getBegin().y);
-        } else {
-            throw new LinesDetectorException("Band not found");
-        }
-
-        double distanceX = (halfDistance.x - line.getBegin().x);
-        double distanceY = (halfDistance.y - line.getBegin().y);
-
-        return new Line(
-                bumpPoint,
-                new Point(halfDistance.x + distanceX, halfDistance.y + distanceY)
-        );
-    }
 }
