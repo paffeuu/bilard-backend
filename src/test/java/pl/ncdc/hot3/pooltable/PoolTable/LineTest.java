@@ -77,4 +77,21 @@ public class LineTest {
 //        Imgproc.circle(sourceImage, new Point(prediction2.getBegin().x, prediction2.getEnd().y), 50, new Scalar(0, 255, 255), 3);
         Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
     }
+
+    @Test
+    public void calculateCordinates() {
+//        double[] ret = lineService.calcAllCordinate(new Line(
+//                new Point(5, 6),
+//                new Point(7, 11)
+//        ));
+
+        double[] ret = lineService.calcAllCordinate(new Line(
+                new Point(0, 3),
+                new Point(1, 5)
+        ));
+
+        System.out.print(ret[0] + " | ");
+        System.out.print(ret[1] + " | ");
+        System.out.print(ret[2] + " | ");
+    }
 }

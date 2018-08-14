@@ -6,8 +6,11 @@ import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.ExtendLineException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+
+import java.util.ArrayList;
 
 @Service
 public class LineService {
@@ -190,5 +193,22 @@ public class LineService {
         double X = (line.getBegin().x - line.getEnd().x);
 
         return (Y/X);
+    }
+
+    public Ball stopLineAtFirstBall(Line line, ArrayList<Ball> balls) {
+        for (Ball ball : balls) {
+            double A = calcCoordinate_A(line);
+        }
+
+        return null;
+    }
+
+    public double[] calcAllCordinate(Line line) {
+        double Y = line.getBegin().y - line.getEnd().y;
+        double X = line.getBegin().x - line.getEnd().x;
+        double a = Y / X;
+        double b = line.getBegin().y - line.getBegin().x * a;
+
+        return new double[]{a, b, 1};
     }
 }
