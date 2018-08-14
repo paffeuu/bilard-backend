@@ -114,12 +114,12 @@ public class Line {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
         }
 
-        double distanceX = Math.abs(line.getBegin().x - halfDistance.x);
-        double distanceY = Math.abs(line.getBegin().y - halfDistance.y);
+        double distanceX = (halfDistance.x - line.getBegin().x);
+        double distanceY = (halfDistance.y - line.getBegin().y);
 
         return new Line(
                 bumpPoint,
-                new Point(halfDistance.x + distanceX, distanceY + halfDistance.y)
+                new Point(halfDistance.x + distanceX, halfDistance.y + distanceY)
         );
     }
 }
