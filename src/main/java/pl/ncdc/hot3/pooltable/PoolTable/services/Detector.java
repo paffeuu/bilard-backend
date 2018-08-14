@@ -97,7 +97,9 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	public Mat detectBalls(Mat image) {
+	public Mat detectBalls() {
+		Mat image = sourceImg.clone();
+
 		// blur image
 		Imgproc.blur(image, image, new Size(5, 5));
 
@@ -244,9 +246,9 @@ public class Detector {
 
 
 
-	public ArrayList<Ball> createListOfBalls(Mat image) {
+	public ArrayList<Ball> createListOfBalls() {
 		int x,y,r;
-		Mat circles = detectBalls(image);
+		Mat circles = detectBalls();
 		ArrayList<Ball> balls = new ArrayList<>();
 
 		for (int i = 1; i < circles.cols(); i++) {

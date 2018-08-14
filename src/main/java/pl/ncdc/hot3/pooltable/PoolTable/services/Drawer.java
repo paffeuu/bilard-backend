@@ -1,17 +1,15 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -39,12 +37,15 @@ public class Drawer {
 		}
 	}
 
-	public void drawExtendedCue(Mat img, Line line) {
+	public void drawLine(Mat img, Line line) {
 		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), 4);
 	}
 
-	public void draw(Mat img, Line line, ArrayList<Ball> listOfBalls) {
+	public void draw(Mat img, List<Line> lines, ArrayList<Ball> listOfBalls) {
 		drawBalls(img, listOfBalls,  new Scalar(0, 0, 255));
-		drawExtendedCue(img, line);
+
+		for (Line line : lines) {
+            drawLine(img, line);
+        }
 	}
 }
