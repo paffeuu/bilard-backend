@@ -4,6 +4,8 @@ import org.opencv.core.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.ExtendLineException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
@@ -63,7 +65,7 @@ public class LineService {
         return a;
     }
 
-    public Line getExtendedStickLineForOneSide(Line stickLine) throws CueServiceException {
+    public Line getExtendedStickLineForOneSide(Line stickLine) throws LineServiceException {
         double horizontalMove = stickLine.getEnd().x - stickLine.getBegin().x;
         double verticalMove = stickLine.getEnd().y - stickLine.getBegin().y;
 
@@ -105,9 +107,6 @@ public class LineService {
 
         }
 
-        System.out.println(crosscutPoint1);
-        System.out.println(crosscutPoint2);
-
         try {
             if (detector.isPointInsideBand(crosscutPoint1)) {
                 extendedLine.setBegin(stickLine.getEnd());
@@ -116,71 +115,27 @@ public class LineService {
                 extendedLine.setBegin(stickLine.getEnd());
                 extendedLine.setEnd(crosscutPoint2);
             } else {
-                throw new CueServiceException("Error while trying make extended line for one side. Both crosscut points out of the bands");
+                throw new ExtendLineException("Error while trying make extended line for one side. Both crosscut points out of the bands");
             }
         }
         catch (NullPointerException e) {
-            throw new CueServiceException("Make extended line for one side error. Points still null value.");
+            throw new ExtendLineException("Make extended line for one side error. Points still null value.");
         }
 
         return extendedLine;
     }
 
-    public Line getExtendedStickLineForBothSides(Line stickLine) throws CueServiceException {
+    public Line getExtendedStickLineForBothSides(Line stickLine) throws LineServiceException {
 
-        Line extendedLine = new Line();
+        Line extendedOneSide = getExtendedStickLineForOneSide(stickLine);
 
-        double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
-        double X = (stickLine.getBegin().x - stickLine.getEnd().x);
+        switchPoints(extendedOneSide);
 
-        safeMoveLine(stickLine, X, Y);
+        Line extendedBothSides = getExtendedStickLineForOneSide(extendedOneSide);
 
-        double a = Y/X;
-        double b = stickLine.getBegin().y - (a*stickLine.getBegin().x);
+        switchPoints(extendedBothSides);
 
-        Point maxTop = new Point();
-        maxTop.y = properties.getTableBandTop();
-        maxTop.x = ((properties.getTableBandTop() - b) / a);
-
-        Point maxBot = new Point();
-        maxBot.y = properties.getTableBandBottom();
-        maxBot.x = (properties.getTableBandBottom() - b) / a;
-
-        Point maxLeft = new Point();
-        maxLeft.x = properties.getTableBandLeft();
-        maxLeft.y = properties.getTableBandLeft() * a + b;
-
-        Point maxRight = new Point();
-        maxRight.x = properties.getTableBandRight();
-        maxRight.y = properties.getTableBandRight() * a + b;
-
-        if (detector.isPointInsideBand(maxTop)){
-            extendedLine.setPoint(maxTop);
-        }
-
-        if (detector.isPointInsideBand(maxLeft)){
-            extendedLine.setPoint(maxLeft);
-        }
-
-        if (detector.isPointInsideBand(maxBot)){
-            extendedLine.setPoint(maxBot);
-        }
-
-        if (detector.isPointInsideBand(maxRight)){
-            extendedLine.setPoint(maxRight);
-        }
-
-        if (extendedLine.getBegin() == null) {
-            extendedLine.setBegin(new Point(0, 0));
-            throw new CueServiceException("Extended line for both sides begin point is null.");
-        }
-
-        if (extendedLine.getEnd() == null) {
-            extendedLine.setEnd(new Point(0, 0));
-            throw new CueServiceException("Extended line for both sides end point is null.");
-        }
-
-        return extendedLine;
+        return extendedBothSides;
     }
 
     private void safeMoveLine(Line origin, double horizontalMove, double verticalMove){
@@ -197,7 +152,7 @@ public class LineService {
         origin.setBegin(newBegin);
     }
 
-    private Point getCrosscutPointForLines(Line line1, Line line2) throws CueServiceException {
+    private Point getCrosscutPointForLines(Line line1, Line line2) throws LineServiceException {
 
         double a_Line1 = calcCoordinate_A(line1);
         double b_Line1 = line1.getBegin().y - (a_Line1*line1.getBegin().x);
@@ -206,7 +161,7 @@ public class LineService {
         double b_Line2 = line2.getBegin().y - (a_Line2*line2.getBegin().x);
 
         if (a_Line1 == a_Line2) {
-            throw new CueServiceException("The lines are parallel.");
+            throw new LineServiceException("Error while trying find cross point for 2 lines. The lines are parallel.");
         }
 
         double X = (b_Line2 - b_Line1) / (a_Line1 - a_Line2);
