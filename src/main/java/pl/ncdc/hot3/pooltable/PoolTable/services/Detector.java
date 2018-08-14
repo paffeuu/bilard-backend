@@ -2,31 +2,30 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+import java.util.UUID;
 
-import javax.security.auth.PrivateCredentialPermission;
-
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
-import pl.ncdc.hot3.pooltable.PoolTable.PropertiesReader;
-import pl.ncdc.hot3.pooltable.PoolTable.WritePropertiesFile;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.PropertiesReaderException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-
-
+@ContextConfiguration(classes = {Properties.class})
 @Service
 public class Detector {
 
-	static final String PROPERTIES_FILE = "detector.properties";
 	private final String EMPTY_TABLE_IMG = "src/main/resources/emptyTable.png";
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
@@ -35,50 +34,39 @@ public class Detector {
 	private Mat outputImg;
 	private Mat cannyImg;
 
-	private int leftBand = 0;
-	private int rightBand = 0;
-	private int topBand = 0;
-	private int bottomBand = 0;
+	final int maxRadiusForBall = 22;
+	final int minRadiusForBall = 16;
+	final int minDistanceForBalls = 36;
+	final int highThreshold = 105;
+	final int ratio = 3;
+	final int cueThickness = 17;
 
-	private int maxRadiusForBall = 0;
-	private int minRadiusForBall = 0;
-	private int minDistanceForBalls = 0;
+	@Autowired
+	private static Properties properties;
 
-    private int highThreshold = 105;
-	private int ratio = 3;
-
-	private PropertiesReader properties;
+	@Autowired
+	private CueService cueService;
 
 	public Detector() {
+		this.properties = properties;
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
 		this.outputImg = new Mat();
 		this.cannyImg = new Mat();
 
-		try {
-			this.properties = new PropertiesReader(PROPERTIES_FILE);
+		double sourceWidth = 0;
+		double sourceHeight = 0;
 
-			sourceImg = Imgcodecs.imread(ProjectProperties.EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
+		try {
+			sourceImg = Imgcodecs.imread(EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
 			cannyImg = getEdges(sourceImg);
+
+			sourceWidth = sourceImg.width();
+			sourceHeight = sourceImg.height();
+
 
 		} catch (DetectorException e) {
 			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
-		} catch (PropertiesReaderException e) {
-			LOGGER.error("Cannot read detector.properties. File not found or broken");
-		}
-
-		try {
-			leftBand = properties.getIntProperty("table.band.left");
-			rightBand = properties.getIntProperty("table.band.right");
-			topBand = properties.getIntProperty("table.band.top");
-			bottomBand = properties.getIntProperty("table.band.bottom");
-
-			maxRadiusForBall = properties.getIntProperty("ball.maxRadius");
-			minRadiusForBall = properties.getIntProperty("ball.minRadius");
-			minDistanceForBalls = properties.getIntProperty("ball.minDistance");
-
-			highThreshold = properties.getIntProperty("canny.highThreshold");
-			ratio = properties.getIntProperty("canny.ratio");
-		} catch (PropertiesReaderException e) {
-			LOGGER.error("Could not property from " + PROPERTIES_FILE);
 		}
 	}
 
@@ -107,270 +95,177 @@ public class Detector {
 	}
 
 	public Mat detectBalls(Mat image) {
-		Mat output = new Mat();
 		// blur image
-		Imgproc.blur(image, output, new Size(5, 5)); // was 1,1
+		Imgproc.blur(image, image, new Size(5, 5));
 
-		// convert to HSV
-		Imgproc.cvtColor(output, output, Imgproc.COLOR_BGR2HSV);
+		// convert to hsv
+		Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2HSV);
 
 		// split into planes
 		List<Mat> planes = new ArrayList<>(3);
-		Core.split(output, planes);
+		Core.split(image, planes);
 
 		// canny - detect edges
-		Imgproc.Canny(planes.get(2), output, highThreshold / ratio, highThreshold);
+		Mat edges = new Mat();
+		Imgproc.Canny(planes.get(2), edges, highThreshold/ratio, highThreshold);
 
-		// detect circles from the whole image
-		Imgproc.HoughCircles(output, output, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistanceForBalls, 105, 12,
-				minRadiusForBall, maxRadiusForBall);
+		// detect circles
+		Mat circles = new Mat(); // contains balls coordinates
+		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistanceForBalls,
+				105, 12, minRadiusForBall, maxRadiusForBall);
 
-		// filter circles from the table
-
-        return filterCircles(output);
-	}
-
-	// filter circles positioned only on the table
-	private Mat filterCircles(Mat allCircles) {
-
-		Mat filteredCircles = new Mat(1, 1, CvType.CV_64FC3); // output Mat
-		Mat newMat = new Mat(1, 1, CvType.CV_64FC3); // merged new column
-		List<Mat> matList = new ArrayList<>(); // 2-element list for merging in Core.hconcat
-		matList.add(null);
-		matList.add(null);
-
-		// conversion to use type double data
-		allCircles.convertTo(allCircles, CvType.CV_64FC3);
-
-		// write circles coordinates into an array
-		double[] data = convertMatToArray(allCircles);
-
-		// filter circles
-		int j = 0;
-		double x, y, r;
-		for (int i = 0; i < data.length; i += 3) {
-
-			// read coordinates
-			x = data[i];
-			y = data[i + 1];
-			r = data[i + 2];
-
-			// check if they are within table boundaries
-			if (isPointInsideBand(new Point(x, y))) {
-
-				if (j == 0) {
-					filteredCircles.put(0, j, x, y, r);
-					matList.set(0, filteredCircles);
-				} else {
-					// merge horizontally filteredCircles with newMat and save to filteredCircles
-					newMat.put(0, 0, x, y, r);
-					matList.set(1, newMat);
-					Core.hconcat(matList, filteredCircles);
-					matList.set(0, filteredCircles);
-				}
-
-				j++;
-			}
-		}
-
-		return filteredCircles;
-	}
-
-	// crop image into pieces specified by roi
-	public List<Mat> cropImage(List<Rect> roi, Mat image) {
-		List<Mat> crops = new ArrayList<>();
-
-		for (int i = 0; i < roi.size(); i++) {
-			crops.add(new Mat(image, roi.get(i)));
-		}
-		return crops;
-	}
-
-	// get balls region of interest
-	public List<Rect> getBallsROI(double[] circles, Mat image) {
-		List<Rect> roiList = new ArrayList<>();
-
-		for (int i = 0; i < circles.length; i += 3) {
-			double x = circles[i];
-			double y = circles[i + 1];
-			double r = circles[i + 2];
-			Point topLeft = new Point(x - r, y - r);
-			Point bottomRight = new Point(x + r, y + r);
-
-			roiList.add(new Rect(topLeft, bottomRight));
-		}
-
-		return roiList;
-	}
-	
-	public double[] getMeanColor(List<Mat> images) {
-		double[] meanArray = new double[images.size()];
-
-		for (int i = 0; i < images.size(); i++) {
-
-			MatOfDouble mean = new MatOfDouble();
-			Core.meanStdDev(images.get(i), mean, new MatOfDouble());
-			meanArray[i]=mean.get(0, 0)[0];
-		}
-		
-		return meanArray;
-	}
-
-	// add ball id to its coordinates
-	public double[] getBallsId(double[] circles, Mat image) {
-
-		// crop image to balls
-		List<Rect> roiList = getBallsROI(circles, image);
-		List<Mat> ballImgList = cropImage(roiList, image);
-
-		// compute mean value of color
-		double[] mean = getMeanColor(ballImgList);
-		
-		// assign id by color
-
-		double[] id = null;
-		return mean;
+		return circles;
 	}
 
 	private Mat getEdges(Mat source) throws DetectorException {
 		Mat dst = new Mat();
-		List<Mat> layers = new ArrayList<>();
+		List <Mat> layers = new ArrayList<>();
 
 		try {
-			Imgproc.blur(source, dst, new Size(6, 6));
+			Imgproc.blur(source, source, new Size(6,6));
 
-			Imgproc.cvtColor(dst, dst, Imgproc.COLOR_BGR2HSV);
-			Core.split(dst, layers);
-			Imgproc.Canny(layers.get(1), dst, 50, 200, 3, false);
+			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
+			Core.split(source, layers);
+			Imgproc.Canny(layers.get(2), dst, 50, 200, 3, false);
 
-		} catch (NullPointerException e) {
+		} catch (NullPointerException e){
 			throw new LinesDetectorException("Could not read source stream.", e);
 		}
 
 		return dst;
 	}
 
-	public Line findStickLine(Mat image) throws DetectorException {
-
+	private List<Line> getInnerLines() throws DetectorException {
 		Line tempLine = null;
 
 		Mat substractedImg = new Mat();
-		Mat linesP = getEdges(image);
+		Mat linesP = getEdges(sourceImg);
 
 		Core.subtract(linesP, cannyImg, substractedImg);
 
-		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI / 180, 50, 50, 10);
+		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 70, 50, 10);
 
-		for (int x = 0; x < linesP.rows(); x++) {
+		List <Line> linesList = new ArrayList<>();
+
+		for (int x = 0; x < linesP.rows(); x++){
 			double line[] = linesP.get(x, 0);
 
 			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
-			if (isPointInsideBand(tempLine.getBegin()) || isPointInsideBand(tempLine.getEnd())) {
-				return tempLine;
+			if (isPointInsideBand(tempLine.getBegin()) || isPointInsideBand(tempLine.getEnd())){
+				linesList.add(tempLine);
 			}
 		}
 
-		return tempLine;
+		return linesList;
 	}
 
-	public Line getExtendedStickLine(Line stickLine) {
+	public Line findStickLine() throws DetectorException, CueServiceException {
 
-		Line extendedLine = new Line();
+		List <Line> linesList = getInnerLines();
+		Line cueLine = null;
 
-		double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
-		double X = (stickLine.getBegin().x - stickLine.getEnd().x);
+		double dist;
+		double a1, a2, parallelTolerance = 0.2;
 
-		if (X == 0) {
-			Point maxTop = new Point(stickLine.getBegin().x, 0);
-			Point maxBot = new Point(stickLine.getBegin().x, sourceImg.height());
+		double minDistance = 50;
+		outerloop:
+		for (int i = 0; i < linesList.size() - 1; i++){
+			for (int j = 0; j < linesList.size(); j++){
+				if (i != j) {
 
-			extendedLine.setBegin(maxTop);
-			extendedLine.setEnd(maxBot);
-		} else if (Y == 0) {
-			Point maxLeft = new Point(0, stickLine.getBegin().y);
-			Point maxRight = new Point(sourceImg.width(), stickLine.getBegin().y);
+					a1 = calcCoordinate_A(linesList.get(i));
+					a2 = calcCoordinate_A(linesList.get(j));
 
-			extendedLine.setBegin(maxLeft);
-			extendedLine.setEnd(maxRight);
-		} else {
-			double a = Y / X;
-			double b = stickLine.getBegin().y - (a * stickLine.getBegin().x);
+					if (Math.abs(a1 - a2) < parallelTolerance) {
+						dist = getDistanceBetweenLines(linesList.get(i), linesList.get(j));
+						if (dist < minDistance) {
+							cueLine = Line.getDirectedLine(cueService.getExtendedStickLineForBothSides(linesList.get(i)), cueService.getExtendedStickLineForBothSides(linesList.get(j)));
 
-			Point maxTop = new Point(stickLine.getBegin().x, 0);
-			maxTop.y = 0;
-			maxTop.x = -(b / a);
+							break outerloop;
+						}
+					}
 
-			Point maxBot = new Point(stickLine.getBegin().x, sourceImg.height());
-			maxBot.y = sourceImg.height();
-			maxBot.x = (-b + sourceImg.height()) / a;
-
-			Point maxLeft = new Point();
-			maxLeft.x = 0;
-			maxLeft.y = b;
-
-			Point maxRight = new Point();
-			maxRight.x = sourceImg.width();
-			maxRight.y = a * sourceImg.width() + b;
-
-			if (maxTop.x >= 0 && maxTop.x <= sourceImg.width()) {
-				extendedLine.setPoint(maxTop);
+				}
 			}
-
-			if (maxLeft.y >= 0 && maxLeft.y <= sourceImg.height()) {
-				extendedLine.setPoint(maxLeft);
-			}
-
-			if (maxBot.x >= 0 && maxBot.x <= sourceImg.width()) {
-				extendedLine.setPoint(maxBot);
-			}
-
-			if (maxRight.y >= 0 && maxRight.y <= sourceImg.height()) {
-				extendedLine.setPoint(maxRight);
-			}
-
 		}
 
-		return extendedLine;
+		return cueLine;
 	}
+
+	public double calcCoordinate_A(Line line){
+
+		if (line.getBegin().x == line.getEnd().x){
+			line.setEnd(new Point(line.getEnd().x + 3, line.getEnd().y));
+		}
+
+		double Y = (line.getBegin().y - line.getEnd().y);
+		double X = (line.getBegin().x - line.getEnd().x);
+
+		return (Y/X);
+
+	}
+
+
 
 	public ArrayList<Ball> createListOfBalls(Mat image) {
-
+		int x,y,r;
 		Mat circles = detectBalls(image);
-
-		// write circles coordinates into an array
-		double[] data = convertMatToArray(circles);
-
-		// get IDs
-		double[] id = getBallsId(data, image);
-
 		ArrayList<Ball> balls = new ArrayList<>();
 
-		int x, y, r;
-		for (int i = 0; i < data.length; i += 3) {
+		for (int i = 1; i < circles.cols(); i++) {
 			// read ball coordinates
-			x = (int) data[i];
-			y = (int) data[i + 1];
-			r = (int) data[i + 2];
+			double[] data = circles.get(0, i);
 
-			Ball ball = new Ball(i, x, y, r);
+			x = (int) data[0];
+			y = (int) data[1];
+			r = (int) data[2];
+
+			Ball ball = new Ball(i,x,y,r);
 			balls.add(ball);
 		}
 
 		return balls;
 	}
 
-	private boolean isPointInsideBand(Point point) {
-		if (point.x > leftBand && point.x < rightBand) {
-            return point.y > topBand && point.y < bottomBand;
+	public boolean isPointInsideBand(Point point){
+		return isPointInsideBand(point, new Properties());
+	}
+
+	public static boolean isPointInsideBand(Point point, Properties properties){
+		if (point.x >= properties.getTableBandLeft() - 5 && point.x <= properties.getTableBandRight() + 5) {
+			if (point.y >= properties.getTableBandTop() - 5 && point.y <= properties.getTableBandBottom() + 5) {
+				return true;
+			}
 		}
 		return false;
 	}
 
-	public double[] convertMatToArray(Mat mat) {
-		int size = (int) mat.total() * mat.channels();
-		double[] data = new double[size];
-		mat.get(0, 0, data);
+	private double getDistanceBetweenLines(Line line1, Line line2) {
 
-		return data;
+		double begin2begin = getDistanceBetweenPoints(line1.getBegin(), line2.getBegin());
+		double begin2end = getDistanceBetweenPoints(line1.getBegin(), line2.getEnd());
+		double end2begin = getDistanceBetweenPoints(line1.getEnd(), line2.getBegin());
+		double end2end = getDistanceBetweenPoints(line1.getEnd(), line2.getEnd());
+
+		double min1 = getMinWithNoFirst(0, begin2begin, begin2end, end2begin, end2end);
+		double min2 = getMinWithNoFirst(min1, begin2begin, begin2end, end2begin, end2end);
+
+		return ((min1 + min2)/2);
+	}
+
+	private double getDistanceBetweenPoints(Point point1, Point point2) {
+		return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
+	}
+
+	private double getMinWithNoFirst(double discardThisMinValue, double ... values){
+		double temp = Double.MAX_VALUE;
+		for (int i = 0; i < values.length; i++){
+			if (values[i] < temp && values[i] != discardThisMinValue) {
+				temp = values[i];
+			}
+		}
+		return temp;
 	}
 }
+
+
