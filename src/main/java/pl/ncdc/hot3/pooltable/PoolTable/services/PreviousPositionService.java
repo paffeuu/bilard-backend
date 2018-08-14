@@ -13,6 +13,7 @@ public class PreviousPositionService {
     private ArrayList<ArrayList<Ball>> positionsHistory;
     private ArrayList<Ball> previousPosition;
     private ArrayList<Ball> currentPosition;
+    private boolean showPrevious = true;
 
     public PreviousPositionService() {
         this.positionsHistory = new ArrayList<ArrayList<Ball>>();
@@ -58,5 +59,13 @@ public class PreviousPositionService {
 
     public ArrayList<Ball> getPreviousPosition() {
         return this.previousPosition;
+    }
+
+    public boolean isShowPrevious() {
+        return showPrevious;
+    }
+
+    public void setShowPrevious(boolean showPrevious) {
+        this.showPrevious = showPrevious;
     }
 }

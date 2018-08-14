@@ -145,8 +145,8 @@ public class DetectorTests {
 
             Imgproc.line(sourceWithStickImg, line.getBegin(), line.getEnd(), new Scalar(110, 0, 255), 9);
 
-            Mat dst = drawer.drawBandLines(sourceWithStickImg);
-            Imgcodecs.imwrite(fileTemp, dst);
+           // Mat dst = drawer.drawBandLines(sourceWithStickImg);
+            //Imgcodecs.imwrite(fileTemp, dst);
         }
     }
 

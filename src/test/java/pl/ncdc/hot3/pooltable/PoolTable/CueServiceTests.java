@@ -50,8 +50,8 @@ public class CueServiceTests {
 
             Imgproc.line(sourceWithStickImg, line.getBegin(), line.getEnd(), new Scalar(110, 0, 255), 9);
 
-            Mat dst = drawer.drawBandLines(sourceWithStickImg);
-            Imgcodecs.imwrite(fileTemp, dst);
+          //  Mat dst = drawer.drawBandLines(sourceWithStickImg);
+          //  Imgcodecs.imwrite(fileTemp, dst);
         }
     }
 
@@ -80,8 +80,8 @@ public class CueServiceTests {
             Imgproc.line(sourceWithStickImg, line.getBegin(), line.getEnd(), new Scalar(110, 0, 255), 5);
             Imgproc.line(sourceWithStickImg, extendedLine.getBegin(), extendedLine.getEnd(), new Scalar(0, 0, 255), 9);
 
-            Mat dst = drawer.drawBandLines(sourceWithStickImg);
-            Imgcodecs.imwrite(fileTemp, dst);
+         //   Mat dst = drawer.drawBandLines(sourceWithStickImg);
+           // Imgcodecs.imwrite(fileTemp, dst);
         }
     }
 

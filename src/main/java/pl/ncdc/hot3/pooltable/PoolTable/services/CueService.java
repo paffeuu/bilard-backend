@@ -185,7 +185,7 @@ public class CueService {
 
 
     public Line predictTrajectoryAfterBump(Point bumpPoint, Line line) throws CueServiceException {
-        Point halfDistance;
+        Point halfDistance = new Point(0, 0);
 
         if (properties.getTableBandLeft() == bumpPoint.x) {
             halfDistance = new Point(line.getBegin().x, line.getEnd().y);
@@ -196,7 +196,7 @@ public class CueService {
         } else if (properties.getTableBandBottom() == bumpPoint.y) {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
         } else {
-            throw new CueServiceException("Band not found");
+           // throw new CueServiceException("Band not found");
         }
 
         double distanceX = (halfDistance.x - line.getBegin().x);

@@ -105,17 +105,64 @@ public class Detector {
 		List<Mat> planes = new ArrayList<>(3);
 		Core.split(image, planes);
 
-		// canny - detect edges
-		Mat edges = new Mat();
-		Imgproc.Canny(planes.get(2), edges, highThreshold/ratio, highThreshold);
+
 
 		// detect circles
 		Mat circles = new Mat(); // contains balls coordinates
-		Imgproc.HoughCircles(edges, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistanceForBalls,
-				105, 12, minRadiusForBall, maxRadiusForBall);
+		Imgproc.HoughCircles(planes.get(2), circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, minDistanceForBalls,
+				30, 15, minRadiusForBall, maxRadiusForBall);
 
-		return circles;
+		return filterCircles(circles);
 	}
+
+	private Mat filterCircles(Mat allCircles) {
+
+		Mat filteredCircles = new Mat(1, 1, CvType.CV_64FC3); // output Mat
+		Mat newMat = new Mat(1, 1, CvType.CV_64FC3); // merged new column
+		List<Mat> matList = new ArrayList<>(); // 2-element list for merging in Core.hconcat
+		matList.add(null);
+		matList.add(null);
+
+		// conversion to use type double data
+		allCircles.convertTo(allCircles, CvType.CV_64FC3);
+
+		// write circles coordinates into an array
+		double[] data = convertMatToArray(allCircles);
+
+		// filter circles
+		int j = 0;
+		double x, y, r;
+		for (int i = 0; i < data.length; i += 3) {
+
+			// read coordinates
+			x = data[i];
+			y = data[i + 1];
+			r = data[i + 2];
+
+			// check if they are within table boundaries
+			if (isPointInsideBand(new Point(x, y))) {
+
+				if (j == 0) {
+					filteredCircles.put(0, j, x, y, r);
+					matList.set(0, filteredCircles);
+				} else {
+					// merge horizontally filteredCircles with newMat and save to filteredCircles
+					newMat.put(0, 0, x, y, r);
+					matList.set(1, newMat);
+					Core.hconcat(matList, filteredCircles);
+					matList.set(0, filteredCircles);
+				}
+
+				j++;
+			}
+		}
+
+		return filteredCircles;
+	}
+
+
+
+
 
 	private Mat getEdges(Mat source) throws DetectorException {
 		Mat dst = new Mat();
@@ -179,7 +226,7 @@ public class Detector {
 					if (Math.abs(a1 - a2) < parallelTolerance) {
 						dist = getDistanceBetweenLines(linesList.get(i), linesList.get(j));
 						if (dist < minDistance) {
-							cueLine = Line.getDirectedLine(cueService.getExtendedStickLineForBothSides(linesList.get(i)), cueService.getExtendedStickLineForBothSides(linesList.get(j)));
+							cueLine = Line.getDirectedLine(linesList.get(i), linesList.get(j));
 
 							break outerloop;
 						}
@@ -265,6 +312,14 @@ public class Detector {
 			}
 		}
 		return temp;
+	}
+
+	public double[] convertMatToArray(Mat mat) {
+		int size = (int) mat.total() * mat.channels();
+		double[] data = new double[size];
+		mat.get(0, 0, data);
+
+		return data;
 	}
 }
 
