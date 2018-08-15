@@ -33,9 +33,6 @@ public class DetectorTests {
     private Detector detector;
 
     @Autowired
-    private CueService cueService;
-
-    @Autowired
     private Properties properties;
 
     @Autowired

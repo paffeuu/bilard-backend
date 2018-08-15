@@ -18,6 +18,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -38,10 +39,10 @@ public class LineTest {
     private Properties properties;
 
     @Test
-    public void directedLine() throws LineServiceException, DetectorException {
+    public void directedLine() throws LineServiceException, DetectorException, CueServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        String sourceImagePath = BASE_PATH + "jacek5.png";
+        String sourceImagePath = BASE_PATH + "jacek9.png";
         Mat sourceImage = Imgcodecs.imread(sourceImagePath, Imgcodecs.IMREAD_COLOR);
 
         detector.setSourceImg(sourceImage.clone());
@@ -63,7 +64,6 @@ public class LineTest {
         for (int i = 0; i < properties.getPredictionDepth(); i++){
 
             Line prediction = cueService.predictTrajectoryAfterBump(prevLine);
-            prediction = lineService.getExtendedStickLineForOneSide(prediction);
 
             Imgproc.line(sourceImage, prediction.getBegin(), prediction.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
             Imgproc.circle(sourceImage, prediction.getBegin(), 30, new Scalar(0, 111, 255), 3);
@@ -74,4 +74,7 @@ public class LineTest {
 
         Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
     }
+
+
+
 }

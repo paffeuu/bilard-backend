@@ -10,7 +10,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 @ControllerAdvice("pl/ncdc/hot3/pooltable/PoolTable/rest")
 public class RestExceptionsHandler {
 
-    @ExceptionHandler({DetectorException.class, CueServiceException.class})
+    @ExceptionHandler()
     public ResponseEntity handleException(Exception e){
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

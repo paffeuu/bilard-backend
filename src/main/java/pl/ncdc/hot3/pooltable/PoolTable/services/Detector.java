@@ -20,7 +20,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-@ContextConfiguration(classes = {Properties.class})
+@ContextConfiguration(classes = {CueService.class, Properties.class})
 @Service
 public class Detector {
 
@@ -37,20 +37,17 @@ public class Detector {
 	final int minDistanceForBalls = 36;
 	final int highThreshold = 105;
 	final int ratio = 3;
-	final int cueThickness = 17;
-    final double minDistance = 60;
 
 	private static Properties properties;
-
-	private LineService lineService;
+	private CueService cueService;
 
 	@Autowired
 	public Detector(
-			LineService lineService,
+			CueService cueService,
 			Properties properties
 	) {
-		this.lineService = lineService;
 		this.properties = properties;
+		this.cueService = cueService;
 
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
@@ -156,62 +153,11 @@ public class Detector {
 		return filteredCircles;
 	}
 
-
-
-
-
-	private Mat getEdges(Mat source) throws DetectorException {
-		Mat dst = new Mat();
-		List <Mat> layers = new ArrayList<>();
-
-		try {
-			Imgproc.blur(source, source, new Size(6,6));
-
-			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
-			Core.split(source, layers);
-			Imgproc.Canny(layers.get(2), dst, 50, 200, 3, false);
-
-		} catch (NullPointerException e){
-			throw new LinesDetectorException("Could not read source stream.", e);
-		}
-
-		return dst;
-	}
-
 	public Line findStickLine() throws MissingCueLineException, DetectorException, LineServiceException {
 
 		List <Line> linesList = getInnerLines();
-		Line cueLine = null;
+		return cueService.findStickLine(linesList);
 
-		double dist;
-		double a1, a2, parallelTolerance = 0.2;
-
-		outerloop:
-		for (int i = 0; i < linesList.size() - 1; i++){
-			for (int j = 0; j < linesList.size(); j++){
-				if (i != j) {
-
-					a1 = lineService.calcCoordinate_A(linesList.get(i));
-					a2 = lineService.calcCoordinate_A(linesList.get(j));
-
-					if (Math.abs(a1 - a2) < parallelTolerance) {
-						dist = getDistanceBetweenLines(linesList.get(i), linesList.get(j));
-						if (dist < minDistance) {
-							cueLine = lineService.getDirectedLine(linesList.get(i), linesList.get(j));
-
-							break outerloop;
-						}
-					}
-
-				}
-			}
-		}
-
-		if (cueLine == null){
-			throw new MissingCueLineException("Could not find stick line.");
-		}
-
-		return cueLine;
 	}
 
 	private List<Line> getInnerLines() throws DetectorException {
@@ -238,6 +184,46 @@ public class Detector {
 		return linesList;
 	}
 
+	private Mat getEdges(Mat source) throws DetectorException {
+		Mat dst = new Mat();
+		List <Mat> layers = new ArrayList<>();
+
+		try {
+			Imgproc.blur(source, source, new Size(6,6));
+
+			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
+			Core.split(source, layers);
+			Imgproc.Canny(layers.get(2), dst, 50, 200, 3, false);
+
+		} catch (NullPointerException e){
+			throw new LinesDetectorException("Could not read source stream.", e);
+		}
+
+		return dst;
+	}
+
+	public List<Line> getPredictions() throws CueServiceException, LineServiceException {
+		List <Line> predictions = new ArrayList<>();
+
+		try {
+			Line cue = findStickLine();
+			predictions.add(cue);
+
+			for (int i = 0; i < properties.getPredictionDepth(); i++){
+				Line pred = cueService.predictTrajectoryAfterBump(predictions.get(i));
+				predictions.add(pred);
+			}
+
+		} catch (MissingCueLineException e) {
+			LOGGER.warn("Could not find stick, predictions canceled.", e);
+		} finally {
+			if (predictions.size() > 1)
+				predictions.subList(1, predictions.size() -1);
+
+			return predictions;
+		}
+	}
+
 	public ArrayList<Ball> createListOfBalls() {
 		int x,y,r;
 		Mat circles = detectBalls();
@@ -257,38 +243,12 @@ public class Detector {
 
 		return balls;
 	}
-
-//	public boolean isPointInsideBand(Point point){
-//		return isPointInsideBand(point);
-//	}
-
-
-	private double getDistanceBetweenLines(Line line1, Line line2) {
-
-		double begin2begin = getDistanceBetweenPoints(line1.getBegin(), line2.getBegin());
-		double begin2end = getDistanceBetweenPoints(line1.getBegin(), line2.getEnd());
-		double end2begin = getDistanceBetweenPoints(line1.getEnd(), line2.getBegin());
-		double end2end = getDistanceBetweenPoints(line1.getEnd(), line2.getEnd());
-
-		double min1 = getMinWithNoFirst(0, begin2begin, begin2end, end2begin, end2end);
-		double min2 = getMinWithNoFirst(min1, begin2begin, begin2end, end2begin, end2end);
-
-		return ((min1 + min2)/2);
-	}
-
-	private double getDistanceBetweenPoints(Point point1, Point point2) {
-		return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
-	}
-
-	private double getMinWithNoFirst(double discardThisMinValue, double ... values){
-		double temp = Double.MAX_VALUE;
-		for (int i = 0; i < values.length; i++){
-			if (values[i] < temp && values[i] != discardThisMinValue) {
-				temp = values[i];
-			}
-		}
-		return temp;
-	}
+//
+////	public boolean isPointInsideBand(Point point){
+////		return isPointInsideBand(point);
+////	}
+//
+//
 
 	public double[] convertMatToArray(Mat mat) {
 		int size = (int) mat.total() * mat.channels();

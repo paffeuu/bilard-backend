@@ -5,6 +5,7 @@ import org.opencv.imgproc.Imgproc;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.*;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
@@ -22,60 +23,34 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @RestController
 @RequestMapping(path = "/pooltable")
 public class MainController {
+
     @Autowired
-    private SnapshotGetterService snapshotGetterService;
+    private Properties properties;
+
     @Autowired
-    private ImageUndistorterService undistorter;
-    @Autowired
-    private Drawer drawer;
-    @Autowired
-    private CueService cueService;
-    @Autowired
-    private Detector detector;
-    @Autowired
-    private PreviousPositionService previousPositionService;
+    private TableStoryService tableStoryService;
 
     @CrossOrigin(origins = "http://localhost:4200")
     @RequestMapping(value = "/get-pool-table", method = RequestMethod.GET)
-    public ResponseEntity<PoolTable> test() throws CueServiceException, DetectorException, LineServiceException {
-        PoolTable table = new PoolTable();
-        MatOfByte matOfByte = new MatOfByte();
-        Mat result = undistorter.undistort(OpenCVBufforFlushService.getLastFrame());
+    public ResponseEntity<PoolTable> test() {
 
-        detector.setSourceImg(result.clone());
-        table.setBalls(detector.createListOfBalls());
+        PoolTable table = tableStoryService
+                .next()
+                .findBalls()
+                .findCue()
+                .makePredictions()
+                .showPrevious()
+                .build();
 
-        if (OpenCVBufforFlushService.getCounter() % 4 == 0) {
-            previousPositionService.addPosition(table.getBalls());
-            previousPositionService.findLastStillPosition();
-        }
-
-        List<Line> cueAndPredictions = cueService.getStickWithPredictions();
-
-
-        if ( !cueAndPredictions.isEmpty() ) {
-            table.setCue(cueAndPredictions.get(0));
-
-            drawer.draw(result, cueAndPredictions, table.getBalls());
-        }
-
-        if (previousPositionService.isShowPrevious()) {
-            if (previousPositionService.getPreviousPosition() != null) {
-                drawer.drawBalls(result, previousPositionService.getPreviousPosition(), new Scalar(255, 0, 255));
-            }
-        }
-        Imgcodecs.imencode(".jpg", result, matOfByte);
-        table.setTableImage(matOfByte.toArray());
         return ResponseEntity.ok(table);
 
     }
 
     @RequestMapping(value = "/set-visible", method = RequestMethod.GET)
     public void setShowPrevious() {
-        previousPositionService.setShowPrevious(!previousPositionService.isShowPrevious());
+        properties.setShowPreviousPosition(true);
     }
 }

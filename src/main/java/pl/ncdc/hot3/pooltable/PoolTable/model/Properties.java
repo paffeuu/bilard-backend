@@ -3,6 +3,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.model;
 import org.opencv.core.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 /**
  * Properties class
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class Properties {
+
     // Bands
     private double tableBandLeft;
     private double tableBandRight;
@@ -34,8 +36,17 @@ public class Properties {
     private double imageSourceWidth;
     private double imageSourceHeight;
 
+    // Stick
+    private double cueThickness;
+    private double parallelTolerance;
+
     // Predictions
     private int predictionDepth;
+
+    // Replays
+    private boolean showPreviousPosition;
+    private int previousFramesFrequency;
+
 
     public Properties() {
         this.tableBandLeft = 165;
@@ -43,6 +54,12 @@ public class Properties {
         this.tableBandTop = 350;
         this.tableBandBottom = 1236;
         this.predictionDepth = 10;
+
+        this.cueThickness = 60;
+        this.parallelTolerance = 0.2;
+
+        this.showPreviousPosition = true;
+        this.previousFramesFrequency = 4;
     }
 
     /**
@@ -79,23 +96,38 @@ public class Properties {
                       double imageSourceWidth,
                       double imageSourceHeight,
                       int predictionDepth
-    ) {
+    ) {}
 
-        this.tableBandLeft = tableBandLeft;
-        this.tableBandRight = tableBandRight;
-        this.tableBandTop = tableBandTop;
-        this.tableBandBottom = tableBandBottom;
-        this.tablePocketMinRadius = tablePocketMinRadius;
-        this.tablePocketMaxRadius = tablePocketMaxRadius;
-        this.tablePocketMinDistance = tablePocketMinDistance;
-        this.ballMaxRadius = ballMaxRadius;
-        this.ballMinRadius = ballMinRadius;
-        this.ballMinDistance = ballMinDistance;
-        this.cannyHighThreshold = cannyHighThreshold;
-        this.cannyRatio = cannyRatio;
-        this.imageSourceWidth = imageSourceWidth;
-        this.imageSourceHeight = imageSourceHeight;
-        this.predictionDepth = predictionDepth;
+    public boolean isShowPreviousPosition() {
+        return showPreviousPosition;
+    }
+
+    public void setShowPreviousPosition(boolean showPreviousPosition) {
+        this.showPreviousPosition = showPreviousPosition;
+    }
+
+    public int getPreviousFramesFrequency() {
+        return previousFramesFrequency;
+    }
+
+    public void setPreviousFramesFrequency(int previousFramesFrequency) {
+        this.previousFramesFrequency = previousFramesFrequency;
+    }
+
+    public double getCueThickness() {
+        return cueThickness;
+    }
+
+    public void setCueThickness(double cueThickness) {
+        this.cueThickness = cueThickness;
+    }
+
+    public double getParallelTolerance() {
+        return parallelTolerance;
+    }
+
+    public void setParallelTolerance(double parallelTolerance) {
+        this.parallelTolerance = parallelTolerance;
     }
 
     /**
