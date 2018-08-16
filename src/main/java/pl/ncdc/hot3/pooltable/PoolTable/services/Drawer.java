@@ -5,6 +5,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.stereotype.Service;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DrawerException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 
@@ -15,7 +16,12 @@ import java.util.List;
 @Service
 public class Drawer {
 
-	public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) {
+	public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) throws DrawerException {
+		if (img == null)
+			throw new DrawerException("Cannot draw on an empty image source.");
+		else if (null == balls || balls.isEmpty())
+			return;
+
 		double x, y;
 		int r;
 		for (int i = 0; i < balls.size(); i++) {
@@ -37,14 +43,21 @@ public class Drawer {
 		}
 	}
 
-	public void drawLine(Mat img, Line line) {
+	private void drawLine(Mat img, Line line) {
 		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), 4);
 	}
 
-	public void draw(Mat img, List<Line> lines, ArrayList<Ball> listOfBalls) {
-		drawBalls(img, listOfBalls,  new Scalar(0, 0, 255));
+	public void draw(Mat img, Line cue, ArrayList<Ball> listOfBalls, List<Line> predictions) throws DrawerException {
+		if (img == null)
+			throw new DrawerException("Cannot draw line to null image.");
 
-		for (Line line : lines) {
+		if (cue != null)
+			drawLine(img, cue);
+
+		if (!listOfBalls.isEmpty())
+			drawBalls(img, listOfBalls,  new Scalar(0, 0, 255));
+
+		for (Line line : predictions) {
             drawLine(img, line);
         }
 	}
