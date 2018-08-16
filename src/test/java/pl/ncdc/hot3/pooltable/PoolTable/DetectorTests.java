@@ -130,7 +130,6 @@ public class DetectorTests {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         String fileUrl = BASE_PATH + "jacek" ;
 
-        Drawer drawer = new Drawer();
 
         for (int i = 0; i < 9; i++){
             String file = fileUrl + (i+1) + ".png";

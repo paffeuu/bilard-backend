@@ -5,22 +5,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CameraServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 @Service
 public class CameraService {
 
     private ImageUndistorterService undistorterService;
+    private MockupService mockupService;
 
     @Autowired
     public CameraService(
-            ImageUndistorterService undistorterService
+            ImageUndistorterService undistorterService,
+            MockupService mockupService
     ) {
         this.undistorterService = undistorterService;
+        this.mockupService = mockupService;
     }
 
     public Mat getSnap() throws CameraServiceException {
-        Mat source = OpenCVBufforFlushService.getLastFrame();
+        Mat source = mockupService.getLiveSnapshot();
         if (source == null || source.empty())
             throw new CameraServiceException("The camera view is not available.");
 

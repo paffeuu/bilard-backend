@@ -115,12 +115,13 @@ public class TableStoryService {
 
     }
 
-    public TableStoryService findBalls() {
+    public TableStoryService findBalls() throws DrawerException {
         try {
             ArrayList<Ball> q = detector.createListOfBalls();
             current().setBalls(q);
         } catch (BallsDetectorException e) {
             LOGGER.info("Can not find balls");
+            e.printStackTrace();
         }
         return this;
     }

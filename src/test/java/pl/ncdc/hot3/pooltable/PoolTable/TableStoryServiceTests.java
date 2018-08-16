@@ -1,6 +1,5 @@
 package pl.ncdc.hot3.pooltable.PoolTable;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +14,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CameraServiceException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DrawerException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
@@ -55,7 +55,7 @@ public class TableStoryServiceTests {
     private PreviousPositionService previousPositionService;
 
     @Test
-    public void shouldReturnPoolTableModelWithAllDetailsAndSaveNewImage() throws CameraServiceException {
+    public void shouldReturnPoolTableModelWithAllDetailsAndSaveNewImage() throws CameraServiceException, DrawerException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Mat source = Imgcodecs.imread(properties.BASE_PATH + "jacek3.png", CvType.CV_64F);
@@ -86,7 +86,7 @@ public class TableStoryServiceTests {
     }
 
     @Test
-    public void shouldReturnEmptyTableForEmptyTablePhoto() throws CameraServiceException, FileNotFoundException {
+    public void shouldReturnEmptyTableForEmptyTablePhoto() throws CameraServiceException, FileNotFoundException, DrawerException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         Mat source = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
         System.out.println("========================================================");
@@ -117,7 +117,7 @@ public class TableStoryServiceTests {
     }
 
     @Test(expected = CameraServiceException.class)
-    public void shouldThrowCameraExceptionWhenSourceNotAvailable() throws CameraServiceException {
+    public void shouldThrowCameraExceptionWhenSourceNotAvailable() throws CameraServiceException, DrawerException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Mat source = Imgcodecs.imread(properties.BASE_PATH + "hahahhah.png", CvType.CV_64F);
@@ -141,7 +141,7 @@ public class TableStoryServiceTests {
     }
 
     @Test(expected = CameraServiceException.class)
-    public void shouldThrowCameraExceptionWhenSourceNull() throws CameraServiceException {
+    public void shouldThrowCameraExceptionWhenSourceNull() throws CameraServiceException, DrawerException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         CameraService cameraService = mock(CameraService.class);

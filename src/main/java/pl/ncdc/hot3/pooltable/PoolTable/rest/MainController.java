@@ -3,9 +3,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.rest;
 import org.apache.catalina.mapper.Mapper;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CameraServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.*;
@@ -20,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +34,7 @@ public class MainController {
 
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
-    public ResponseEntity<PoolTable> test() throws CameraServiceException {
+    public ResponseEntity<PoolTable> test() throws CameraServiceException, DrawerException {
 
         PoolTable table = tableStoryService
                 .next()

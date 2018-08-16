@@ -7,6 +7,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Queue;
 
 @Service
@@ -19,16 +20,17 @@ public class MockupService {
     public MockupService()
     {
         mockList = new ArrayList<>();
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 63; i++)
         {
             try {
-                Mat img = Imgcodecs.imread(ProjectProperties.BASE_PATH + "mock\\" + fileName + String.valueOf(i) + ".jpg");
-                if (img.empty())
+                Mat img = Imgcodecs.imread( pl.ncdc.hot3.pooltable.PoolTable.model.Properties.TEST_PATH + fileName + i + ".jpg");
+
+                if (img.empty() || img == null)
                     break;
                 mockList.add(img);
             } catch (Exception ex)
             {
-                ex.printStackTrace();
+                System.out.println("Blad w MockupService");
             }
         }
     }
