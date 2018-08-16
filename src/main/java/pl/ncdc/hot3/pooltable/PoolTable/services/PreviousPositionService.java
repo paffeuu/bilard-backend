@@ -44,6 +44,7 @@ public class PreviousPositionService {
 
         for (int i=positionsHistory.size()-1; i>0; i--) {
             if (this.comparePositions(this.positionsHistory.get(i), this.positionsHistory.get(i - 1))) {
+               // System.out.println("position found");
                 if (comparePositions(this.positionsHistory.get(i), currentPosition)) {
                         continue;
                     }

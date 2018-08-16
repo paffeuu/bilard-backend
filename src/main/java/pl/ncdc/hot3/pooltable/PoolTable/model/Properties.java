@@ -1,14 +1,20 @@
 package pl.ncdc.hot3.pooltable.PoolTable.model;
 
+import org.opencv.core.Point;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 /**
  * Properties class
  */
 
-@Service
+@Component
 public class Properties {
+
+    public final static String BASE_PATH = "src/main/resources/";
+
     // Bands
     private double tableBandLeft;
     private double tableBandRight;
@@ -33,12 +39,30 @@ public class Properties {
     private double imageSourceWidth;
     private double imageSourceHeight;
 
+    // Stick
+    private double cueThickness;
+    private double parallelTolerance;
+
+    // Predictions
+    private int predictionDepth;
+
+    // Replays
+    private boolean showPreviousPosition;
+    private int previousFramesFrequency;
+
 
     public Properties() {
         this.tableBandLeft = 165;
         this.tableBandRight = 1948;
         this.tableBandTop = 350;
         this.tableBandBottom = 1236;
+        this.predictionDepth = 10;
+
+        this.cueThickness = 60;
+        this.parallelTolerance = 0.2;
+
+        this.showPreviousPosition = true;
+        this.previousFramesFrequency = 4;
     }
 
     /**
@@ -58,6 +82,7 @@ public class Properties {
      * @param cannyRatio
      * @param imageSourceWidth
      * @param imageSourceHeight
+     * @param predictionDepth
      */
     public Properties(double tableBandLeft,
                       double tableBandRight,
@@ -72,22 +97,40 @@ public class Properties {
                       double cannyHighThreshold,
                       double cannyRatio,
                       double imageSourceWidth,
-                      double imageSourceHeight) {
+                      double imageSourceHeight,
+                      int predictionDepth
+    ) {}
 
-        this.tableBandLeft = tableBandLeft;
-        this.tableBandRight = tableBandRight;
-        this.tableBandTop = tableBandTop;
-        this.tableBandBottom = tableBandBottom;
-        this.tablePocketMinRadius = tablePocketMinRadius;
-        this.tablePocketMaxRadius = tablePocketMaxRadius;
-        this.tablePocketMinDistance = tablePocketMinDistance;
-        this.ballMaxRadius = ballMaxRadius;
-        this.ballMinRadius = ballMinRadius;
-        this.ballMinDistance = ballMinDistance;
-        this.cannyHighThreshold = cannyHighThreshold;
-        this.cannyRatio = cannyRatio;
-        this.imageSourceWidth = imageSourceWidth;
-        this.imageSourceHeight = imageSourceHeight;
+    public boolean isShowPreviousPosition() {
+        return showPreviousPosition;
+    }
+
+    public void setShowPreviousPosition(boolean showPreviousPosition) {
+        this.showPreviousPosition = showPreviousPosition;
+    }
+
+    public int getPreviousFramesFrequency() {
+        return previousFramesFrequency;
+    }
+
+    public void setPreviousFramesFrequency(int previousFramesFrequency) {
+        this.previousFramesFrequency = previousFramesFrequency;
+    }
+
+    public double getCueThickness() {
+        return cueThickness;
+    }
+
+    public void setCueThickness(double cueThickness) {
+        this.cueThickness = cueThickness;
+    }
+
+    public double getParallelTolerance() {
+        return parallelTolerance;
+    }
+
+    public void setParallelTolerance(double parallelTolerance) {
+        this.parallelTolerance = parallelTolerance;
     }
 
     /**
@@ -340,5 +383,26 @@ public class Properties {
      */
     public void setImageSourceHeight(double imageSourceHeight) {
         this.imageSourceHeight = imageSourceHeight;
+    }
+
+    public int getPredictionDepth() {
+        return predictionDepth;
+    }
+
+    public void setPredictionDepth(int predictionDepth) {
+        this.predictionDepth = predictionDepth;
+    }
+
+    public boolean isPointInsideBand(Point point){
+        if (point.x >= this.getTableBandLeft() - 5 && point.x <= this.getTableBandRight() + 5) {
+            if (point.y >= this.getTableBandTop() - 5 && point.y <= this.getTableBandBottom() + 5) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void setProperties(Properties properties){
+        System.out.println(Properties.class);
     }
 }

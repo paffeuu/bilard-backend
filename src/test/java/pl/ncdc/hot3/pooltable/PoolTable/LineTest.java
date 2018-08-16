@@ -11,16 +11,14 @@ import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -28,49 +26,55 @@ import java.util.List;
 public class LineTest {
     String BASE_PATH = "src/main/resources/";
 
-    private LineService lineService = new LineService(new Properties(), new Detector());
-
-    //private CueService cueService = new CueService(new Properties(), new Detector(), new LineService());
     @Autowired
     private CueService cueService;
 
+    @Autowired
+    private Detector detector;
+
+    @Autowired
+    private LineService lineService;
+
+    @Autowired
+    private Properties properties;
+
     @Test
-    public void directedLine() throws CueServiceException, LineServiceException {
+    public void directedLine() throws LineServiceException, DetectorException, CueServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        String sourceImagePath = BASE_PATH + "emptyTable.png";
+        String sourceImagePath = BASE_PATH + "jacek9.png";
         Mat sourceImage = Imgcodecs.imread(sourceImagePath, Imgcodecs.IMREAD_COLOR);
 
-        Line line1 = new Line(
-                new Point(1331, 957),
-                new Point(1372, 897)
-        );
-        Line line2 = new Line(
-                new Point(1320, 951),
-                new Point(1579, 581)
-        );
+        detector.setSourceImg(sourceImage.clone());
 
-        Imgproc.circle(sourceImage, line1.getEnd(), 50, new Scalar(0, 255, 255), 3);
-        Imgproc.circle(sourceImage, line2.getEnd(), 50, new Scalar(0, 255, 255), 3);
+        Line asd = null;
+        try {
+            asd = detector.findStickLine();
 
+        } catch (MissingCueLineException e) {
+            System.out.println(e.getMessage());
+            return;
+        }
 
-        Line asd = lineService.getDirectedLine(line1, line2);
-        Imgproc.line(sourceImage, asd.getBegin(), asd.getEnd(), new Scalar(0, 255, 222), 6, Imgproc.LINE_AA, 0);
+        Imgproc.line(sourceImage, asd.getBegin(), asd.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
+        Imgproc.circle(sourceImage, asd.getBegin(), 50, new Scalar(0, 255, 255), 3);
+        Imgproc.circle(sourceImage, asd.getEnd(), 50, new Scalar(0, 255, 255), 3);
 
-
-        int predictionsCount = 4;
         Line prevLine = asd;
-        for (int i = 0; i < predictionsCount; i++){
+        for (int i = 0; i < properties.getPredictionDepth(); i++){
+
             Line prediction = cueService.predictTrajectoryAfterBump(prevLine);
-            prediction = lineService.getExtendedStickLineForOneSide(prediction);
-            Imgproc.line(sourceImage, prediction.getBegin(), prediction.getEnd(), new Scalar((i*20), (i*20), (i*20)), 3, Imgproc.LINE_AA, 0);
+
+            Imgproc.line(sourceImage, prediction.getBegin(), prediction.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
+            Imgproc.circle(sourceImage, prediction.getBegin(), 30, new Scalar(0, 111, 255), 3);
+            Imgproc.circle(sourceImage, prediction.getEnd(), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
+
             prevLine = prediction;
         }
 
-        Imgproc.line(sourceImage, line1.getBegin(), line1.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
-        Imgproc.line(sourceImage, line2.getBegin(), line2.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
-        Imgproc.circle(sourceImage, asd.getEnd(), 50, new Scalar(0, 255, 255), 3);
-
         Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
     }
+
+
+
 }
