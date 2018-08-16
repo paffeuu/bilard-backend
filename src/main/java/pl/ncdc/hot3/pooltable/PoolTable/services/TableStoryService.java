@@ -115,6 +115,22 @@ public class TableStoryService {
 
     }
 
+    public TableStoryService detectColision() {
+        try {
+            if (null != current().getCue()) {
+                current().setTargetLine(detector.createTargetLine(
+                        current().getCue(),
+                        current().getBalls(),
+                        true
+                ));
+            }
+        } catch (LineServiceException e) {
+            LOGGER.info("Can not find target line");
+        }
+
+        return this;
+    }
+
     public TableStoryService findBalls() {
         try {
             ArrayList<Ball> q = detector.createListOfBalls();
@@ -158,7 +174,13 @@ public class TableStoryService {
 
     private TableStoryService makeView(){
         try {
-            drawer.draw(outputImage, current().getCue(), current().getBalls(), current().getPredictions());
+            drawer.draw(
+                    outputImage,
+                    current().getCue(),
+                    current().getBalls(),
+                    current().getPredictions(),
+                    current().getTargetLine()
+            );
 
             MatOfByte matOfByte = new MatOfByte();
             Imgcodecs.imencode(".jpg", outputImage, matOfByte);

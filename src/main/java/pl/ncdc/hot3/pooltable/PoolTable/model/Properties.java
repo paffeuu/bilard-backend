@@ -59,7 +59,7 @@ public class Properties {
         this.tableBandRight = 1948;
         this.tableBandTop = 350;
         this.tableBandBottom = 1236;
-        this.predictionDepth = 1;
+        this.predictionDepth = 3;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;

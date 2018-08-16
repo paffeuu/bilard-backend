@@ -84,8 +84,8 @@ public class LineTest {
         );
         Point point = new Point(2, 0);
 
-        double[] cordinates = lineService.calcAllCordinate(line);
-        double distance = lineService.calculateDistanceBetwenPointAndLine(point, line);
+        double[] cordinates = cueService.calcAllCordinate(line);
+        double distance = cueService.calculateDistanceBetwenPointAndLine(point, line);
         System.out.print(cordinates[0] + " | " + cordinates[1] + " | " + cordinates[2] + " | " + distance);
     }
 
@@ -98,7 +98,7 @@ public class LineTest {
         ArrayList<Ball> balls = new ArrayList<>();
         balls.add(new Ball(0, 3, 0, 2));
 
-        Ball stoped = lineService.stopLineAtFirstBall(line, balls, false);
+        Ball stoped = cueService.stopLineAtFirstBall(line, balls, false);
         System.out.print("asd");
     }
 
@@ -122,13 +122,13 @@ public class LineTest {
 
         ArrayList<Ball> balls = detector.createListOfBalls();
 
-        Ball colision1 = lineService.stopLineAtFirstBall(asd, balls, true);
+        Ball colision1 = cueService.stopLineAtFirstBall(asd, balls, true);
 
         if (null != colision1) {
 //                Imgproc.circle(sourceImage, new Point(colision.getX(), colision.getY()), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
 //                Imgproc.circle(sourceImage, c[0], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
 //                Imgproc.circle(sourceImage, c[1], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-            Line celownik = lineService.findBallColisionLine(asd, colision1);
+            Line celownik = cueService.findBallColisionLine(asd, colision1);
             celownik = lineService.getExtendedStickLineForOneSide(celownik);
             Imgproc.line(sourceImage, celownik.getBegin(), celownik.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
             Imgproc.circle(sourceImage, celownik.getBegin(), new Double(colision1.getRadius()).intValue(), new Scalar(0, 255, 255), 3);
@@ -143,13 +143,13 @@ public class LineTest {
         for (int i = 0; i < properties.getPredictionDepth(); i++){
 
             Line prediction = cueService.predictTrajectoryAfterBump(prevLine);
-            Ball colision = lineService.stopLineAtFirstBall(prediction, balls, false);
+            Ball colision = cueService.stopLineAtFirstBall(prediction, balls, false);
 
             if (null != colision) {
 //                Imgproc.circle(sourceImage, new Point(colision.getX(), colision.getY()), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
 //                Imgproc.circle(sourceImage, c[0], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
 //                Imgproc.circle(sourceImage, c[1], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-                Line celownik = lineService.findBallColisionLine(prediction, colision);
+                Line celownik = cueService.findBallColisionLine(prediction, colision);
                 celownik = lineService.getExtendedStickLineForOneSide(celownik);
                 Imgproc.line(sourceImage, celownik.getBegin(), celownik.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
                 Imgproc.circle(sourceImage, celownik.getBegin(), new Double(colision.getRadius()).intValue(), new Scalar(0, 255, 255), 3);

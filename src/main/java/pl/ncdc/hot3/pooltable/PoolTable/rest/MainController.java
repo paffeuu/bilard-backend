@@ -44,6 +44,7 @@ public class MainController {
                 .findBalls()
                 .findCue()
                 .makePredictions()
+                .detectColision()
                 .showPrevious()
                 .build();
 
