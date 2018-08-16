@@ -2,6 +2,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.model;
 
 import org.opencv.core.Point;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
@@ -9,8 +10,10 @@ import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUn
  * Properties class
  */
 
-@Service
+@Component
 public class Properties {
+
+    public final static String BASE_PATH = "src/main/resources/";
 
     // Bands
     private double tableBandLeft;
@@ -397,5 +400,9 @@ public class Properties {
             }
         }
         return false;
+    }
+
+    public void setProperties(Properties properties){
+        System.out.println(Properties.class);
     }
 }

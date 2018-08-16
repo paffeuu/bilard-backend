@@ -1,7 +1,9 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
+import org.apache.catalina.mapper.Mapper;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CameraServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
@@ -34,8 +36,8 @@ public class MainController {
     private TableStoryService tableStoryService;
 
     @CrossOrigin(origins = "http://localhost:4200")
-    @RequestMapping(value = "/get-pool-table", method = RequestMethod.GET)
-    public ResponseEntity<PoolTable> test() {
+    @GetMapping("/get-pool-table")
+    public ResponseEntity<PoolTable> test() throws CameraServiceException {
 
         PoolTable table = tableStoryService
                 .next()
@@ -49,8 +51,16 @@ public class MainController {
 
     }
 
+    @PutMapping("/get-pool-table")
+    public ResponseEntity<Properties> setProperties(@RequestParam Properties properties){
+//        Mapper mapper = new DozerBeanMapper();
+        return ResponseEntity.ok(this.properties);
+    }
+
+
     @RequestMapping(value = "/set-visible", method = RequestMethod.GET)
     public void setShowPrevious() {
         properties.setShowPreviousPosition(true);
     }
+
 }

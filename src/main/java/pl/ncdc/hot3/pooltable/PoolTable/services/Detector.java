@@ -195,7 +195,7 @@ public class Detector {
 			Core.split(source, layers);
 			Imgproc.Canny(layers.get(2), dst, 50, 200, 3, false);
 
-		} catch (NullPointerException e){
+		} catch (Exception e){
 			throw new LinesDetectorException("Could not read source stream.", e);
 		}
 

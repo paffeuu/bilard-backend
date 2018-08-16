@@ -7,11 +7,9 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.MissingCueLineException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
@@ -24,6 +22,7 @@ import java.util.List;
 public class TableStoryService {
 
     final static int LIMIT_OF_TABLES = 512;
+    final static int LIMIT_OF_VIEWS = 6;
     final static Logger LOGGER = LoggerFactory.getLogger(TableStoryService.class);
 
     private int currentTableIndex;
@@ -34,6 +33,7 @@ public class TableStoryService {
     private CameraService cameraService;
     private Drawer drawer;
     private Properties properties;
+
     private PreviousPositionService previousPositionService;
 
     @Autowired
@@ -50,28 +50,39 @@ public class TableStoryService {
         this.properties = properties;
         this.previousPositionService = previousPositionService;
 
-        currentTableIndex = 0;
+        currentTableIndex = -1;
 
         tableStory = new ArrayList<>();
     }
 
+    private PoolTable current(int backwardStep){
+        if (currentTableIndex >= backwardStep)
+            return tableStory.get((currentTableIndex - backwardStep) % LIMIT_OF_TABLES);
+
+        return new PoolTable();
+    }
+
     private PoolTable current(){
-        return tableStory.get(currentTableIndex % LIMIT_OF_TABLES);
+        if (currentTableIndex >= 0)
+            return tableStory.get(currentTableIndex % LIMIT_OF_TABLES);
+
+        return new PoolTable();
     }
 
-    private void clearOldTableImage(){
-        if (tableStory.size() >= 1){
-            current().setTableImage(null);
-        }
-    }
 
-    public TableStoryService next(){
-        clearOldTableImage();
-        tableStory.add(new PoolTable());
-        currentTableIndex++;
-
+    public TableStoryService next() throws CameraServiceException {
         outputImage = cameraService.getSnap();
-        detector.setSourceImg(outputImage.clone());
+
+        if (outputImage == null || outputImage.empty())
+            throw new CameraServiceException("TableStoryService::next(): Cannot operate into an empty source image.");
+        else
+            detector.setSourceImg(outputImage.clone());
+
+
+        if (++currentTableIndex > 1)
+            current(2).setTableImage(null);
+        tableStory.add(new PoolTable());
+
 
         return this;
     }
@@ -81,11 +92,11 @@ public class TableStoryService {
             Line cue = detector.findStickLine();
             current().setCue(cue);
         } catch (MissingCueLineException e) {
-            LOGGER.info("Cue not founded.");
+            LOGGER.info("Cue not founded.", e);
+        } catch (LineServiceException e) {
+            LOGGER.warn("Missing line when try find cue.", e);
         } catch (DetectorException e) {
             LOGGER.error("Error while trying find cue.", e);
-        } catch (LineServiceException e) {
-            LOGGER.warn("Missing line when try find cue.");
         }
         return this;
     }
@@ -114,11 +125,14 @@ public class TableStoryService {
     }
 
     public TableStoryService showPrevious(){
-        saveToPrevService();
 
         if (properties.isShowPreviousPosition()) {
-            if (previousPositionService.getPreviousPosition() != null) {
+            saveToPrevService();
+
+            try {
                 drawer.drawBalls(outputImage, previousPositionService.getPreviousPosition(), new Scalar(255, 0, 255));
+            } catch (DrawerException e) {
+                LOGGER.warn("Could not draw previous balls possition. Nested: " + e.getMessage());
             }
         }
 
@@ -133,14 +147,17 @@ public class TableStoryService {
     }
 
     private TableStoryService makeView(){
-        drawer.drawLine(outputImage, tableStory.get(currentTableIndex).getCue());
-        drawer.draw(outputImage, tableStory.get(currentTableIndex).getPredictions(), tableStory.get(currentTableIndex).getBalls());
+        try {
+            drawer.draw(outputImage, current().getCue(), current().getBalls(), current().getPredictions());
 
-        MatOfByte matOfByte = new MatOfByte();
-        Imgcodecs.imencode(".jpg", outputImage, matOfByte);
-        current().setTableImage(matOfByte.toArray());
-
-        return this;
+            MatOfByte matOfByte = new MatOfByte();
+            Imgcodecs.imencode(".jpg", outputImage, matOfByte);
+            current().setTableImage(matOfByte.toArray());
+        } catch (DrawerException e) {
+            LOGGER.error("Cannot prepere the view image.", e);
+        } finally {
+            return this;
+        }
     }
 
 }

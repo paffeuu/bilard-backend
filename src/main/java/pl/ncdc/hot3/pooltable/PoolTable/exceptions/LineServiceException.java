@@ -1,6 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.exceptions;
 
-public class LineServiceException extends Exception {
+public class LineServiceException extends DetectorException {
 
     public LineServiceException() {
     }
