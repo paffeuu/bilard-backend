@@ -3,7 +3,6 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 import org.opencv.core.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.ExtendLineException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
@@ -360,13 +359,30 @@ public class LineService {
         double c = (Sx*Sx * B*B) + (C*C) + (2 * B * Sy * C) + (Sy*Sy * B*B) - (B*B * d*d);
 
         double delta = b*b - 4 * a * c;
+
+        if (0 > delta) {
+            return null;
+        }
+
         double x1 = (-b - Math.sqrt(delta)) / (2 * a);
         double x2 = (-b + Math.sqrt(delta)) / (2 * a);
-        double y1 = (-C - A * x1) / (-B);
-        double y2 = (-C - A * x2) / (-B);
+        double y1 = (-C - A * x1) / B;
+        double y2 = (-C - A * x2) / B;
+
+        double distance1 = calculateDistanceBetweenPoints(new Point(x1, y1), line.getEnd());
+        double distance2 = calculateDistanceBetweenPoints(new Point(x2, y2), line.getEnd());
+        Point point = new Point();
+
+        if (distance1 >= distance2) {
+            point.x = x1;
+            point.y = y1;
+        } else {
+            point.x = x2;
+            point.y = y2;
+        }
 
         return new Line(
-                new Point(x1, y1),
+                point,
                 new Point(
                         ball.getX(),
                         ball.getY()

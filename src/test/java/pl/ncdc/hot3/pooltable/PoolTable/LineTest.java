@@ -43,7 +43,7 @@ public class LineTest {
     public void directedLine() throws LineServiceException, DetectorException, CueServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        String sourceImagePath = BASE_PATH + "jacek9.png";
+        String sourceImagePath = BASE_PATH + "jacek7.png";
         Mat sourceImage = Imgcodecs.imread(sourceImagePath, Imgcodecs.IMREAD_COLOR);
 
         detector.setSourceImg(sourceImage.clone());
@@ -100,5 +100,54 @@ public class LineTest {
 
         Ball stoped = lineService.stopLineAtFirstBall(line, balls);
         System.out.print("asd");
+    }
+
+    @Test
+    public void ballColision() throws LineServiceException, DetectorException, CueServiceException {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+        String sourceImagePath = BASE_PATH + "jacek6.png";
+        Mat sourceImage = Imgcodecs.imread(sourceImagePath, Imgcodecs.IMREAD_COLOR);
+
+        detector.setSourceImg(sourceImage.clone());
+
+        Line asd = null;
+        try {
+            asd = detector.findStickLine();
+
+        } catch (MissingCueLineException e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+
+        Imgproc.line(sourceImage, asd.getBegin(), asd.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
+        Imgproc.circle(sourceImage, asd.getBegin(), 50, new Scalar(255, 0, 0), 3);
+        Imgproc.circle(sourceImage, asd.getEnd(), 50, new Scalar(0, 255, 255), 3);
+
+        ArrayList<Ball> balls = detector.createListOfBalls();
+
+        Line prevLine = asd;
+        for (int i = 0; i < properties.getPredictionDepth(); i++){
+
+            Line prediction = cueService.predictTrajectoryAfterBump(prevLine);
+            Ball colision = lineService.stopLineAtFirstBall(prediction, balls);
+
+            if (null != colision) {
+//                Imgproc.circle(sourceImage, new Point(colision.getX(), colision.getY()), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
+//                Imgproc.circle(sourceImage, c[0], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
+//                Imgproc.circle(sourceImage, c[1], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
+                Line celownik = lineService.findBallColisionLine(prediction, colision);
+                celownik = lineService.getExtendedStickLineForOneSide(celownik);
+                Imgproc.line(sourceImage, celownik.getBegin(), celownik.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
+            }
+
+            Imgproc.line(sourceImage, prediction.getBegin(), prediction.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
+            Imgproc.circle(sourceImage, prediction.getBegin(), 30, new Scalar(0, 111, 255), 3);
+            Imgproc.circle(sourceImage, prediction.getEnd(), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
+
+            prevLine = prediction;
+        }
+
+        Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
     }
 }
