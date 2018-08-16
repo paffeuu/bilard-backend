@@ -27,7 +27,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 @Service
 public class Detector {
 
-	private final String EMPTY_TABLE_IMG = "src/main/resources/emptyTable.png";
+	private final String EMPTY_TABLE_IMG = System.getProperty("user.dir")  + "\\resource\\emptyTable.png";
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
@@ -54,7 +54,7 @@ public class Detector {
 	public Detector() {
 		this.properties = properties;
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
+		System.out.println(EMPTY_TABLE_IMG);
 		this.outputImg = new Mat();
 		this.cannyImg = new Mat();
 

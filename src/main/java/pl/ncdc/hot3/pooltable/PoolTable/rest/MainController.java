@@ -1,7 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
 import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
@@ -13,13 +12,11 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -51,7 +48,7 @@ public class MainController {
 
         if (OpenCVBufforFlushService.getCounter() % 4 == 0) {
             previousPositionService.addPosition(table.getBalls());
-            previousPositionService.findLastStillPosition();
+            previousPositionService.updatePreviousBallPosition();
         }
 
         List<Line> cueAndPredictions = cueService.getStickWithPredictions(4);
