@@ -149,7 +149,7 @@ public class TableStoryService {
         try {
             if (OpenCVBufforFlushService.getCounter() % 4 == 0) {
                 previousPositionService.addPosition(current().getBalls());
-                previousPositionService.findLastStillPosition();
+                previousPositionService.updatePreviousBallPosition();
             }
         } catch (NullPointerException e) {
             LOGGER.warn("Can not save previous position", e.getMessage());

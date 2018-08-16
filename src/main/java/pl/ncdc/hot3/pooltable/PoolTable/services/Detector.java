@@ -1,5 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,8 +26,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 @Service
 public class Detector {
 
-	private final String EMPTY_TABLE_IMG = System.getProperty("user.dir")  + "\\resource\\emptyTable.png";
-
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
 	private Mat sourceImg;
@@ -45,20 +45,23 @@ public class Detector {
 	public Detector(
 			CueService cueService,
 			Properties properties
-	) {
+	) throws DetectorException {
 		this.properties = properties;
 		this.cueService = cueService;
 
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		System.out.println(EMPTY_TABLE_IMG);
 		this.outputImg = new Mat();
 		this.cannyImg = new Mat();
 
 		try {
-			sourceImg = Imgcodecs.imread(EMPTY_TABLE_IMG, Imgcodecs.IMREAD_COLOR);
+			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
 			cannyImg = getEdges(sourceImg);
 
-		} catch (DetectorException e) {
+		}
+		catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		catch (DetectorException e) {
 			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
 		}
 	}

@@ -1,5 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +20,8 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.*;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
+
+import java.io.FileNotFoundException;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -83,11 +86,12 @@ public class TableStoryServiceTests {
     }
 
     @Test
-    public void shouldReturnEmptyTableForEmptyTablePhoto() throws CameraServiceException {
+    public void shouldReturnEmptyTableForEmptyTablePhoto() throws CameraServiceException, FileNotFoundException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-        Mat source = Imgcodecs.imread(properties.BASE_PATH + "emptyTable.png", CvType.CV_64F);
-
+        Mat source = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
+        System.out.println("========================================================");
+        System.out.println(properties.getFullPath("emptyTable.png"));
+        System.out.println("========================================================");
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(source);
 
@@ -108,7 +112,7 @@ public class TableStoryServiceTests {
         Imgcodecs.imwrite(properties.BASE_PATH + "TableStoryService_empty_Test.png", output);
 
         Assert.assertNotNull(table);
-        Assert.assertFalse(table.getBalls().isEmpty());
+        Assert.assertTrue(table.getBalls().isEmpty());
         Assert.assertNotNull(table.getTableImage());
     }
 

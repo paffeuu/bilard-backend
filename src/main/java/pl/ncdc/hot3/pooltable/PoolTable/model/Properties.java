@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
+import java.io.FileNotFoundException;
+
 /**
  * Properties class
  */
@@ -13,7 +15,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUn
 @Component
 public class Properties {
 
-    public final static String BASE_PATH = "src/main/resources/";
+    public final String BASE_PATH = this.getClass().getClassLoader().getResource("emptyTable.png").toString();
 
     // Bands
     private double tableBandLeft;
@@ -56,7 +58,7 @@ public class Properties {
         this.tableBandRight = 1948;
         this.tableBandTop = 350;
         this.tableBandBottom = 1236;
-        this.predictionDepth = 10;
+        this.predictionDepth = 3;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.2;
@@ -404,5 +406,10 @@ public class Properties {
 
     public void setProperties(Properties properties){
         System.out.println(Properties.class);
+    }
+
+    public String getFullPath(String filename) throws FileNotFoundException {
+            String path = this.getClass().getClassLoader().getResource(filename).toExternalForm();
+            return path.substring(path.indexOf(':')+2);
     }
 }
