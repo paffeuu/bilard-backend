@@ -58,7 +58,8 @@ public class TableStoryServiceTests {
     public void shouldReturnPoolTableModelWithAllDetailsAndSaveNewImage() throws CameraServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat source = Imgcodecs.imread(properties.TESTS_DIR_PATH + "jacek3.png", CvType.CV_64F);
+        Mat source = Imgcodecs.imread(properties.TESTS_DIR_PATH + "xxxx.png", CvType.CV_64F);
+
 
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(source);
