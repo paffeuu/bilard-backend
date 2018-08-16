@@ -152,7 +152,7 @@ public class TableStoryService {
                 previousPositionService.updatePreviousBallPosition();
             }
         } catch (NullPointerException e) {
-            LOGGER.warn("Can not save previous position", e.getMessage());
+            LOGGER.warn("Can not save previous position. Nested: ", e.getMessage());
         }
     }
 
