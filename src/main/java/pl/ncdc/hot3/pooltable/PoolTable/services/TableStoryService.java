@@ -93,7 +93,7 @@ public class TableStoryService {
             Line cue = detector.findStickLine();
             current().setCue(cue);
         } catch (MissingCueLineException e) {
-            LOGGER.info("Cue not founded.");
+            //LOGGER.info("Cue not founded.");
         } catch (LineServiceException e) {
             LOGGER.warn("Missing line when try find cue.", e);
         } catch (DetectorException e) {
@@ -107,7 +107,7 @@ public class TableStoryService {
         try {
             current().setPredictions(detector.getPredictions());
         } catch (CueServiceException e) {
-            LOGGER.warn("Predictions canceled.", e);
+            //LOGGER.warn("Predictions canceled.", e);
         } catch (LineServiceException e) {
             LOGGER.error("Cannot extend predicted line.", e);
         }

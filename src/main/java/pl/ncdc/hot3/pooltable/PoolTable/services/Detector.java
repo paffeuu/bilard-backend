@@ -53,17 +53,27 @@ public class Detector {
 		this.outputImg = new Mat();
 		this.cannyImg = new Mat();
 
+        String emptyTablePath = "";
 		try {
-			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
-			cannyImg = getEdges(sourceImg);
+		    emptyTablePath = properties.getFullPath("emptyTable.png");
+            System.out.println("==================================================================");
+            System.out.println(emptyTablePath);
+            sourceImg = Imgcodecs.imread(emptyTablePath, Imgcodecs.IMREAD_COLOR);
 
+            System.out.println("Source " + sourceImg.size());
+            cannyImg = getEdges(sourceImg);
+
+            System.out.println("canny" + cannyImg.size());
+            System.out.println("==================================================================");
 		}
 		catch (FileNotFoundException e) {
-			e.printStackTrace();
+            LOGGER.error("Empty table for callibrate not founded.");
 		}
 		catch (DetectorException e) {
 			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
-		}
+		} finally {
+        }
+
 	}
 
 	public Mat getCannyImg() {
@@ -172,6 +182,7 @@ public class Detector {
 
 		Mat substractedImg = new Mat();
 		Mat linesP = getEdges(sourceImg);
+
 
 		Core.subtract(linesP, cannyImg, substractedImg);
 
