@@ -87,7 +87,7 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	public Mat detectBalls() {
+	public Mat detectBalls() throws BallsDetectorException {
 		Mat image = sourceImg.clone();
 
 		// blur image
@@ -108,7 +108,7 @@ public class Detector {
 		return filterCircles(circles);
 	}
 
-	private Mat filterCircles(Mat allCircles) {
+	private Mat filterCircles(Mat allCircles) throws BallsDetectorException {
 
 		Mat filteredCircles = new Mat(1, 1, CvType.CV_64FC3); // output Mat
 		Mat newMat = new Mat(1, 1, CvType.CV_64FC3); // merged new column
@@ -121,6 +121,10 @@ public class Detector {
 
 		// write circles coordinates into an array
 		double[] data = convertMatToArray(allCircles);
+
+		if (null == data) {
+			throw new BallsDetectorException("Error while trying filter circles");
+		}
 
 		// filter circles
 		int j = 0;
@@ -215,7 +219,7 @@ public class Detector {
 			}
 
 		} catch (MissingCueLineException e) {
-			LOGGER.warn("Could not find stick, predictions canceled.", e);
+			LOGGER.warn("Could not find stick, predictions canceled.");
 		} finally {
 			if (predictions.size() > 1)
 				predictions.subList(1, predictions.size() -1);
@@ -224,7 +228,7 @@ public class Detector {
 		}
 	}
 
-	public ArrayList<Ball> createListOfBalls() {
+	public ArrayList<Ball> createListOfBalls() throws BallsDetectorException {
 		int x,y,r;
 		Mat circles = detectBalls();
 		ArrayList<Ball> balls = new ArrayList<>();
@@ -251,11 +255,18 @@ public class Detector {
 //
 
 	public double[] convertMatToArray(Mat mat) {
-		int size = (int) mat.total() * mat.channels();
-		double[] data = new double[size];
-		mat.get(0, 0, data);
+		double[] data = null;
+		try {
+			int size = (int) mat.total() * mat.channels();
+			data = new double[size];
+			mat.get(0, 0, data);
 
-		return data;
+			return null;
+		} catch (Exception e) {
+			LOGGER.info("Can not convert mat to array. Returned null");
+		} finally {
+			return data;
+		}
 	}
 
 }

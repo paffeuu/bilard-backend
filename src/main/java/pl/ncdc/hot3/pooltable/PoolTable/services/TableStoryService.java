@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
@@ -21,7 +22,7 @@ import java.util.List;
 @Service
 public class TableStoryService {
 
-    final static int LIMIT_OF_TABLES = 512;
+    final static int LIMIT_OF_TABLES = 32;
     final static int LIMIT_OF_VIEWS = 6;
     final static Logger LOGGER = LoggerFactory.getLogger(TableStoryService.class);
 
@@ -92,7 +93,7 @@ public class TableStoryService {
             Line cue = detector.findStickLine();
             current().setCue(cue);
         } catch (MissingCueLineException e) {
-            LOGGER.info("Cue not founded.", e);
+            LOGGER.info("Cue not founded.");
         } catch (LineServiceException e) {
             LOGGER.warn("Missing line when try find cue.", e);
         } catch (DetectorException e) {
@@ -115,7 +116,12 @@ public class TableStoryService {
     }
 
     public TableStoryService findBalls() {
-        current().setBalls(detector.createListOfBalls());
+        try {
+            ArrayList<Ball> q = detector.createListOfBalls();
+            current().setBalls(q);
+        } catch (BallsDetectorException e) {
+            LOGGER.info("Can not find balls");
+        }
         return this;
     }
 
@@ -140,9 +146,13 @@ public class TableStoryService {
     }
 
     private void saveToPrevService(){
-        if (OpenCVBufforFlushService.getCounter() % 4 == 0) {
-            previousPositionService.addPosition(current().getBalls());
-            previousPositionService.findLastStillPosition();
+        try {
+            if (OpenCVBufforFlushService.getCounter() % 4 == 0) {
+                previousPositionService.addPosition(current().getBalls());
+                previousPositionService.findLastStillPosition();
+            }
+        } catch (NullPointerException e) {
+            LOGGER.warn("Can not save previous position", e.getMessage());
         }
     }
 

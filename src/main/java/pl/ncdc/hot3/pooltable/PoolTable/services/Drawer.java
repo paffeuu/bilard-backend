@@ -19,7 +19,7 @@ public class Drawer {
 	public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) throws DrawerException {
 		if (img == null)
 			throw new DrawerException("Cannot draw on an empty image source.");
-		else if (balls.isEmpty())
+		else if (null == balls || balls.isEmpty())
 			return;
 
 		double x, y;
