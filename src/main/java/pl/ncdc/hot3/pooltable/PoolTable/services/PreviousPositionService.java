@@ -2,6 +2,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,14 +12,16 @@ import java.util.List;
 @Service
 public class PreviousPositionService {
     private ArrayList<ArrayList<Ball>> positionsHistory;
-    private ArrayList<Ball> previousPosition = null;
-    private ArrayList<Ball> currentPosition;
+    private ArrayList<Ball> previousPosition;
+    private ArrayList<Ball> playerSavedPosition;
+    private Line playerSavedStick;
+    private boolean showPrevious = true;
 
     public PreviousPositionService() {
         this.positionsHistory = new ArrayList<ArrayList<Ball>>();
     }
 
-    private void updatePreviousPosition(Collection<Ball> position) {
+    private void updatePreviousBallPosition(Collection<Ball> position) {
         this.previousPosition.clear();
         this.previousPosition.addAll(position);
     }
@@ -31,7 +34,7 @@ public class PreviousPositionService {
 
     }
 
-    public void findLastStillPosition() {
+    public void updatePreviousBallPosition() {
         ArrayList<Ball> currentPosition = this.positionsHistory.get(this.positionsHistory.size()-1);
         if (this.previousPosition == null) {
             this.previousPosition = this.positionsHistory.get(this.positionsHistory.size()-1);
@@ -57,6 +60,33 @@ public class PreviousPositionService {
     }
 
     public ArrayList<Ball> getPreviousPosition() {
+        if (this.playerSavedPosition != null) {
+            return this.playerSavedPosition;
+        }
         return this.previousPosition;
+    }
+
+    public boolean isShowPrevious() {
+        return showPrevious;
+    }
+
+    public void setPlayerSavedPosition(ArrayList<Ball> playerPosition) {
+        this.playerSavedPosition = playerPosition;
+    }
+
+    public void clearPlayerSavedPosition() {
+        this.playerSavedPosition = null;
+    }
+
+    public void setPlayerSavedStick(Line stick) {
+        this.playerSavedStick = stick;
+    }
+
+    public void clearPlayerSavedStick() {
+        this.playerSavedStick = null;
+    }
+
+    public void setShowPrevious(boolean showPrevious) {
+        this.showPrevious = showPrevious;
     }
 }
