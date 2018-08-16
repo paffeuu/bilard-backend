@@ -101,10 +101,10 @@ public class LineService {
         double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
         double X = (stickLine.getBegin().x - stickLine.getEnd().x);
 
-        double a = Y/X;
-        double b = stickLine.getBegin().y - (a*stickLine.getBegin().x);
+        double a = Y / X;
+        double b = stickLine.getBegin().y - (a * stickLine.getBegin().x);
 
-        if (horizontalMove >= 0 && verticalMove <= 0){
+        if (horizontalMove >= 0 && verticalMove <= 0) {
 
             crosscutPoint1 = getCrosscutPointForLines(stickLine, topBand);
             crosscutPoint2 = getCrosscutPointForLines(stickLine, rightBand);
@@ -149,7 +149,7 @@ public class LineService {
 
             crosscutPoint1 = maxLeft;
             crosscutPoint2 = maxBot;
- //           System.out.println("2===========================");
+            //           System.out.println("2===========================");
 //            System.out.println("lineService::getExtendedStickLineForOneSide()");
 //            System.out.println(stickLine.toString());
 //            System.out.println(crosscutPoint1);
@@ -173,7 +173,7 @@ public class LineService {
             Point maxLeft = new Point();
             maxLeft.x = properties.getTableBandLeft();
             maxLeft.y = properties.getTableBandLeft() * a + b;
-  //          System.out.println("33===========================");
+            //          System.out.println("33===========================");
 
             crosscutPoint1 = maxLeft;
             crosscutPoint2 = maxTop;
@@ -190,7 +190,7 @@ public class LineService {
             Point maxRight = new Point();
             maxRight.x = properties.getTableBandRight();
             maxRight.y = properties.getTableBandRight() * a + b;
-  //          System.out.println("444===========================");
+            //          System.out.println("444===========================");
 
             crosscutPoint1 = maxRight;
             crosscutPoint2 = maxBot;
@@ -209,8 +209,7 @@ public class LineService {
 
                 throw new ExtendLineException("Error while trying make extended line for one side. Both crosscut points out of the bands");
             }
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             throw new ExtendLineException("Make extended line for one side error. Points still null value.");
         }
 
@@ -223,8 +222,8 @@ public class LineService {
         double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
         double X = (stickLine.getBegin().x - stickLine.getEnd().x);
 
-        double a = Y/X;
-        double b = stickLine.getBegin().y - (a*stickLine.getBegin().x);
+        double a = Y / X;
+        double b = stickLine.getBegin().y - (a * stickLine.getBegin().x);
 
         Point maxTop = new Point();
         maxTop.y = properties.getTableBandTop();
@@ -242,19 +241,19 @@ public class LineService {
         maxRight.x = properties.getTableBandRight();
         maxRight.y = properties.getTableBandRight() * a + b;
 
-        if (properties.isPointInsideBand(maxTop)){
+        if (properties.isPointInsideBand(maxTop)) {
             extendedLine.setPoint(maxTop);
         }
 
-        if (properties.isPointInsideBand(maxLeft)){
+        if (properties.isPointInsideBand(maxLeft)) {
             extendedLine.setPoint(maxLeft);
         }
 
-        if (properties.isPointInsideBand(maxBot)){
+        if (properties.isPointInsideBand(maxBot)) {
             extendedLine.setPoint(maxBot);
         }
 
-        if (properties.isPointInsideBand(maxRight)){
+        if (properties.isPointInsideBand(maxRight)) {
             extendedLine.setPoint(maxRight);
         }
 
@@ -272,7 +271,7 @@ public class LineService {
     }
 
 
-    private void safeMoveLine(Line origin, double horizontalMove, double verticalMove){
+    private void safeMoveLine(Line origin, double horizontalMove, double verticalMove) {
         Point newBegin = origin.getBegin();
 
         if (horizontalMove == 0) {
@@ -289,10 +288,10 @@ public class LineService {
     private Point getCrosscutPointForLines(Line line1, Line line2) throws LineServiceException {
 
         double a_Line1 = calcCoordinate_A(line1);
-        double b_Line1 = line1.getBegin().y - (a_Line1*line1.getBegin().x);
+        double b_Line1 = line1.getBegin().y - (a_Line1 * line1.getBegin().x);
 
         double a_Line2 = calcCoordinate_A(line2);
-        double b_Line2 = line2.getBegin().y - (a_Line2*line2.getBegin().x);
+        double b_Line2 = line2.getBegin().y - (a_Line2 * line2.getBegin().x);
 
         if (a_Line1 == a_Line2) {
             throw new LineServiceException("Error while trying find cross point for 2 lines. The lines are parallel.");
@@ -304,24 +303,30 @@ public class LineService {
         return new Point(X, Y);
     }
 
-    public static double calcCoordinate_A(Line line){
+    public static double calcCoordinate_A(Line line) {
 
-        if (line.getBegin().x == line.getEnd().x){
+        if (line.getBegin().x == line.getEnd().x) {
             line.setEnd(new Point(line.getEnd().x + 3, line.getEnd().y));
         }
 
         double Y = (line.getBegin().y - line.getEnd().y);
         double X = (line.getBegin().x - line.getEnd().x);
 
-        return (Y/X);
+        return (Y / X);
     }
 
-    public Ball stopLineAtFirstBall(Line line, ArrayList<Ball> balls) {
+    public Ball stopLineAtFirstBall(Line line, ArrayList<Ball> balls, boolean isCueLine) {
+        double counter = 0;
+
         for (Ball ball : balls) {
             double distance = calculateDistanceBetwenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 
             if (distance <= ball.getRadius() * 2) {
-                return ball;
+                ++counter;
+
+                if (!isCueLine || 2 == counter) {
+                    return ball;
+                }
             }
         }
 
@@ -342,7 +347,7 @@ public class LineService {
 
         // http://matematyka.pisz.pl/strona/1249.html
         return Math.abs(cordinates[0] * point.x + cordinates[1] * point.y + cordinates[2]) /
-                Math.sqrt(Math.pow(cordinates[0], 2) + Math.pow(cordinates[1] , 2));
+                Math.sqrt(Math.pow(cordinates[0], 2) + Math.pow(cordinates[1], 2));
     }
 
     public Line findBallColisionLine(Line line, Ball ball) {
@@ -354,11 +359,11 @@ public class LineService {
         double Sy = ball.getY();
         double d = ball.getRadius() * 2;
 
-        double a = (B*B) + (A*A);
-        double b = (-2 * Sx * B*B) + (2 * C * A) + (2 * B * Sy * A);
-        double c = (Sx*Sx * B*B) + (C*C) + (2 * B * Sy * C) + (Sy*Sy * B*B) - (B*B * d*d);
+        double a = (B * B) + (A * A);
+        double b = (-2 * Sx * B * B) + (2 * C * A) + (2 * B * Sy * A);
+        double c = (Sx * Sx * B * B) + (C * C) + (2 * B * Sy * C) + (Sy * Sy * B * B) - (B * B * d * d);
 
-        double delta = b*b - 4 * a * c;
+        double delta = b * b - 4 * a * c;
 
         if (0 > delta) {
             return null;
