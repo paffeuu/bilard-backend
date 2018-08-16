@@ -3,6 +3,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CameraLoadingException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CameraServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
@@ -20,9 +21,12 @@ public class CameraService {
     }
 
     public Mat getSnap() throws CameraServiceException {
+        if (OpenCVBufforFlushService.getCounter() < 10)
+            throw new CameraLoadingException("Camera view is not available yet.");
+
         Mat source = OpenCVBufforFlushService.getLastFrame();
         if (source == null || source.empty())
-            throw new CameraServiceException("The camera view is not available.");
+            throw new CameraServiceException("The camera view is not available or broken.");
 
         Mat undistorted = undistorterService.undistort(source);
         if (undistorted == null || undistorted.empty())
