@@ -33,7 +33,7 @@ public class OpenCVBufforFlushService {
                 if (!newFrame.empty()){
                     counter++;
                     framesArray[counter%10] = newFrame;
-                    //System.out.println("przeczytal klatka: "+ counter);
+                   // System.out.println("przeczytal klatka: "+ counter);
                 }else {
                     capture = new VideoCapture();
                     System.gc();
@@ -54,5 +54,8 @@ public class OpenCVBufforFlushService {
 
     public static void setIsNotNeeded(boolean b) {
         isNotNeeded = b;
+    }
+    public static int getCounter() {
+        return counter;
     }
 }

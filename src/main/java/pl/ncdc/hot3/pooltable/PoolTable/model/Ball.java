@@ -7,6 +7,15 @@ public class Ball {
     private int id;
     private double x;
     private double y;
+
+    public double getRadius() {
+        return radius;
+    }
+
+    public void setRadius(double radius) {
+        this.radius = radius;
+    }
+
     private double radius;
 
     /**
@@ -20,6 +29,7 @@ public class Ball {
         this.id = id;
         this.x = x;
         this.y = y;
+        this.radius = radius;
     }
 
     /**
@@ -74,5 +84,19 @@ public class Ball {
      */
     public void setY(double y) {
         this.y = y;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Ball)) {
+            return false;
+        }
+
+        Ball b = (Ball) o;
+
+        double xDelta = this.x - b.getX();
+        double yDelta = this.y - b.getY();
+
+        return (xDelta <= 15.0 && yDelta <= 15.0);
     }
 }

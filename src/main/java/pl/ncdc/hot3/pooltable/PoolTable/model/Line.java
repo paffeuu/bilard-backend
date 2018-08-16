@@ -2,18 +2,20 @@ package pl.ncdc.hot3.pooltable.PoolTable.model;
 
 
 import org.opencv.core.Point;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LinesDetectorException;
 
 public class Line {
 
     private Point begin;
     private Point end;
 
-    public Line(){};
+    public Line() {
+    }
 
-    public Line(Point start, Point end){
+    public Line(Point start, Point end) {
         this.begin = start;
         this.end = end;
-    };
+    }
 
     public Point getBegin() {
         return begin;
@@ -31,11 +33,12 @@ public class Line {
         this.end = end;
     }
 
-    public void setPoint(Point point){
-        if (this.begin != null)
+    public void setPoint(Point point) {
+        if (this.begin != null) {
             this.end = point;
-        else
+        } else {
             this.begin = point;
+        }
     }
 
     @Override

@@ -1,8 +1,14 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
+import org.apache.catalina.mapper.Mapper;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CameraServiceException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Drawer;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.*;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
@@ -13,79 +19,48 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/pooltable")
 public class MainController {
+
     @Autowired
-    private SnapshotGetterService snapshotGetterService;
+    private Properties properties;
+
     @Autowired
-    private ImageUndistorterService undistorter;
-    @Autowired
-    private Drawer drawer;
-    @Autowired
-    private Detector detector;
+    private TableStoryService tableStoryService;
 
     @CrossOrigin(origins = "http://localhost:4200")
+    @GetMapping("/get-pool-table")
+    public ResponseEntity<PoolTable> test() throws CameraServiceException {
 
-    @RequestMapping(value = "/get-snapshot", method = RequestMethod.GET)
-    public ResponseEntity<PoolTable> getPoolTableImage() throws DetectorException {
-        PoolTable table = new PoolTable();
+        PoolTable table = tableStoryService
+                .next()
+                .findBalls()
+                .findCue()
+                .makePredictions()
+                .showPrevious()
+                .build();
 
-        if (!snapshotGetterService.isOpening()) {
-            Mat in = snapshotGetterService.getLiveSnapshot();
-            if (in != null && !in.empty()) {
-                MatOfByte matOfByte = new MatOfByte();
-                try {
-                    Mat result = undistorter.undistort(in);
-                    detector.setSourceImg(result.clone());
-                    table.setBalls(detector.createListOfBalls(result.clone()));
-                    table.setCue(detector.findStickLine());
-                    Line line = detector.getExtendedStickLine(table.getCue());
-                    drawer.draw(result, line);
-                    Imgcodecs.imencode(".jpg", result, matOfByte);
-                    table.setTableImage(matOfByte.toArray());
-                    return ResponseEntity.ok(table);
-
-                } catch (Exception e) {
-                    System.out.println("error");
-                    return ResponseEntity.ok(table);
-                }
-            } else {
-                snapshotGetterService.reset();
-                System.out.println("in empty or null");
-                return ResponseEntity.ok(table);
-            }
-        } else {
-            System.out.println("is opening");
-            return ResponseEntity.ok(table);
-        }
-    }
-
-    @CrossOrigin(origins = "http://localhost:4200")
-    @RequestMapping(value = "/get-pool-table", method = RequestMethod.GET)
-    public ResponseEntity<PoolTable> test() {
-        PoolTable table = new PoolTable();
-        MatOfByte matOfByte = new MatOfByte();
-        Mat result = undistorter.undistort(OpenCVBufforFlushService.getLastFrame());
-        try {
-            detector.setSourceImg(result.clone());
-            table.setBalls(detector.createListOfBalls(result.clone()));
-            table.setCue(detector.findStickLine());
-            Line line = detector.getExtendedStickLine(table.getCue());
-            drawer.draw(result, line);
-            Imgcodecs.imencode(".jpg", result, matOfByte);
-            table.setTableImage(matOfByte.toArray());
-            return ResponseEntity.ok(table);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("wyslane");
-        //OpenCVBufforFlushService.setIsNotNeeded(true);
         return ResponseEntity.ok(table);
+
     }
+
+    @PutMapping("/get-pool-table")
+    public ResponseEntity<Properties> setProperties(@RequestParam Properties properties){
+//        Mapper mapper = new DozerBeanMapper();
+        return ResponseEntity.ok(this.properties);
+    }
+
+
+    @RequestMapping(value = "/set-visible", method = RequestMethod.GET)
+    public void setShowPrevious() {
+        properties.setShowPreviousPosition(true);
+    }
+
 }

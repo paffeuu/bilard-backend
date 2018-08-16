@@ -1,77 +1,64 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DrawerException;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Service
 public class Drawer {
 
-    @Autowired
-    private Detector detector;
+	public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) throws DrawerException {
+		if (img == null)
+			throw new DrawerException("Cannot draw on an empty image source.");
+		else if (null == balls || balls.isEmpty())
+			return;
 
-    public Mat drawBalls(Mat img) {
-        Mat detectedBalls = detector.detectBalls(img.clone());
+		double x, y;
+		int r;
+		for (int i = 0; i < balls.size(); i++) {
+			// read ball coordinates
+			Ball ball = balls.get(i);
 
-        int x,y,r;
-        int leftBand = 175;
-        int rightBand = img.width() - 105;
-        int topBand = 350;
-        int bottomBand = img.height() - 300;
+			x = ball.getX();
+			y = ball.getY();
+			r = (int) ball.getRadius();
 
-        for (int i = 0; i < detectedBalls.cols(); i++) {
-            // read ball coordinates
-            double[] data = detectedBalls.get(0, i);
+			Point center = new Point(x, y);
 
-            x = (int) data[0];
-            y = (int) data[1];
-            r = (int) data[2];
-            if((x > leftBand && x < rightBand) && (y > topBand && y < bottomBand)) {
-                Point center = new Point(x, y);
+			// draw circle center
+			Imgproc.circle(img, center, 3, new Scalar(0, 255, 0), 3);
 
-                // draw circle center
-                Imgproc.circle(img, center, 3, new Scalar(0, 255, 0), 3);
+			// draw circle outline
+			Imgproc.circle(img, center, r, scalar, 5);
 
-                // draw circle outline
-                Imgproc.circle(img, center, r, new Scalar(0, 0, 255), 5);
-            }
+		}
+	}
+
+	private void drawLine(Mat img, Line line) {
+		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), 4);
+	}
+
+	public void draw(Mat img, Line cue, ArrayList<Ball> listOfBalls, List<Line> predictions) throws DrawerException {
+		if (img == null)
+			throw new DrawerException("Cannot draw line to null image.");
+
+		if (cue != null)
+			drawLine(img, cue);
+
+		if (!listOfBalls.isEmpty())
+			drawBalls(img, listOfBalls,  new Scalar(0, 0, 255));
+
+		for (Line line : predictions) {
+            drawLine(img, line);
         }
-
-        return img;
-    }
-
-    public Mat drawLine(Mat img, pl.ncdc.hot3.pooltable.PoolTable.model.Line line) {
-        Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155,155,155), 4);
-        return img;
-    }
-
-    public Mat draw(Mat img, Line line) {
-        Mat balls = drawBalls(img);
-        Mat extendedCue = drawLine(img, line);
-        Mat all = new Mat();
-        Core.add(balls, extendedCue, all);
-        return all;
-    }
-
-    public Mat drawBandLines(Mat sourceImg){
-
-
-
-//        Point leftTopCorner = new Point(leftBand, topBand);
-//        Point leftBotCorner = new Point(leftBand, bottomBand);
-//        Point rightTopCorner = new Point(rightBand, topBand);
-//        Point rightBotCorner = new Point(rightBand, bottomBand);
-//
-//        Imgproc.line(sourceImg, leftTopCorner, leftBotCorner, new Scalar(0, 255, 0), 5);
-//        Imgproc.line(sourceImg, leftBotCorner, rightBotCorner, new Scalar(0, 255, 0), 5);
-//        Imgproc.line(sourceImg, rightBotCorner, rightTopCorner, new Scalar(0, 255, 0), 5);
-//        Imgproc.line(sourceImg, rightTopCorner, leftTopCorner, new Scalar(0, 255, 0), 5);
-//
-        return sourceImg;
-    }
+	}
 }
