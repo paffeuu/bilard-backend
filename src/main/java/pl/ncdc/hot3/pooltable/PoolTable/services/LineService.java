@@ -321,7 +321,7 @@ public class LineService {
         for (Ball ball : balls) {
             double distance = calculateDistanceBetwenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 
-            if (distance <= properties.getBallMaxRadius()) {
+            if (distance <= ball.getRadius() * 2) {
                 return ball;
             }
         }
@@ -344,5 +344,33 @@ public class LineService {
         // http://matematyka.pisz.pl/strona/1249.html
         return Math.abs(cordinates[0] * point.x + cordinates[1] * point.y + cordinates[2]) /
                 Math.sqrt(Math.pow(cordinates[0], 2) + Math.pow(cordinates[1] , 2));
+    }
+
+    public Line findBallColisionLine(Line line, Ball ball) {
+        double[] cordinates = calcAllCordinate(line);
+        double A = cordinates[0];
+        double B = cordinates[1];
+        double C = cordinates[2];
+        double Sx = ball.getX();
+        double Sy = ball.getY();
+        double d = ball.getRadius() * 2;
+
+        double a = (B*B) + (A*A);
+        double b = (-2 * Sx * B*B) + (2 * C * A) + (2 * B * Sy * A);
+        double c = (Sx*Sx * B*B) + (C*C) + (2 * B * Sy * C) + (Sy*Sy * B*B) - (B*B * d*d);
+
+        double delta = b*b - 4 * a * c;
+        double x1 = (-b - Math.sqrt(delta)) / (2 * a);
+        double x2 = (-b + Math.sqrt(delta)) / (2 * a);
+        double y1 = (-C - A * x1) / (-B);
+        double y2 = (-C - A * x2) / (-B);
+
+        return new Line(
+                new Point(x1, y1),
+                new Point(
+                        ball.getX(),
+                        ball.getY()
+                )
+        );
     }
 }

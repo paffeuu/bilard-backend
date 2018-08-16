@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
@@ -75,6 +76,29 @@ public class LineTest {
         Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
     }
 
+    @Test
+    public void calculateCordinates() {
+        Line line = new Line(
+                new Point(0, -4),
+                new Point(2, 0)
+        );
+        Point point = new Point(2, 0);
 
+        double[] cordinates = lineService.calcAllCordinate(line);
+        double distance = lineService.calculateDistanceBetwenPointAndLine(point, line);
+        System.out.print(cordinates[0] + " | " + cordinates[1] + " | " + cordinates[2] + " | " + distance);
+    }
 
+    @Test
+    public void stopLineAtFirstBall() {
+        Line line = new Line(
+                new Point(0, -4),
+                new Point(2, 0)
+        );
+        ArrayList<Ball> balls = new ArrayList<>();
+        balls.add(new Ball(0, 3, 0, 2));
+
+        Ball stoped = lineService.stopLineAtFirstBall(line, balls);
+        System.out.print("asd");
+    }
 }
