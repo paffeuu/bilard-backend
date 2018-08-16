@@ -37,7 +37,7 @@ public class CueService {
     public Line predictTrajectoryAfterBump(Line line) throws CueServiceException, LineServiceException {
 
         Point bumpPoint = line.getEnd();
-        Point halfDistance = new Point(0, 0);
+        Point halfDistance;
 
         if (calcAbsoluteDistance(properties.getTableBandLeft(), bumpPoint.x) <= 2) {
             halfDistance = new Point(line.getBegin().x, line.getEnd().y);

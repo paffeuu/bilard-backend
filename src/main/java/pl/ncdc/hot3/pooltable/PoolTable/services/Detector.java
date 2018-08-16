@@ -104,7 +104,7 @@ public class Detector {
 	}
 
 	private List<Line> getInnerLines() throws DetectorException {
-		Line tempLine = null;
+		Line tempLine;
 
 		Mat substractedImg = new Mat();
 		Mat linesP = getEdges(sourceImg);
@@ -132,10 +132,10 @@ public class Detector {
 		List <Mat> layers = new ArrayList<>();
 
 		try {
-			Imgproc.blur(source, source, new Size(6,6));
+			Imgproc.blur(source, dst, new Size(6,6));
 
-			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
-			Core.split(source, layers);
+			Imgproc.cvtColor(dst, dst, Imgproc.COLOR_BGR2HSV);
+			Core.split(dst, layers);
 			Imgproc.Canny(layers.get(2), dst, 50, 200, 3, false);
 
 		} catch (Exception e){

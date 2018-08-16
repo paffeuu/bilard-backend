@@ -20,10 +20,10 @@ public class MockupService {
     public MockupService()
     {
         mockList = new ArrayList<>();
-        for (int i = 0; i < 63; i++)
+        for (int i = 0; i < 16; i++)
         {
             try {
-                Mat img = Imgcodecs.imread( pl.ncdc.hot3.pooltable.PoolTable.model.Properties.TEST_PATH + fileName + i + ".jpg");
+                Mat img = Imgcodecs.imread( "src\\main\\resources\\mock\\" + fileName + i + ".jpg");
 
                 if (img.empty() || img == null)
                     break;

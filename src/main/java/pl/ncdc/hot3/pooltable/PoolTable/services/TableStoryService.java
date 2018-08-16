@@ -29,6 +29,7 @@ public class TableStoryService {
     private int currentTableIndex;
     private List<PoolTable> tableStory;
     private Mat outputImage;
+    private int counter = 0;
 
     private Detector detector;
     private CameraService cameraService;
@@ -54,6 +55,24 @@ public class TableStoryService {
         currentTableIndex = -1;
 
         tableStory = new ArrayList<>();
+    }
+
+    public TableStoryService saveBefore(int framesStep) {
+        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            makeView();
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("before_frame" + counter + ".jpg", outputClone);
+        }
+        return this;
+    }
+
+    public TableStoryService saveAfter(int framesStep) {
+        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            makeView();
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("after_frame" + counter + ".jpg", outputClone);
+        }
+        return this;
     }
 
     private PoolTable current(int backwardStep){
@@ -83,6 +102,10 @@ public class TableStoryService {
         if (++currentTableIndex > 1)
             current(2).setTableImage(null);
         tableStory.add(new PoolTable());
+
+        counter++;
+
+
 
 
         return this;
