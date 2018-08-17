@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 public class Properties {
 
     public final String BASE_PATH = this.getClass().getClassLoader().getResource("emptyTable.png").toString();
-    public final String TESTS_DIR_PATH = "src/main/resources/";
 
     // Bands
     private double tableBandLeft;
@@ -410,8 +409,7 @@ public class Properties {
     }
 
     public String getFullPath(String filename) throws FileNotFoundException {
-        String path = this.getClass().getClassLoader().getResource(filename).getPath().replaceAll("%20"," ");
-
-        return path.substring(1);
-}
+        String path = this.getClass().getClassLoader().getResource(filename).getPath().replaceAll("%20"," ").substring(1);
+        return path;
+    }
 }

@@ -28,8 +28,8 @@ public class Detector {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
+	private Mat emptyTableImage;
 	private Mat sourceImg;
-	private Mat outputImg;
 	private Mat cannyImg;
 
 	final int maxRadiusForBall = 22;
@@ -45,34 +45,25 @@ public class Detector {
 	public Detector(
 			CueService cueService,
 			Properties properties
-	) throws DetectorException {
+	) {
 		this.properties = properties;
 		this.cueService = cueService;
 
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		this.outputImg = new Mat();
 		this.cannyImg = new Mat();
 
-        String emptyTablePath = "";
+
+
 		try {
-		    emptyTablePath = properties.getFullPath("emptyTable.png");
-            System.out.println("==================================================================");
-            System.out.println(emptyTablePath);
-            sourceImg = Imgcodecs.imread(emptyTablePath, Imgcodecs.IMREAD_COLOR);
+			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
+			emptyTableImage = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
 
-            System.out.println("Source " + sourceImg.size());
-            cannyImg = getEdges(sourceImg);
-
-            System.out.println("canny" + cannyImg.size());
-            System.out.println("==================================================================");
+			cannyImg = getEdges(sourceImg);
+		} catch (FileNotFoundException e) {
+			LOGGER.error("File with empty table not founded.");
+		} catch (DetectorException e) {
+			LOGGER.warn("Cannot make edges for empty source image.");
 		}
-		catch (FileNotFoundException e) {
-            LOGGER.error("Empty table for callibrate not founded.");
-		}
-		catch (DetectorException e) {
-			LOGGER.error("Cannot calibrate table. Source image for empty table not found or broken.");
-		} finally {
-        }
 
 	}
 
@@ -90,14 +81,6 @@ public class Detector {
 
 	public void setSourceImg(Mat sourceImg) {
 		this.sourceImg = sourceImg;
-	}
-
-	public Mat getOutputImg() {
-		return this.outputImg;
-	}
-
-	public void setOutputImg(Mat outputImg) {
-		this.outputImg = outputImg;
 	}
 
 	public Mat detectBalls() throws BallsDetectorException {
@@ -220,26 +203,18 @@ public class Detector {
 		return dst;
 	}
 
-	public List<Line> getPredictions() throws CueServiceException, LineServiceException {
+	public List<Line> getPredictions(Line cueLine) throws CueServiceException, LineServiceException {
 		List <Line> predictions = new ArrayList<>();
 
-		try {
-			Line cue = findStickLine();
-			predictions.add(cue);
-
+		if (cueLine != null) {
+			predictions.add(cueLine);
 			for (int i = 0; i < properties.getPredictionDepth(); i++){
 				Line pred = cueService.predictTrajectoryAfterBump(predictions.get(i));
 				predictions.add(pred);
 			}
-
-		} catch (MissingCueLineException e) {
-			LOGGER.warn("Could not find stick, predictions canceled.");
-		} finally {
-			if (predictions.size() > 1)
-				predictions.subList(1, predictions.size() -1);
-
-			return predictions;
 		}
+
+		return predictions;
 	}
 
 	public ArrayList<Ball> createListOfBalls() throws BallsDetectorException {
@@ -282,6 +257,12 @@ public class Detector {
 			return data;
 		}
 	}
+
+	public Mat getEmptyTableImage() {
+		return emptyTableImage;
+	}
+
+	public void setEmptyTableImage(Mat nothingWillSet_Sorry) {}
 
 	public Line createTargetLine(Line line, ArrayList<Ball> balls, boolean isCue) throws LineServiceException {
 		Ball collision = cueService.stopLineAtFirstBall(line, balls, isCue);

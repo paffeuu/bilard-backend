@@ -18,10 +18,11 @@ public class MainController {
     @Autowired
     private TableStoryService tableStoryService;
 
+
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
     public ResponseEntity<PoolTable> test() throws CameraServiceException {
-
+        System.gc();
         PoolTable table = tableStoryService
                 .next()
                 .findBalls()
@@ -30,7 +31,6 @@ public class MainController {
                 .detectCollision()
                 .showPrevious()
                 .build();
-
         return ResponseEntity.ok(table);
 
     }
@@ -44,7 +44,7 @@ public class MainController {
 
     @RequestMapping(value = "/set-visible", method = RequestMethod.GET)
     public void setShowPrevious() {
-        properties.setShowPreviousPosition(true);
+        properties.setShowPreviousPosition(!properties.isShowPreviousPosition());
     }
 
 }

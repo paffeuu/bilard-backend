@@ -14,6 +14,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.List;
 
 @Service
 public class TableStoryService {
+
 
     final static int LIMIT_OF_TABLES = 32;
     final static int LIMIT_OF_VIEWS = 6;
@@ -71,13 +73,14 @@ public class TableStoryService {
     }
 
 
-    public TableStoryService next() throws CameraServiceException {
-        outputImage = cameraService.getSnap();
-
-        if (outputImage == null || outputImage.empty())
-            throw new CameraServiceException("TableStoryService::next(): Cannot operate into an empty source image.");
-        else
+    public TableStoryService next() {
+        try {
+            outputImage = cameraService.getSnap();
             detector.setSourceImg(outputImage.clone());
+        } catch (CameraServiceException e) {
+            LOGGER.warn("Camera view not available. Empty table image as a source");
+            outputImage = detector.getSourceImg().clone();
+        }
 
 
         if (++currentTableIndex > 1)
@@ -105,7 +108,7 @@ public class TableStoryService {
     public TableStoryService makePredictions(){
 
         try {
-            current().setPredictions(detector.getPredictions());
+            current().setPredictions(detector.getPredictions(current().getCue()));
         } catch (CueServiceException e) {
             //LOGGER.warn("Predictions canceled.", e);
         } catch (LineServiceException e) {
@@ -154,7 +157,7 @@ public class TableStoryService {
             try {
                 drawer.drawBalls(outputImage, previousPositionService.getPreviousPosition(), new Scalar(255, 0, 255));
             } catch (DrawerException e) {
-                LOGGER.warn("Could not draw previous balls possition. Nested: " + e.getMessage());
+                LOGGER.warn("Could not draw previous balls possition. Nested: " + e);
             }
         }
 
