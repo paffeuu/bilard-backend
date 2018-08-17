@@ -59,7 +59,7 @@ public class Properties {
         this.tableBandRight = 1948;
         this.tableBandTop = 350;
         this.tableBandBottom = 1236;
-        this.predictionDepth = 1;
+        this.predictionDepth = 3;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
@@ -411,7 +411,6 @@ public class Properties {
 
     public String getFullPath(String filename) throws FileNotFoundException {
         String path = this.getClass().getClassLoader().getResource(filename).getPath().replaceAll("%20"," ").substring(1);
-
         return path;
     }
 }

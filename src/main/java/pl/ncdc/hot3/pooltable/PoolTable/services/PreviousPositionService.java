@@ -51,6 +51,7 @@ public class PreviousPositionService {
                 if (!comparePositions(this.positionsHistory.get(i), this.previousPosition)) {
                     System.out.println("new position found");
                     this.previousPosition = this.positionsHistory.get(i);
+                    this.positionsHistory.subList(0, i).clear();
                     return;
                 } else {
                     return;

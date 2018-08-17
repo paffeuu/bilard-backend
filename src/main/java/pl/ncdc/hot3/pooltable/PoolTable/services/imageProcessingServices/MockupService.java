@@ -14,7 +14,7 @@ public class MockupService {
     private final static String fileName = "mockupcameraCalibPic";
     private final static String extension = ".jpg";
     private ArrayList<Mat> mockList;
-    private int counter = 0;
+    public int counter = 0;
 
     public MockupService()
     {
@@ -22,7 +22,7 @@ public class MockupService {
         for (int i = 0; i < 100; i++)
         {
             try {
-                Mat img = Imgcodecs.imread(ProjectProperties.BASE_PATH + "mock\\" + fileName + String.valueOf(i) + ".jpg");
+                Mat img = Imgcodecs.imread("C:\\Users\\Arcimboldo\\Desktop\\CamerCalib\\mockup\\" + fileName + String.valueOf(i) + ".jpg");
                 if (img.empty())
                     break;
                 mockList.add(img);

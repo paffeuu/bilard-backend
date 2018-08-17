@@ -97,6 +97,6 @@ public class Ball {
         double xDelta = this.x - b.getX();
         double yDelta = this.y - b.getY();
 
-        return (xDelta <= 15.0 && yDelta <= 15.0);
+        return (xDelta <= 5.0 && yDelta <= 5.0);
     }
 }
