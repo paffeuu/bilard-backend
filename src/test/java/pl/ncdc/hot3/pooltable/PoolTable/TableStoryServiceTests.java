@@ -58,7 +58,7 @@ public class TableStoryServiceTests {
     public void shouldReturnPoolTableModelWithAllDetailsAndSaveNewImage() throws CameraServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat source = Imgcodecs.imread(properties.TESTS_DIR_PATH + "xxxx.png", CvType.CV_64F);
+        Mat source = Imgcodecs.imread(properties.TESTS_PATH + "xxxx.png", CvType.CV_64F);
 
 
         CameraService cameraService = mock(CameraService.class);
@@ -163,6 +163,42 @@ public class TableStoryServiceTests {
 
         Assert.assertNotNull(table);
         Assert.assertFalse(table.getBalls().isEmpty());
+        Assert.assertNotNull(table.getTableImage());
+    }
+
+    @Test
+    public void shouldMakeTablesForManyImagesAndSaveThemAll() throws CameraServiceException, FileNotFoundException {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+        ImageUndistorterService undistorterService = new ImageUndistorterService();
+        CameraService cameraService = mock(CameraService.class);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+
+        PoolTable table = new PoolTable();
+        Mat source;
+
+        for (int i = 0; i < 64; i++){
+            String filename = "mock/mockupcameraCalibPic" + i + ".jpg";
+            String fullPath = properties.getFullPath(filename);
+
+            source = Imgcodecs.imread(fullPath, CvType.CV_64F);
+                when(cameraService.getSnap()).thenReturn(undistorterService.undistort(source));
+
+            table = tableStoryService
+                    .next()
+                    .findCue()
+                    .makePredictions()
+                    .findBalls()
+                    .showPrevious()
+                    .build();
+
+            Mat output = Imgcodecs.imdecode(new MatOfByte(table.getTableImage()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
+            String fileName = "tests/fromMock_" + i + ".jpg";
+            Imgcodecs.imwrite(fileName, output);
+        }
+
+        Assert.assertNotNull(table);
+        Assert.assertTrue(table.getBalls().isEmpty());
         Assert.assertNotNull(table.getTableImage());
     }
 

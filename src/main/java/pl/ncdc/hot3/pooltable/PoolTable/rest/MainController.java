@@ -41,10 +41,12 @@ public class MainController {
 
         PoolTable table = tableStoryService
                 .next()
+                .save(12)
                 .findBalls()
                 .findCue()
                 .makePredictions()
                 .showPrevious()
+                .save(12)
                 .build();
 
         return ResponseEntity.ok(table);

@@ -156,20 +156,24 @@ public class Detector {
 	public Line findStickLine() throws MissingCueLineException, DetectorException, LineServiceException {
 
 		List <Line> linesList = getInnerLines();
+
 		return cueService.findStickLine(linesList);
 
 	}
 
+	static int forTestsCounter = 0;
 	private List<Line> getInnerLines() throws DetectorException {
 		Line tempLine = null;
 
 		Mat substractedImg = new Mat();
-		Mat linesP = getEdges(sourceImg);
-
+		Mat linesP = getEdges(sourceImg.clone());
 
 		Core.subtract(linesP, cannyImg, substractedImg);
 
+
+
 		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 70, 50, 10);
+
 
 		List <Line> linesList = new ArrayList<>();
 
@@ -181,6 +185,21 @@ public class Detector {
 				linesList.add(tempLine);
 			}
 		}
+
+//		*******************************************
+//		***** SAVING SEARCHED LINES FOR TESTS *****
+//		*******************************************
+
+//		Mat forTestsSave = new Mat(cannyImg.rows(), cannyImg.cols(), CvType.CV_32F);
+//		for (Line line : linesList) {
+//			Imgproc.line(forTestsSave, line.getBegin(), line.getEnd(), new Scalar(255, 255, 255), 4);
+//		}
+//		String fileName = "tests/subby/LinesTest_" + (linesList.isEmpty() ? "EMPTY_" : (linesList.size() + "_")) + forTestsCounter++ + ".jpg";
+//		if (!linesList.isEmpty())
+//			Imgcodecs.imwrite(fileName, forTestsSave);
+//		else
+//			Imgcodecs.imwrite(fileName, substractedImg);
+
 
 		return linesList;
 	}

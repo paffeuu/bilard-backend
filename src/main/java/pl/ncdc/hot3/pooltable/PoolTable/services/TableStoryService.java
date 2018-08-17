@@ -171,4 +171,13 @@ public class TableStoryService {
         }
     }
 
+    public TableStoryService save(int framesStep) {
+        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            makeView();
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("test_frame" + OpenCVBufforFlushService.getCounter() + ".jpg", outputClone);
+        }
+        return this;
+    }
+
 }

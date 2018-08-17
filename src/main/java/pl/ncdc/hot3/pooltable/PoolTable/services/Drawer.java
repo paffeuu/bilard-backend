@@ -16,7 +16,7 @@ import java.util.List;
 @Service
 public class Drawer {
 
-	public void xdrawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) throws DrawerException {
+	public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) throws DrawerException {
 		if (img == null)
 			throw new DrawerException("Cannot draw on an empty image source.");
 		else if (null == balls || balls.isEmpty())
@@ -54,11 +54,13 @@ public class Drawer {
 		if (cue != null)
 			drawLine(img, cue);
 
-		if (!listOfBalls.isEmpty())
+		if (listOfBalls != null && !listOfBalls.isEmpty())
 			drawBalls(img, listOfBalls,  new Scalar(0, 0, 255));
 
-		for (Line line : predictions) {
-            drawLine(img, line);
-        }
+		if (predictions != null && !predictions.isEmpty()) {
+			for (Line line : predictions) {
+				drawLine(img, line);
+			}
+		}
 	}
 }
