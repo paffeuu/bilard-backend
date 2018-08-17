@@ -1,19 +1,15 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.opencv.core.*;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DrawerException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.sql.SQLOutput;
+import java.util.*;
 
 
 @Service
@@ -26,6 +22,43 @@ public class BallService {
             Properties properties
     ) {
         this.properties = properties;
+    }
+
+    public ArrayList<Ball> setWhiteAndBlackBall(ArrayList<Ball> balls, Mat sourceImg, List<Mat> ballImgList) {
+        try {
+            Ball whiteBall = balls
+                    .stream()
+                    .max(Comparator.comparing(Ball::getWhitePixels))
+                    .orElseThrow(BallsDetectorException::new);
+            whiteBall.setId(0);
+        } catch (BallsDetectorException e) {
+            System.out.println("White ball not found.");
+        }
+
+        Scalar blackLowerMask = new Scalar(0, 0, 0);
+        Scalar blackHigherMask = new Scalar(180, 255, 35);
+
+        MatOfFloat ranges = new MatOfFloat(0f,256f);
+        MatOfInt channels = new MatOfInt(0);
+        MatOfInt histSize = new MatOfInt(2);
+        Mat mask = new Mat();
+        Mat hist = new Mat();
+        double numberOfWhitePixels = 0;
+        int indexOfBlackBall = 0;
+
+        for(int i = 0 ; i < ballImgList.size() ; i ++) {
+            Imgproc.cvtColor(ballImgList.get(i), ballImgList.get(i), Imgproc.COLOR_BGR2HSV);
+            Core.inRange(ballImgList.get(i), blackLowerMask, blackHigherMask, ballImgList.get(i));
+            Imgproc.calcHist(Arrays.asList(ballImgList.get(i)), channels, mask, hist, histSize ,ranges);
+            if(hist.get(1,0)[0] > numberOfWhitePixels) {
+                indexOfBlackBall = i;
+                numberOfWhitePixels = hist.get(1,0)[0];
+            }
+        }
+
+        balls.get(indexOfBlackBall).setId(8);
+
+        return balls;
     }
 
     public Mat filterCircles(Mat allCircles) throws BallsDetectorException {
@@ -88,7 +121,7 @@ public class BallService {
             y = (int) data[1];
             r = (int) data[2];
 
-            Ball ball = new Ball(i,x,y,r);
+            Ball ball = new Ball(x,y,r);
             balls.add(ball);
         }
 
@@ -153,6 +186,7 @@ public class BallService {
         return this.filterCircles(convertedImage);
     }
 
+
     public ArrayList<Ball> createListOfBalls(Mat circles, Mat sourceImg, List<Mat> ballImgList,
                                              List<Rect> roiList) throws BallsDetectorException {
         ArrayList<Ball> detectedBalls = this.convertMatToListOfBalls(circles);
@@ -189,15 +223,19 @@ public class BallService {
             }
         }
 
-        int stripedId = 8;
-        int solidId = 0;
+        detectedBalls = setWhiteAndBlackBall(detectedBalls, sourceImg.clone(), ballImgList);
+
+        int stripedId = 9;
+        int solidId = 1;
         for(Ball ball : detectedBalls) {
-            if((ball.getWhitePixels()*100)/1764 >= 16) {
-                ball.setId(stripedId);
-                stripedId++;
-            } else {
-                ball.setId(solidId);
-                solidId++;
+            if(ball.getId() == null) {
+                if ((ball.getWhitePixels() * 100) / 1764 >= 16) {
+                    ball.setId(stripedId);
+                    stripedId++;
+                } else {
+                    ball.setId(solidId);
+                    solidId++;
+                }
             }
         }
 

@@ -39,10 +39,14 @@ public class Drawer {
 			Point center = new Point(ball.getX(), ball.getY());
 
 			if(scalar == null){
-				if(ball.getId() >= 0 && ball.getId() < 8) {
+				if(ball.getId() > 0 && ball.getId() < 8) {
 					Imgproc.circle(img, center, r, properties.getSolidDrawColor(), 5);
-				} else {
+				} else if(ball.getId() > 8 && ball.getId() < 16){
 					Imgproc.circle(img, center, r, properties.getStripedDrawColor(), 5);
+				} else if(ball.getId() == 8) {
+					Imgproc.circle(img, center, r, new Scalar(0, 0, 0), 5);
+				} else if(ball.getId() == 0) {
+					Imgproc.circle(img, center, r, new Scalar(255, 255, 255), 5);
 				}
 			} else {
 				Imgproc.circle(img, center, r, scalar, 5);
