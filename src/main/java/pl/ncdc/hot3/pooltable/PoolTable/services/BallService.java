@@ -154,7 +154,7 @@ public class BallService {
     }
 
     public ArrayList<Ball> createListOfBalls(Mat circles, Mat sourceImg, List<Mat> ballImgList,
-                                             List<Rect> roiList) throws BallsDetectorException, DrawerException {
+                                             List<Rect> roiList) throws BallsDetectorException {
         ArrayList<Ball> detectedBalls = this.convertMatToListOfBalls(circles);
         List<Mat> planes = new ArrayList<>();
 

@@ -20,6 +20,7 @@ public class OpenCVBufforFlushService {
 
     private static Mat[] framesArray = new Mat[10];
 
+    @Scheduled(fixedRate = 125)
     public static void getFrame() {
         if (isNotNeeded) {
 

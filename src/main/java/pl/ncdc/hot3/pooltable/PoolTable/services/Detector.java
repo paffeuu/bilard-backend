@@ -88,7 +88,7 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	public ArrayList<Ball> createListOfBalls() throws BallsDetectorException, DrawerException {
+	public ArrayList<Ball> createListOfBalls() throws BallsDetectorException {
 		Mat circles = ballService.detectBalls(sourceImg);
 
 		List<Rect> roiList = ballService.getBallsROI(ballService.convertMatToArray(circles));
