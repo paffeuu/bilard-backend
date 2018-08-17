@@ -73,13 +73,14 @@ public class TableStoryService {
     }
 
 
-    public TableStoryService next() throws CameraServiceException {
-        outputImage = cameraService.getSnap();
-
-        if (outputImage == null || outputImage.empty())
-            throw new CameraServiceException("TableStoryService::next(): Cannot operate into an empty source image.");
-        else
+    public TableStoryService next() {
+        try {
+            outputImage = cameraService.getSnap();
             detector.setSourceImg(outputImage.clone());
+        } catch (CameraServiceException e) {
+            LOGGER.warn("Camera view not available. Empty table image as a source");
+            outputImage = detector.getSourceImg().clone();
+        }
 
 
         if (++currentTableIndex > 1)
@@ -95,7 +96,7 @@ public class TableStoryService {
             Line cue = detector.findStickLine();
             current().setCue(cue);
         } catch (MissingCueLineException e) {
-            LOGGER.info("Cue not founded.");
+            //LOGGER.info("Cue not founded.");
         } catch (LineServiceException e) {
             LOGGER.warn("Missing line when try find cue.", e);
         } catch (DetectorException e) {
@@ -107,9 +108,9 @@ public class TableStoryService {
     public TableStoryService makePredictions(){
 
         try {
-            current().setPredictions(detector.getPredictions());
+            current().setPredictions(detector.getPredictions(current().getCue()));
         } catch (CueServiceException e) {
-            LOGGER.warn("Predictions canceled.", e);
+            //LOGGER.warn("Predictions canceled.", e);
         } catch (LineServiceException e) {
             LOGGER.error("Cannot extend predicted line.", e);
         }
@@ -140,7 +141,7 @@ public class TableStoryService {
             try {
                 drawer.drawBalls(outputImage, previousPositionService.getPreviousPosition(), new Scalar(255, 0, 255));
             } catch (DrawerException e) {
-                LOGGER.warn("Could not draw previous balls possition. Nested: " + e.getMessage());
+                LOGGER.warn("Could not draw previous balls possition. Nested: " + e);
             }
         }
 
@@ -154,7 +155,7 @@ public class TableStoryService {
                 previousPositionService.updatePreviousBallPosition();
             }
         } catch (NullPointerException e) {
-            LOGGER.warn("Can not save previous position", e.getMessage());
+            LOGGER.warn("Can not save previous position. Nested: ", e.getMessage());
         }
     }
 

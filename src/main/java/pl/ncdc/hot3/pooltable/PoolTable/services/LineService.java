@@ -3,7 +3,6 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 import org.opencv.core.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CueServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.ExtendLineException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
@@ -12,6 +11,10 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 @Service
 public class LineService {
     private Properties properties;
+
+    private Line prevExtendedCueLines[] = new Line[10];
+    private int prevLinesCounter = 0, prevLinesMax = 10;
+    private double previousEndPointDistTolerance = 5;
 
     @Autowired
     public LineService(Properties properties) {
@@ -56,11 +59,34 @@ public class LineService {
                 (extendedA.getEnd().y + extendedB.getEnd().y) / 2
         );
 
-
-        Line finalLine = new Line(newLineStart, newLineEnd);
+        Line finalLine = makeSureLineEndCorrect(new Line(newLineStart, newLineEnd));
 
         //finalLine = getExtendedStickLineForOneSide(finalLine);
 
+        return finalLine;
+    }
+
+    private Line makeSureLineEndCorrect(Line finalLine){
+
+        int countOfCorrectLines = 0;
+        int countOfSwitchedLines = 0;
+        for (int i = 0; i < prevLinesMax; i++){
+            if (prevExtendedCueLines[(prevLinesCounter + i) % 10] != null){
+                Point beginPoint = prevExtendedCueLines[(prevLinesCounter + i) % 10].getBegin();
+                Point endPoint = prevExtendedCueLines[(prevLinesCounter + i) % 10].getEnd();
+
+                if (calculateDistanceBetweenPoints(finalLine.getEnd(), endPoint) <= previousEndPointDistTolerance){
+                    countOfCorrectLines++;
+                } else if (calculateDistanceBetweenPoints(finalLine.getEnd(), beginPoint) <= previousEndPointDistTolerance){
+                    countOfSwitchedLines++;
+                }
+            }
+        }
+        if (countOfSwitchedLines > countOfCorrectLines){
+            switchPoints(finalLine);
+        }
+        prevLinesCounter = (prevLinesCounter+1) % prevLinesMax;
+        prevExtendedCueLines[prevLinesCounter] =  finalLine;
         return finalLine;
     }
 

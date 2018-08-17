@@ -61,7 +61,7 @@ public class Properties {
         this.predictionDepth = 3;
 
         this.cueThickness = 60;
-        this.parallelTolerance = 0.2;
+        this.parallelTolerance = 0.15;
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
