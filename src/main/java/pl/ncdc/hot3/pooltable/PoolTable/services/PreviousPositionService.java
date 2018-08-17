@@ -39,7 +39,7 @@ public class PreviousPositionService {
         ArrayList<Ball> currentPosition = this.positionsHistory.get(this.positionsHistory.size()-1);
         if (this.previousPosition == null) {
             this.previousPosition = this.positionsHistory.get(this.positionsHistory.size()-1);
-            System.out.println("position first set");
+            //System.out.println("position first set");
             return;
         }
 
@@ -50,7 +50,7 @@ public class PreviousPositionService {
                         continue;
                     }
                 if (!comparePositions(this.positionsHistory.get(i), this.previousPosition)) {
-                    System.out.println("new position found");
+                    //System.out.println("new position found");
                     this.previousPosition = this.positionsHistory.get(i);
                     this.positionsHistory.subList(0, i).clear();
                     return;

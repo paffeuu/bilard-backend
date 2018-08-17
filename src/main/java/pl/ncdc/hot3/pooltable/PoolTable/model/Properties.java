@@ -45,6 +45,7 @@ public class Properties {
     // Stick
     private double cueThickness;
     private double parallelTolerance;
+    private int cueDetectDelay;
 
     // Predictions
     private int predictionDepth;
@@ -79,6 +80,7 @@ public class Properties {
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
+        this.cueDetectDelay = 4;
 
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
@@ -418,6 +420,14 @@ public class Properties {
         this.predictionDepth = predictionDepth;
     }
 
+    public int getCueDetectDelay() {
+        return cueDetectDelay;
+    }
+
+    public void setCueDetectDelay(int cueDetectDelay) {
+        this.cueDetectDelay = cueDetectDelay;
+    }
+
     public boolean isPointInsideBand(Point point){
         if (point.x >= this.getTableBandLeft() - 5 && point.x <= this.getTableBandRight() + 5) {
             if (point.y >= this.getTableBandTop() - 5 && point.y <= this.getTableBandBottom() + 5) {
@@ -425,10 +435,6 @@ public class Properties {
             }
         }
         return false;
-    }
-
-    public void setProperties(Properties properties){
-        System.out.println(Properties.class);
     }
 
     public String getFullPath(String filename) throws FileNotFoundException {

@@ -57,6 +57,10 @@ public class Detector {
 			emptyTableImage = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
 
 			cannyImg = getEdges(sourceImg);
+			Imgcodecs.imwrite("Canny_Before.jpg", cannyImg);
+			Imgproc.equalizeHist(cannyImg, cannyImg);
+			Imgcodecs.imwrite("Canny_after.jpg", cannyImg);
+
 		} catch (FileNotFoundException e) {
 			LOGGER.error("File with empty table not founded.");
 		} catch (DetectorException e) {
@@ -90,12 +94,16 @@ public class Detector {
 	}
 
 	public ArrayList<Ball> createListOfBalls() throws BallsDetectorException {
-		Mat circles = ballService.detectBalls(sourceImg);
+		try {
+			Mat circles = ballService.detectBalls(sourceImg);
 
-		List<Rect> roiList = ballService.getBallsROI(ballService.convertMatToArray(circles));
-		List<Mat> ballImgList = ballService.cropImage(roiList, sourceImg);
+			List<Rect> roiList = ballService.getBallsROI(ballService.convertMatToArray(circles));
+			List<Mat> ballImgList = ballService.cropImage(roiList, sourceImg);
 
-		return ballService.createListOfBalls(circles, sourceImg, ballImgList, roiList);
+			return ballService.createListOfBalls(circles, sourceImg, ballImgList, roiList);
+		} catch (Exception e) {
+			throw new BallsDetectorException("Unknown exception for create list of balls.", e);
+		}
 	}
 
 	public Line findStickLine() throws MissingCueLineException, DetectorException, LineServiceException {

@@ -232,8 +232,6 @@ public class LineService {
                 extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint2);
             } else {
-
-
                 throw new ExtendLineException("Error while trying make extended line for one side. Both crosscut points out of the bands");
             }
         } catch (NullPointerException e) {

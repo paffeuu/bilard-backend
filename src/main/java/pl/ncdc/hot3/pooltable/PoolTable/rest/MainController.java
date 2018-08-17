@@ -39,11 +39,13 @@ public class MainController {
         System.gc();
         PoolTable table = tableStoryService
                 .next()
+                .saveBefore(8)
                 .findBalls()
                 .findCue()
                 .makePredictions()
                 .detectCollision()
                 .showPrevious()
+                .saveAfter(8)
                 .build();
         return ResponseEntity.ok(table);
 

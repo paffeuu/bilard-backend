@@ -57,24 +57,6 @@ public class TableStoryService {
         tableStory = new ArrayList<>();
     }
 
-    public TableStoryService saveBefore(int framesStep) {
-        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("before_frame" + counter + ".jpg", outputClone);
-        }
-        return this;
-    }
-
-    public TableStoryService saveAfter(int framesStep) {
-        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("after_frame" + counter + ".jpg", outputClone);
-        }
-        return this;
-    }
-
     private PoolTable current(int backwardStep){
         if (currentTableIndex >= backwardStep)
             return tableStory.get((currentTableIndex - backwardStep) % LIMIT_OF_TABLES);
@@ -228,11 +210,25 @@ public class TableStoryService {
         }
     }
 
-    public TableStoryService save(int framesStep) {
-        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+    static int testBeforeMockupLimit = 500;
+    static int testAfterMockupLimit = 500;
+    public TableStoryService saveBefore(int framesStep) {
+        if (testBeforeMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            testBeforeMockupLimit--;
             makeView();
             Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("test_frame" + OpenCVBufforFlushService.getCounter() + ".jpg", outputClone);
+            Imgcodecs.imwrite("tests/before/test_before" + (500 - testBeforeMockupLimit) + ".jpg", outputClone);
+        }
+        return this;
+    }
+
+
+    public TableStoryService saveAfter(int framesStep) {
+        if (testAfterMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            testAfterMockupLimit--;
+            makeView();
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("tests/after/test_after" + (500 - testAfterMockupLimit) + ".jpg", outputClone);
         }
         return this;
     }

@@ -110,10 +110,12 @@ public class BallService {
 
     public List<Mat> cropImage(List<Rect> roi, Mat image) {
         List<Mat> crops = new ArrayList<>();
-
-        for(Rect rect : roi) {
-            crops.add(new Mat(image, rect));
+        if (roi != null && !roi.isEmpty()) {
+            for(Rect rect : roi) {
+                crops.add(new Mat(image, rect));
+            }
         }
+
         return crops;
     }
 
