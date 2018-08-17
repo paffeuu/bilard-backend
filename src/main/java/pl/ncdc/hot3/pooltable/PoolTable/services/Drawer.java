@@ -55,7 +55,7 @@ public class Drawer {
 		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), 4);
 	}
 
-	public void draw(Mat img, Line cue, ArrayList<Ball> listOfBalls, List<Line> predictions) throws DrawerException {
+	public void draw(Mat img, Line cue, ArrayList<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
 		if (img == null)
 			throw new DrawerException("Cannot draw line to null image.");
 
@@ -69,6 +69,10 @@ public class Drawer {
 			for (Line line : predictions) {
 				drawLine(img, line);
 			}
+		}
+
+        if (null != targetLine) {
+        	drawLine(img, targetLine);
 		}
 	}
 }

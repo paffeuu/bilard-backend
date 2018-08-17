@@ -16,6 +16,7 @@ public class PoolTable {
     private ArrayList<Ball> balls;
     private Line cue;
     private byte[] tableImage;
+    private Line targetLine;
 
 
     public PoolTable(){}
@@ -82,5 +83,13 @@ public class PoolTable {
 
     public void setTableImage(byte[] tableImage) {
         this.tableImage = tableImage;
+    }
+
+    public Line getTargetLine() {
+        return targetLine;
+    }
+
+    public void setTargetLine(Line targetLine) {
+        this.targetLine = targetLine;
     }
 }

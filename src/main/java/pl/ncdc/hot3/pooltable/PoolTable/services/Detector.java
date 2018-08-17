@@ -160,6 +160,16 @@ public class Detector {
 
 		return predictions;
 	}
+
+    public Line createTargetLine(Line line, ArrayList<Ball> balls, boolean isCue) throws LineServiceException {
+        Ball collision = cueService.stopLineAtFirstBall(line, balls, isCue);
+
+        if (null != collision) {
+            return cueService.findBallColisionLine(line, collision);
+        }
+
+        return null;
+    }
 }
 
 

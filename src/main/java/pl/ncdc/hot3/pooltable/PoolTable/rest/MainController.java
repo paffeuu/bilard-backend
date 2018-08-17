@@ -32,20 +32,19 @@ public class MainController {
     @Autowired
     private TableStoryService tableStoryService;
 
+
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
     public ResponseEntity<PoolTable> test() throws CameraServiceException {
         System.gc();
         PoolTable table = tableStoryService
                 .next()
-                .save(12)
                 .findBalls()
                 .findCue()
                 .makePredictions()
+                .detectCollision()
                 .showPrevious()
-                .save(12)
                 .build();
-
         return ResponseEntity.ok(table);
 
     }
