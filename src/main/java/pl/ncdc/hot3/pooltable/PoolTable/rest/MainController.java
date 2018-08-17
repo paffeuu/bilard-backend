@@ -55,7 +55,7 @@ public class MainController {
         return ResponseEntity.ok(this.properties);
     }
 
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @RequestMapping(value = "/set-visible", method = RequestMethod.GET)
     public void setShowPrevious() {
         properties.setShowPreviousPosition(!properties.isShowPreviousPosition());
