@@ -1,6 +1,5 @@
 package pl.ncdc.hot3.pooltable.PoolTable;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
