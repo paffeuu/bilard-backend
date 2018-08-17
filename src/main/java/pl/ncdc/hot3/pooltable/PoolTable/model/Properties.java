@@ -409,7 +409,8 @@ public class Properties {
     }
 
     public String getFullPath(String filename) throws FileNotFoundException {
-            String path = this.getClass().getClassLoader().getResource(filename).toExternalForm();
+
+        String path = this.getClass().getClassLoader().getResource(filename).toExternalForm();
             return path.substring(path.indexOf(':')+2);
     }
 }

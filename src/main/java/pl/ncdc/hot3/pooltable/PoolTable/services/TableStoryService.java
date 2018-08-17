@@ -22,10 +22,7 @@ import java.util.List;
 
 @Service
 public class TableStoryService {
-
-    @Autowired
-    MockupService mockupService;
-
+    
 
     final static int LIMIT_OF_TABLES = 32;
     final static int LIMIT_OF_VIEWS = 6;
@@ -152,7 +149,7 @@ public class TableStoryService {
 
     private void saveToPrevService(){
         try {
-            if (mockupService.counter % 4 == 0) {
+            if (OpenCVBufforFlushService.getCounter() % 4 == 0) {
                 previousPositionService.addPosition(current().getBalls());
                 previousPositionService.updatePreviousBallPosition();
             }
