@@ -7,14 +7,12 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 import java.util.ArrayList;
@@ -121,11 +119,23 @@ public class TableStoryService {
     public TableStoryService detectCollision() {
         try {
             if (null != current().getCue() && null != current().getBalls()) {
-                current().setTargetLine(detector.createTargetLine(
+                Line targetLine = detector.createTargetLine(
                         current().getCue(),
                         current().getBalls(),
                         true
-                ));
+                );
+
+                if (null != targetLine) {
+                    current().setTargetLine(targetLine);
+                    current().setCue(new Line(
+                            current().getCue().getBegin(),
+                            targetLine.getBegin()
+                    ));
+
+                    List<Line> pred = new ArrayList<>();
+                    pred.add(current().getCue());
+                    current().setPredictions(pred);
+                }
             }
         } catch (LineServiceException e) {
             LOGGER.info("Can not find target line");
