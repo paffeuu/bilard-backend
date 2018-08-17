@@ -5,7 +5,7 @@ import org.opencv.videoio.VideoCapture;
 import org.springframework.stereotype.Service;
 
 
-@Service
+//@Service
 public class SnapshotGetterService {
     private VideoCapture capture;
     private Mat lastSnapshot;
