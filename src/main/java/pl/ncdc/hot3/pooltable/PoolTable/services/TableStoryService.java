@@ -115,9 +115,9 @@ public class TableStoryService {
 
     }
 
-    public TableStoryService detectColision() {
+    public TableStoryService detectCollision() {
         try {
-            if (null != current().getCue()) {
+            if (null != current().getCue() && null != current().getBalls()) {
                 current().setTargetLine(detector.createTargetLine(
                         current().getCue(),
                         current().getBalls(),
