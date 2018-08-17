@@ -1,10 +1,8 @@
 package pl.ncdc.hot3.pooltable.PoolTable.model;
 
 import org.opencv.core.Point;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.opencv.core.Scalar;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 import java.io.FileNotFoundException;
 
@@ -29,9 +27,11 @@ public class Properties {
     private double tablePocketMinDistance;
 
     // Ball
-    private double ballMaxRadius;
-    private double ballMinRadius;
-    private double ballMinDistance;
+    private int ballMaxRadius;
+    private int ballMinRadius;
+    private int ballMinDistance;
+    private Scalar solidDrawColor;
+    private Scalar stripedDrawColor;
 
     // Canny
     private double cannyHighThreshold;
@@ -53,6 +53,22 @@ public class Properties {
     private int previousFramesFrequency;
 
 
+    public Scalar getSolidDrawColor() {
+        return solidDrawColor;
+    }
+
+    public void setSolidDrawColor(Scalar solidDrawColor) {
+        this.solidDrawColor = solidDrawColor;
+    }
+
+    public Scalar getStripedDrawColor() {
+        return stripedDrawColor;
+    }
+
+    public void setStripedDrawColor(Scalar stripedDrawColor) {
+        this.stripedDrawColor = stripedDrawColor;
+    }
+
     public Properties() {
         this.tableBandLeft = 165;
         this.tableBandRight = 1948;
@@ -62,6 +78,12 @@ public class Properties {
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
+
+        this.ballMaxRadius = 22;
+        this.ballMinRadius = 16;
+        this.ballMinDistance = 36;
+        this.solidDrawColor = new Scalar(0, 0, 255);
+        this.stripedDrawColor = new Scalar(0, 255, 0);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -266,7 +288,7 @@ public class Properties {
      *
      * @return
      */
-    public double getBallMaxRadius() {
+    public int getBallMaxRadius() {
         return ballMaxRadius;
     }
 
@@ -275,7 +297,7 @@ public class Properties {
      *
      * @param ballMaxRadius
      */
-    public void setBallMaxRadius(double ballMaxRadius) {
+    public void setBallMaxRadius(int ballMaxRadius) {
         this.ballMaxRadius = ballMaxRadius;
     }
 
@@ -284,7 +306,7 @@ public class Properties {
      *
      * @return
      */
-    public double getBallMinRadius() {
+    public int getBallMinRadius() {
         return ballMinRadius;
     }
 
@@ -293,7 +315,7 @@ public class Properties {
      *
      * @param ballMinRadius
      */
-    public void setBallMinRadius(double ballMinRadius) {
+    public void setBallMinRadius(int ballMinRadius) {
         this.ballMinRadius = ballMinRadius;
     }
 
@@ -302,7 +324,7 @@ public class Properties {
      *
      * @return
      */
-    public double getBallMinDistance() {
+    public int getBallMinDistance() {
         return ballMinDistance;
     }
 
@@ -311,7 +333,7 @@ public class Properties {
      *
      * @param ballMinDistance
      */
-    public void setBallMinDistance(double ballMinDistance) {
+    public void setBallMinDistance(int ballMinDistance) {
         this.ballMinDistance = ballMinDistance;
     }
 

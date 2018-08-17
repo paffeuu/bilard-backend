@@ -7,6 +7,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Queue;
 
 @Service
@@ -22,8 +23,9 @@ public class MockupService {
         for (int i = 0; i < 100; i++)
         {
             try {
-                Mat img = Imgcodecs.imread("C:\\Users\\Arcimboldo\\Desktop\\CamerCalib\\mockup\\" + fileName + String.valueOf(i) + ".jpg");
-                if (img.empty())
+                Mat img = Imgcodecs.imread( "src\\main\\resources\\mock\\" + fileName + i + ".jpg");
+
+                if (img.empty() || img == null)
                     break;
                 mockList.add(img);
             } catch (Exception ex)

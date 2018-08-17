@@ -35,7 +35,6 @@ public class MainController {
     @Autowired
     private TableStoryService tableStoryService;
 
-
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
     public ResponseEntity<PoolTable> test() throws CameraServiceException {
@@ -47,6 +46,7 @@ public class MainController {
                 .makePredictions()
                 .showPrevious()
                 .build();
+
         return ResponseEntity.ok(table);
 
     }

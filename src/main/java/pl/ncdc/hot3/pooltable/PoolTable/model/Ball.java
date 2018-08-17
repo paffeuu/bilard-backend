@@ -3,10 +3,32 @@ package pl.ncdc.hot3.pooltable.PoolTable.model;
 /**
  * Ball class
  */
-public class Ball {
+public class Ball implements Comparable<Ball> {
     private int id;
+    private double radius;
     private double x;
     private double y;
+
+    @Override
+    public int compareTo(Ball b) {
+        if(this.x < b.x) {
+            return -1;
+        } else if(b.x < this.x) {
+            return 1;
+        }else {
+            return 0;
+        }
+    }
+
+    public double getWhitePixels() {
+        return whitePixels;
+    }
+
+    public void setWhitePixels(double whitePixels) {
+        this.whitePixels = whitePixels;
+    }
+
+    private double whitePixels;
 
     public double getRadius() {
         return radius;
@@ -16,7 +38,7 @@ public class Ball {
         this.radius = radius;
     }
 
-    private double radius;
+
 
     /**
      * Ball Constructor
