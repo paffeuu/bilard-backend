@@ -14,6 +14,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 import java.util.ArrayList;
@@ -21,6 +22,10 @@ import java.util.List;
 
 @Service
 public class TableStoryService {
+
+    @Autowired
+    MockupService mockupService;
+
 
     final static int LIMIT_OF_TABLES = 32;
     final static int LIMIT_OF_VIEWS = 6;
@@ -147,7 +152,7 @@ public class TableStoryService {
 
     private void saveToPrevService(){
         try {
-            if (OpenCVBufforFlushService.getCounter() % 4 == 0) {
+            if (mockupService.counter % 4 == 0) {
                 previousPositionService.addPosition(current().getBalls());
                 previousPositionService.updatePreviousBallPosition();
             }
