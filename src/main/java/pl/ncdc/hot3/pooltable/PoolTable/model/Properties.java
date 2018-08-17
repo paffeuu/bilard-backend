@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 public class Properties {
 
     public final String BASE_PATH = this.getClass().getClassLoader().getResource("emptyTable.png").toString();
+    public final String TESTS_PATH = "src/main/resources/";
 
     // Bands
     private double tableBandLeft;

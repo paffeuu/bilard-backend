@@ -42,7 +42,7 @@ public class Detector {
 			CueService cueService,
 			Properties properties,
 			BallService ballService
-	) throws DetectorException {
+	) {
 		this.ballService = ballService;
 		this.properties = properties;
 		this.cueService = cueService;
@@ -62,6 +62,7 @@ public class Detector {
 		} catch (DetectorException e) {
 			LOGGER.warn("Cannot make edges for empty source image.");
 		}
+
 	}
 
 	public Mat getCannyImg() {
@@ -108,7 +109,7 @@ public class Detector {
 		Line tempLine;
 
 		Mat substractedImg = new Mat();
-		Mat linesP = getEdges(sourceImg);
+		Mat linesP = getEdges(sourceImg.clone());
 
 		Core.subtract(linesP, cannyImg, substractedImg);
 

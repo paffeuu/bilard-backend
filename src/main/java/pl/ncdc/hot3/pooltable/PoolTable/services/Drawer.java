@@ -62,11 +62,13 @@ public class Drawer {
 		if (cue != null)
 			drawLine(img, cue);
 
-		if (!listOfBalls.isEmpty())
-			drawBalls(img, listOfBalls, null);
+		if (listOfBalls != null && !listOfBalls.isEmpty())
+			drawBalls(img, listOfBalls,  null);
 
-		for (Line line : predictions) {
-            drawLine(img, line);
-        }
+		if (predictions != null && !predictions.isEmpty()) {
+			for (Line line : predictions) {
+				drawLine(img, line);
+			}
+		}
 	}
 }
