@@ -15,7 +15,7 @@ public class PreviousPositionService {
     private ArrayList<Ball> previousPosition;
     private ArrayList<Ball> playerSavedPosition;
     private Line playerSavedStick;
-    private boolean showPrevious = true;
+    private boolean showPrevious = false;
 
     public PreviousPositionService() {
         this.positionsHistory = new ArrayList<ArrayList<Ball>>();
