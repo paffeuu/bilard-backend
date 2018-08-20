@@ -18,13 +18,14 @@ public class PreviousPositionService {
     private boolean showPrevious = false;
 
     public PreviousPositionService() {
-        this.positionsHistory = new ArrayList<ArrayList<Ball>>();
+        this.positionsHistory = new ArrayList<>();
     }
 
     private void updatePreviousBallPosition(Collection<Ball> position) {
         this.previousPosition.clear();
         this.previousPosition.addAll(position);
     }
+
     public void addPosition(ArrayList<Ball> position) {
         this.positionsHistory.add(position);
     }

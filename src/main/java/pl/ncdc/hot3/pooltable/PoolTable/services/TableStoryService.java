@@ -7,14 +7,12 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 import java.util.ArrayList;
@@ -31,6 +29,7 @@ public class TableStoryService {
     private int currentTableIndex;
     private List<PoolTable> tableStory;
     private Mat outputImage;
+    private int counter = 0;
 
     private Detector detector;
     private CameraService cameraService;
@@ -56,6 +55,24 @@ public class TableStoryService {
         currentTableIndex = -1;
 
         tableStory = new ArrayList<>();
+    }
+
+    public TableStoryService saveBefore(int framesStep) {
+        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            makeView();
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("before_frame" + counter + ".jpg", outputClone);
+        }
+        return this;
+    }
+
+    public TableStoryService saveAfter(int framesStep) {
+        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            makeView();
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("after_frame" + counter + ".jpg", outputClone);
+        }
+        return this;
     }
 
     private PoolTable current(int backwardStep){
@@ -87,6 +104,10 @@ public class TableStoryService {
             current(2).setTableImage(null);
         tableStory.add(new PoolTable());
 
+        counter++;
+
+
+
 
         return this;
     }
@@ -116,6 +137,34 @@ public class TableStoryService {
         }
         return this;
 
+    }
+
+    public TableStoryService detectCollision() {
+        try {
+            if (null != current().getCue() && null != current().getBalls()) {
+                Line targetLine = detector.createTargetLine(
+                        current().getCue(),
+                        current().getBalls(),
+                        true
+                );
+
+                if (null != targetLine) {
+                    current().setTargetLine(targetLine);
+                    current().setCue(new Line(
+                            current().getCue().getBegin(),
+                            targetLine.getBegin()
+                    ));
+
+                    List<Line> pred = new ArrayList<>();
+                    pred.add(current().getCue());
+                    current().setPredictions(pred);
+                }
+            }
+        } catch (LineServiceException e) {
+            LOGGER.info("Can not find target line");
+        }
+
+        return this;
     }
 
     public TableStoryService findBalls() {
@@ -161,7 +210,13 @@ public class TableStoryService {
 
     private TableStoryService makeView(){
         try {
-            drawer.draw(outputImage, current().getCue(), current().getBalls(), current().getPredictions());
+            drawer.draw(
+                    outputImage,
+                    current().getCue(),
+                    current().getBalls(),
+                    current().getPredictions(),
+                    current().getTargetLine()
+            );
 
             MatOfByte matOfByte = new MatOfByte();
             Imgcodecs.imencode(".jpg", outputImage, matOfByte);
@@ -171,6 +226,15 @@ public class TableStoryService {
         } finally {
             return this;
         }
+    }
+
+    public TableStoryService save(int framesStep) {
+        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            makeView();
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("test_frame" + OpenCVBufforFlushService.getCounter() + ".jpg", outputClone);
+        }
+        return this;
     }
 
 }
