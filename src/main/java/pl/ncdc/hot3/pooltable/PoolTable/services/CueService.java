@@ -34,12 +34,12 @@ public class CueService {
     public CueService(
             Properties properties,
             LineService lineService
-    ){
+    ) {
         this.properties = properties;
         this.lineService = lineService;
     }
 
-    private double calcAbsoluteDistance(double value1, double value2){
+    private double calcAbsoluteDistance(double value1, double value2) {
         return Math.abs(value1 - value2);
     }
 
@@ -82,8 +82,8 @@ public class CueService {
         double a1, a2;
 
         outerloop:
-        for (int i = 0; i < innerLines.size() - 1; i++){
-            for (int j = 0; j < innerLines.size(); j++){
+        for (int i = 0; i < innerLines.size() - 1; i++) {
+            for (int j = 0; j < innerLines.size(); j++) {
                 if (i != j) {
 
                     a1 = lineService.calcCoordinate_A(innerLines.get(i));
@@ -102,7 +102,7 @@ public class CueService {
             }
         }
 
-        if (cueLine == null){
+        if (cueLine == null) {
             throw new MissingCueLineException("Could not find stick line.");
         }
 
@@ -119,39 +119,21 @@ public class CueService {
         double min1 = getMinWithNoFirst(0, begin2begin, begin2end, end2begin, end2end);
         double min2 = getMinWithNoFirst(min1, begin2begin, begin2end, end2begin, end2end);
 
-        return ((min1 + min2)/2);
+        return ((min1 + min2) / 2);
     }
 
     private double getDistanceBetweenPoints(Point point1, Point point2) {
         return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
 
-    private double getMinWithNoFirst(double discardThisMinValue, double ... values){
+    private double getMinWithNoFirst(double discardThisMinValue, double... values) {
         double temp = Double.MAX_VALUE;
-        for (int i = 0; i < values.length; i++){
+        for (int i = 0; i < values.length; i++) {
             if (values[i] < temp && values[i] != discardThisMinValue) {
                 temp = values[i];
             }
         }
         return temp;
-    }
-
-    public Ball stopLineAtFirstBall(Line line, ArrayList<Ball> balls, boolean isCueLine) {
-        double counter = 0;
-
-        for (Ball ball : balls) {
-            double distance = calculateDistanceBetwenPointAndLine(new Point(ball.getX(), ball.getY()), line);
-
-            if (distance <= ball.getRadius() * 2) {
-                ++counter;
-
-                if (!isCueLine || 2 == counter) {
-                    return ball;
-                }
-            }
-        }
-
-        return null;
     }
 
     public double[] calcAllCordinate(Line line) {
@@ -214,5 +196,27 @@ public class CueService {
                         ball.getY()
                 )
         ));
+    }
+
+    public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
+        double distance = calculateDistanceBetwenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+        double[] cordinates = calcAllCordinate(line);
+        double[] newCordinates = {cordinates[0], cordinates[1], cordinates[2] + distance};
+        double A = newCordinates[0];
+        double B = newCordinates[1];
+        double C = newCordinates[2];
+
+        return lineService.getExtendedStickLineForOneSide(
+                new Line(
+                        new Point(
+                                ball.getX(),
+                                ball.getY()
+                        ),
+                        new Point(
+                                line.getEnd().x,
+                                (-C - A * (line.getEnd().x)) / B
+                        )
+                )
+        );
     }
 }

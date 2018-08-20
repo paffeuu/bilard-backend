@@ -53,6 +53,9 @@ public class TableStoryServiceTests {
     @Autowired
     private PreviousPositionService previousPositionService;
 
+    @Autowired
+    private CueService cueService;
+
     @Test
     public void shouldReturnPoolTableModelWithAllDetailsAndSaveNewImage() throws CameraServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -66,7 +69,7 @@ public class TableStoryServiceTests {
 
         System.out.println(source.width());
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, cueService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -98,7 +101,7 @@ public class TableStoryServiceTests {
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(source);
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, cueService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -128,7 +131,7 @@ public class TableStoryServiceTests {
         CameraService cameraService = mock(CameraService.class);
         when(cameraService.getSnap()).thenReturn(source);
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, cueService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -150,7 +153,7 @@ public class TableStoryServiceTests {
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(null);
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, cueService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -171,7 +174,7 @@ public class TableStoryServiceTests {
 
         ImageUndistorterService undistorterService = new ImageUndistorterService();
         CameraService cameraService = mock(CameraService.class);
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, cueService);
 
         PoolTable table = new PoolTable();
         Mat source;

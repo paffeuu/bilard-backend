@@ -1,22 +1,17 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
-import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
@@ -162,7 +157,7 @@ public class Detector {
 	}
 
     public Line createTargetLine(Line line, ArrayList<Ball> balls, boolean isCue) throws LineServiceException {
-        Ball collision = cueService.stopLineAtFirstBall(line, balls, isCue);
+        Ball collision = getCollisionBall(line, balls, isCue);
 
         if (null != collision) {
             return cueService.findBallColisionLine(line, collision);
@@ -170,6 +165,24 @@ public class Detector {
 
         return null;
     }
+
+	public Ball getCollisionBall(Line line, ArrayList<Ball> balls, boolean skipFirst) {
+		double counter = 0;
+
+		for (Ball ball : balls) {
+			double distance = cueService.calculateDistanceBetwenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+
+			if (distance <= ball.getRadius() * 2) {
+				++counter;
+
+				if (!skipFirst || 2 == counter) {
+					return ball;
+				}
+			}
+		}
+
+		return null;
+	}
 }
 
 

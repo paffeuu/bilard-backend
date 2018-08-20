@@ -15,15 +15,15 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.BallService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {Detector.class, CueService.class, Properties.class, LineService.class})
+@ContextConfiguration(classes = {Detector.class, CueService.class, Properties.class, LineService.class, BallService.class})
 public class LineTest {
     String BASE_PATH = "src/main/resources/";
 
@@ -43,7 +43,7 @@ public class LineTest {
     public void directedLine() throws LineServiceException, DetectorException, CueServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        String sourceImagePath = BASE_PATH + "jacek7.png";
+        String sourceImagePath = BASE_PATH + "jacek6.png";
         Mat sourceImage = Imgcodecs.imread(sourceImagePath, Imgcodecs.IMREAD_COLOR);
 
         detector.setSourceImg(sourceImage.clone());
@@ -98,7 +98,7 @@ public class LineTest {
         ArrayList<Ball> balls = new ArrayList<>();
         balls.add(new Ball(0, 3, 0, 2));
 
-        Ball stoped = cueService.stopLineAtFirstBall(line, balls, false);
+        Ball stoped = detector.getCollisionBall(line, balls, false);
         System.out.print("asd");
     }
 
@@ -122,7 +122,7 @@ public class LineTest {
 
         ArrayList<Ball> balls = detector.createListOfBalls();
 
-        Ball colision1 = cueService.stopLineAtFirstBall(asd, balls, true);
+        Ball colision1 = detector.getCollisionBall(asd, balls, true);
 
         if (null != colision1) {
 //                Imgproc.circle(sourceImage, new Point(colision.getX(), colision.getY()), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
@@ -143,7 +143,7 @@ public class LineTest {
         for (int i = 0; i < properties.getPredictionDepth(); i++){
 
             Line prediction = cueService.predictTrajectoryAfterBump(prevLine);
-            Ball colision = cueService.stopLineAtFirstBall(prediction, balls, false);
+            Ball colision = detector.getCollisionBall(prediction, balls, false);
 
             if (null != colision) {
 //                Imgproc.circle(sourceImage, new Point(colision.getX(), colision.getY()), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);

@@ -35,6 +35,7 @@ public class TableStoryService {
     private CameraService cameraService;
     private Drawer drawer;
     private Properties properties;
+    private CueService cueService;
 
     private PreviousPositionService previousPositionService;
 
@@ -44,13 +45,15 @@ public class TableStoryService {
             CameraService cameraService,
             Drawer drawer,
             Properties properties,
-            PreviousPositionService previousPositionService
+            PreviousPositionService previousPositionService,
+            CueService cueService
     ) {
         this.detector = detector;
         this.cameraService = cameraService;
         this.drawer = drawer;
         this.properties = properties;
         this.previousPositionService = previousPositionService;
+        this.cueService = cueService;
 
         currentTableIndex = -1;
 
@@ -106,15 +109,18 @@ public class TableStoryService {
 
         counter++;
 
-
-
-
         return this;
     }
 
     public TableStoryService findCue(){
         try {
             Line cue = detector.findStickLine();
+            Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
+
+            if (0 == collisionBall.getId()) {
+                cue = cueService.refactorCueLine(cue, collisionBall);
+            }
+
             current().setCue(cue);
         } catch (MissingCueLineException e) {
             //LOGGER.info("Cue not founded.");
