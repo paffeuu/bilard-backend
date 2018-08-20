@@ -1,26 +1,12 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
-import org.apache.catalina.mapper.Mapper;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
-import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.*;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.SnapshotGetterService;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping(path = "/pooltable")
