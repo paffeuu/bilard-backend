@@ -13,16 +13,13 @@ import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
-import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-@ContextConfiguration(classes = {CueService.class, Properties.class})
 @Service
 public class Detector {
 
@@ -130,18 +127,6 @@ public class Detector {
 				linesList.add(tempLine);
 			}
 		}
-
-		if (false && isFrameToTestSave() && linesList.size() > 0){
-			Mat tests = sourceImg.clone();
-			System.out.println("==================================================");
-			System.out.println("Lines: " + linesList.size());
-			System.out.println("==================================================");
-			for (Line line : linesList){
-				Imgproc.line(tests, line.getBegin(), line.getEnd(), new Scalar(0, 0, 255), 7);
-			}
-			Imgcodecs.imwrite("tests/all_lines" + forTestsCounter + ".png", tests);
-		}
-
 		return linesList;
 	}
 
@@ -174,6 +159,8 @@ public class Detector {
 			for (int i = 0; i < properties.getPredictionDepth(); i++){
 				Line pred = cueService.predictTrajectoryAfterBump(predictions.get(i));
 				predictions.add(pred);
+				if (properties.isPointGoingToSocket(pred.getBegin()) || properties.isPointGoingToSocket(pred.getEnd()))
+					break;
 			}
 		}
 

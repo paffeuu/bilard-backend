@@ -31,9 +31,10 @@ public class Drawer {
 		if (img == null)
 			throw new DrawerException("Cannot draw on an empty image source.");
 		else if (null == balls || balls.isEmpty())
-			return;
+            throw new DrawerException("Cannot draw empty ball list.");
 
-		int r;
+
+        int r;
 		for (Ball ball : balls) {
 			r = (int) ball.getRadius();
 			Point center = new Point(ball.getX(), ball.getY());

@@ -84,7 +84,7 @@ public class Properties {
         this.tableBandRight = 1948;
         this.tableBandTop = 350;
         this.tableBandBottom = 1236;
-        this.predictionDepth = 1;
+        this.predictionDepth = 3;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
@@ -444,6 +444,37 @@ public class Properties {
             }
         }
         return false;
+    }
+
+    public boolean isPointGoingToSocket(Point point) {
+        boolean isInSocket = false;
+        double distToSocketTollerace = 45;
+
+        Point leftTop = new Point(tableBandLeft, tableBandTop);
+        Point rightTop = new Point(tableBandRight, tableBandTop);
+        Point leftBot = new Point(tableBandLeft, tableBandBottom);
+        Point rightBot = new Point(tableBandRight, tableBandBottom);
+        Point midTop = new Point((tableBandLeft + tableBandRight) / 2, tableBandTop);
+        Point midBot = new Point((tableBandLeft + tableBandRight) / 2, tableBandBottom);
+
+        if (getDistanceBetweenPoints(point, leftTop) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, rightTop) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, leftBot) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, rightBot) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, midTop) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, midBot) <= distToSocketTollerace)
+            isInSocket = true;
+
+        return isInSocket;
+    }
+
+    private double getDistanceBetweenPoints(Point point1, Point point2) {
+        return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
 
     public String getFullPath(String filename) throws FileNotFoundException {

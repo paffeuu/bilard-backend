@@ -51,7 +51,6 @@ public class CueService {
     }
 
     public Line predictTrajectoryAfterBump(Line line) throws CueServiceException, LineServiceException {
-
         Point bumpPoint = line.getEnd();
         Point halfDistance;
 
@@ -79,11 +78,10 @@ public class CueService {
         try {
             predictedLine = lineService.getExtendedStickLineForOneSide(predictedLine);
         }catch (ExtendLineException e) {
-            LOGGER.warn("Cannot extend predicted line. \n" + predictedLine + ". Nested: " + e.getMessage());
+            LOGGER.warn("Cannot extend predicted line. \n" + predictedLine + ". Nested: " + e);
         }
 
         return predictedLine;
-
     }
 
     public Line findStickLine(List<Line> innerLines) throws MissingCueLineException {
@@ -139,7 +137,7 @@ public class CueService {
     }
 
     public Line stabilize(Line cueLine) {
-        double minNotApproved = Double.MAX_VALUE;
+        double minNotApproved = 99999;
         double minDistTolerance = properties.getPreviousFramesMoveTolerance();
 
         int linesApproveCounter = 0;
@@ -151,14 +149,12 @@ public class CueService {
                 int tempIdx = (detectedCueCounter + i) % properties.getCueDetectDelay();
 
                 if (prevCueLines[tempIdx] != null) {
-                    // TODO: Compare with previous and return closest
                     double dist = getDistanceBetweenPoints(cueLine.getEnd(), prevCueLines[tempIdx].getEnd());
 
                     if (dist <= minDistTolerance){
                         linesApproveCounter++;
                     } else if (dist < minNotApproved) {
                         minNotApproved = dist;
-                        System.out.println(dist);
                     }
                 }
             }
@@ -166,10 +162,6 @@ public class CueService {
 
         if (linesApproveCounter >= (properties.getCueDetectDelay() - 1))
             return cueLine;
-        else {
-            LOGGER.info("Lines approved: " + linesApproveCounter + " min not approved: " + minNotApproved + " min app: " + properties.getPreviousFramesMoveTolerance());
-        }
-
 
         return null;
     }

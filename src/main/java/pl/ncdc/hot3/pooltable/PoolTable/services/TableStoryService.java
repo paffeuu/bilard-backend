@@ -54,44 +54,21 @@ public class TableStoryService {
 
         currentTableIndex = -1;
 
-        tableStory = new ArrayList<>();
-    }
-
-    static int testBeforeMockupLimit = 500;
-    static int testAfterMockupLimit = 500;
-    public TableStoryService saveBefore(int framesStep) {
-        if (testBeforeMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            testBeforeMockupLimit--;
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("tests/before/test_before" + (500 - testBeforeMockupLimit) + ".jpg", outputClone);
-        }
-        return this;
-    }
-
-
-    public TableStoryService saveAfter(int framesStep) {
-        if (testAfterMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            testAfterMockupLimit--;
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("tests/after/test_after" + (500 - testAfterMockupLimit) + ".jpg", outputClone);
-        }
-        return this;
+        tableStory = new ArrayList<>(LIMIT_OF_TABLES);
     }
 
     private PoolTable current(int backwardStep){
         if (currentTableIndex >= backwardStep)
-            return tableStory.get((currentTableIndex - backwardStep) % LIMIT_OF_TABLES);
+            return tableStory.get(currentTableIndex - backwardStep);
 
-        return new PoolTable();
+        return null;
     }
 
     private PoolTable current(){
         if (currentTableIndex >= 0)
-            return tableStory.get((currentTableIndex -1) % LIMIT_OF_TABLES);
+            return tableStory.get(currentTableIndex);
 
-        return new PoolTable();
+        return null;
     }
 
 
@@ -100,19 +77,19 @@ public class TableStoryService {
             outputImage = cameraService.getSnap();
             detector.setSourceImg(outputImage.clone());
         } catch (CameraServiceException e) {
-            LOGGER.warn("Camera view not available. Empty table image as a source");
+            //LOGGER.warn("Camera view not available. Empty table image as a source");
             outputImage = detector.getSourceImg().clone();
         }
 
-
         if (++currentTableIndex > 1)
             current(2).setTableImage(null);
-        tableStory.add(new PoolTable());
 
-        counter++;
+        currentTableIndex = currentTableIndex % LIMIT_OF_TABLES;
 
-
-
+        if (tableStory.size() < LIMIT_OF_TABLES)
+            tableStory.add(new PoolTable());
+        else
+            tableStory.set(currentTableIndex, new PoolTable());
 
         return this;
     }
@@ -196,7 +173,7 @@ public class TableStoryService {
             try {
                 drawer.drawBalls(outputImage, previousPositionService.getPreviousPosition(), new Scalar(255, 0, 255));
             } catch (DrawerException e) {
-                LOGGER.warn("Could not draw previous balls possition. Nested: " + e);
+                //LOGGER.warn("Could not draw previous balls possition. Nested: " + e.getMessage());
             }
         }
 
@@ -210,7 +187,7 @@ public class TableStoryService {
                 previousPositionService.updatePreviousBallPosition();
             }
         } catch (NullPointerException e) {
-            LOGGER.warn("Can not save previous position. Nested: ", e.getMessage());
+            //LOGGER.warn("Can not save previous position. Nested: ", e.getMessage());
         }
     }
 
@@ -223,7 +200,6 @@ public class TableStoryService {
                     current().getPredictions(),
                     current().getTargetLine()
             );
-
             MatOfByte matOfByte = new MatOfByte();
             Imgcodecs.imencode(".jpg", outputImage, matOfByte);
             current().setTableImage(matOfByte.toArray());
@@ -234,11 +210,24 @@ public class TableStoryService {
         }
     }
 
-    public TableStoryService save(int framesStep) {
-        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+    static int testBeforeMockupLimit = 500;
+    static int testAfterMockupLimit = 500;
+    public TableStoryService saveBefore(int framesStep) {
+        if (testBeforeMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            testBeforeMockupLimit--;
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("tests/before/test_before" + (500 - testBeforeMockupLimit) + ".jpg", outputClone);
+        }
+        return this;
+    }
+
+
+    public TableStoryService saveAfter(int framesStep) {
+        if (testAfterMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            testAfterMockupLimit--;
             makeView();
             Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("test_frame" + OpenCVBufforFlushService.getCounter() + ".jpg", outputClone);
+            Imgcodecs.imwrite("tests/after/test_after" + (500 - testAfterMockupLimit) + ".jpg", outputClone);
         }
         return this;
     }
