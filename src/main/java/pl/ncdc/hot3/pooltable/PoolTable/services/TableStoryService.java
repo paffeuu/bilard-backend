@@ -57,6 +57,29 @@ public class TableStoryService {
         tableStory = new ArrayList<>();
     }
 
+    static int testBeforeMockupLimit = 500;
+    static int testAfterMockupLimit = 500;
+    public TableStoryService saveBefore(int framesStep) {
+        if (testBeforeMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            testBeforeMockupLimit--;
+            makeView();
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("tests/before/test_before" + (500 - testBeforeMockupLimit) + ".jpg", outputClone);
+        }
+        return this;
+    }
+
+
+    public TableStoryService saveAfter(int framesStep) {
+        if (testAfterMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
+            testAfterMockupLimit--;
+            makeView();
+            Mat outputClone = outputImage.clone();
+            Imgcodecs.imwrite("tests/after/test_after" + (500 - testAfterMockupLimit) + ".jpg", outputClone);
+        }
+        return this;
+    }
+
     private PoolTable current(int backwardStep){
         if (currentTableIndex >= backwardStep)
             return tableStory.get((currentTableIndex - backwardStep) % LIMIT_OF_TABLES);
@@ -66,7 +89,7 @@ public class TableStoryService {
 
     private PoolTable current(){
         if (currentTableIndex >= 0)
-            return tableStory.get(currentTableIndex % LIMIT_OF_TABLES);
+            return tableStory.get((currentTableIndex -1) % LIMIT_OF_TABLES);
 
         return new PoolTable();
     }
@@ -99,7 +122,7 @@ public class TableStoryService {
             Line cue = detector.findStickLine();
             current().setCue(cue);
         } catch (MissingCueLineException e) {
-            //LOGGER.info("Cue not founded.");
+            LOGGER.info(e.getMessage());
         } catch (LineServiceException e) {
             LOGGER.warn("Missing line when try find cue.", e);
         } catch (DetectorException e) {
@@ -111,7 +134,8 @@ public class TableStoryService {
     public TableStoryService makePredictions(){
 
         try {
-            current().setPredictions(detector.getPredictions(current().getCue()));
+            if (current().getCue() != null)
+                current().setPredictions(detector.getPredictions(current().getCue()));
         } catch (CueServiceException e) {
             //LOGGER.warn("Predictions canceled.", e);
         } catch (LineServiceException e) {
@@ -210,25 +234,11 @@ public class TableStoryService {
         }
     }
 
-    static int testBeforeMockupLimit = 500;
-    static int testAfterMockupLimit = 500;
-    public TableStoryService saveBefore(int framesStep) {
-        if (testBeforeMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            testBeforeMockupLimit--;
+    public TableStoryService save(int framesStep) {
+        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
             makeView();
             Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("tests/before/test_before" + (500 - testBeforeMockupLimit) + ".jpg", outputClone);
-        }
-        return this;
-    }
-
-
-    public TableStoryService saveAfter(int framesStep) {
-        if (testAfterMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            testAfterMockupLimit--;
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("tests/after/test_after" + (500 - testAfterMockupLimit) + ".jpg", outputClone);
+            Imgcodecs.imwrite("test_frame" + OpenCVBufforFlushService.getCounter() + ".jpg", outputClone);
         }
         return this;
     }

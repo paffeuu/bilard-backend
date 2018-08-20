@@ -45,6 +45,7 @@ public class Properties {
     // Stick
     private double cueThickness;
     private double parallelTolerance;
+    private double previousFramesMoveTolerance;
     private int cueDetectDelay;
 
     // Predictions
@@ -54,6 +55,13 @@ public class Properties {
     private boolean showPreviousPosition;
     private int previousFramesFrequency;
 
+    public double getPreviousFramesMoveTolerance() {
+        return previousFramesMoveTolerance;
+    }
+
+    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
+        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
+    }
 
     public Scalar getSolidDrawColor() {
         return solidDrawColor;
@@ -76,10 +84,11 @@ public class Properties {
         this.tableBandRight = 1948;
         this.tableBandTop = 350;
         this.tableBandBottom = 1236;
-        this.predictionDepth = 3;
+        this.predictionDepth = 1;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
+        this.previousFramesMoveTolerance = 10;
         this.cueDetectDelay = 4;
 
         this.ballMaxRadius = 22;

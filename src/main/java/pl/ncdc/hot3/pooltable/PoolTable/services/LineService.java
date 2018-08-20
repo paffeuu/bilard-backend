@@ -26,6 +26,40 @@ public class LineService {
 
     public LineService() {}
 
+    public double[] getDistsToBands(Point point) {
+        double[] distances = new double[4];
+
+        distances[0] = CueService.getDistanceBetweenPoints(point, new Point(properties.getTableBandLeft(), point.y)); // LEFT
+        distances[1] = CueService.getDistanceBetweenPoints(point, new Point(properties.getTableBandRight(), point.y)); // RIGHT
+        distances[2] = CueService.getDistanceBetweenPoints(point, new Point(point.x, properties.getTableBandTop())); // TOP
+        distances[3] = CueService.getDistanceBetweenPoints(point, new Point(point.x, properties.getTableBandBottom())); // LEFT
+
+        return distances;
+    }
+
+    public Line getShortDirectedLine(Line line) {
+        Point begin = line.getBegin();
+        Point end = line.getEnd();
+
+        double[] beginDists = getDistsToBands(begin);
+        double[] endDists = getDistsToBands(end);
+
+        double bMin = beginDists[0], eMin = endDists[0];
+        for (int i = 1; i < 4; i++) {
+            if (beginDists[i] < bMin)
+                bMin = beginDists[i];
+
+            if (endDists[i] < eMin)
+                eMin = endDists[i];
+        }
+
+        if (eMin < bMin) {
+            line = LineService.switchPoints(line);
+        }
+
+        return line;
+    }
+
     public Line getDirectedLine(Line a, Line b) throws LineServiceException {
         Line extendedA = getExtendedStickLineForBothSides(a);
         Line extendedB = getExtendedStickLineForBothSides(b);

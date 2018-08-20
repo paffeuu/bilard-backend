@@ -31,35 +31,31 @@ public class Detector {
 	private Mat emptyTableImage;
 	private Mat sourceImg;
 	private Mat outputImg;
-	private Mat cannyImg;
 
 	private static Properties properties;
 	private CueService cueService;
+	private LineService lineService;
 	private BallService ballService;
 
 	@Autowired
 	public Detector(
 			CueService cueService,
 			Properties properties,
-			BallService ballService
+			BallService ballService,
+			LineService lineService
 	) {
 		this.ballService = ballService;
 		this.properties = properties;
 		this.cueService = cueService;
+		this.lineService = lineService;
 
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		this.cannyImg = new Mat();
-
-
 
 		try {
 			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
-			emptyTableImage = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
 
-			cannyImg = getEdges(sourceImg);
-			Imgcodecs.imwrite("Canny_Before.jpg", cannyImg);
-			Imgproc.equalizeHist(cannyImg, cannyImg);
-			Imgcodecs.imwrite("Canny_after.jpg", cannyImg);
+			emptyTableImage = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
+			emptyTableImage = prepereEmptyTableForSubs(emptyTableImage.clone());
 
 		} catch (FileNotFoundException e) {
 			LOGGER.error("File with empty table not founded.");
@@ -67,14 +63,6 @@ public class Detector {
 			LOGGER.warn("Cannot make edges for empty source image.");
 		}
 
-	}
-
-	public Mat getCannyImg() {
-		return cannyImg;
-	}
-
-	public void setCannyImg(Mat cannyImg) {
-		this.cannyImg = cannyImg;
 	}
 
 	public Mat getSourceImg() {
@@ -106,27 +94,36 @@ public class Detector {
 		}
 	}
 
-	public Line findStickLine() throws MissingCueLineException, DetectorException, LineServiceException {
+	public Line findStickLine() throws MissingCueLineException, DetectorException {
+		Mat substractedImg = getEdges(getSourceImg().clone());
+		List <Line> linesList = getInnerLines(substractedImg);
+		Line cueLine = cueService.findStickLine(linesList);
+		cueLine = cueService.stabilize(cueLine);
 
-		List <Line> linesList = getInnerLines();
-		return cueService.findStickLine(linesList);
-
+		return cueLine;
 	}
 
-	private List<Line> getInnerLines() throws DetectorException {
+	private boolean isFrameToTestSave(){
+		if (forTestsCounter++ % 4 == 0){
+			if (forTestsCounter > 40 && forTestsCounter < 120){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public List<Line> getInnerLines(Mat substractedImage) {
 		Line tempLine;
 
-		Mat substractedImg = new Mat();
-		Mat linesP = getEdges(sourceImg.clone());
+		Mat linesData = new Mat();
 
-		Core.subtract(linesP, cannyImg, substractedImg);
 
-		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 70, 50, 10);
+		Imgproc.HoughLinesP(substractedImage, linesData, 1, Math.PI/180, 70, 50, 10);
 
 		List <Line> linesList = new ArrayList<>();
 
-		for (int x = 0; x < linesP.rows(); x++){
-			double line[] = linesP.get(x, 0);
+		for (int x = 0; x < linesData.rows(); x++){
+			double line[] = linesData.get(x, 0);
 
 			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
 			if (properties.isPointInsideBand(tempLine.getBegin()) || properties.isPointInsideBand(tempLine.getEnd())){
@@ -134,25 +131,39 @@ public class Detector {
 			}
 		}
 
+		if (false && isFrameToTestSave() && linesList.size() > 0){
+			Mat tests = sourceImg.clone();
+			System.out.println("==================================================");
+			System.out.println("Lines: " + linesList.size());
+			System.out.println("==================================================");
+			for (Line line : linesList){
+				Imgproc.line(tests, line.getBegin(), line.getEnd(), new Scalar(0, 0, 255), 7);
+			}
+			Imgcodecs.imwrite("tests/all_lines" + forTestsCounter + ".png", tests);
+		}
+
 		return linesList;
 	}
 
-	private Mat getEdges(Mat source) throws DetectorException {
-		Mat dst = new Mat();
+	private static int forTestsCounter = 0;
+	public Mat getEdges(Mat source) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();
 
 		try {
-			Imgproc.blur(source, dst, new Size(6,6));
+			Imgproc.blur(source, source, new Size(6,6));
 
-			Imgproc.cvtColor(dst, dst, Imgproc.COLOR_BGR2HSV);
-			Core.split(dst, layers);
-			Imgproc.Canny(layers.get(2), dst, 50, 200, 3, false);
+			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
+			Core.split(source, layers);
+			Imgproc.Canny(layers.get(2), source, 50, 200, 3, false);
+			Imgproc.threshold(source, source, 200, 255, Imgproc.THRESH_BINARY);
+
+			Core.subtract(source, emptyTableImage, source);
 
 		} catch (Exception e){
 			throw new LinesDetectorException("Could not read source stream.", e);
 		}
 
-		return dst;
+		return source;
 	}
 
 	public List<Line> getPredictions(Line cueLine) throws CueServiceException, LineServiceException {
@@ -178,6 +189,22 @@ public class Detector {
 
         return null;
     }
+
+    private Mat prepereEmptyTableForSubs(Mat emptyTableImage) throws DetectorException {
+		List <Mat> layers = new ArrayList<>();
+
+		try {
+			Imgproc.cvtColor(emptyTableImage, emptyTableImage, Imgproc.COLOR_BGR2HSV);
+			Core.split(emptyTableImage, layers);
+
+			Imgproc.Canny(layers.get(2), emptyTableImage, 50, 200, 3, false);
+
+		} catch (Exception e){
+			throw new DetectorException("Could not prepere empty table image for substract.", e);
+		}
+
+		return emptyTableImage;
+	}
 }
 
 

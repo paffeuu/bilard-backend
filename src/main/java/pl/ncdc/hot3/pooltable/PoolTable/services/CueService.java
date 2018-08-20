@@ -86,9 +86,12 @@ public class CueService {
 
     }
 
-    public Line findStickLine(List<Line> innerLines) throws MissingCueLineException, LineServiceException {
+    public Line findStickLine(List<Line> innerLines) throws MissingCueLineException {
 
         Line cueLine = null;
+
+        if (innerLines.isEmpty())
+            return cueLine;
 
         double dist;
         double a1, a2, pMin = properties.getParallelTolerance(), distMin = properties.getCueThickness();
@@ -98,14 +101,13 @@ public class CueService {
             for (int j = 0; j < innerLines.size(); j++){
                 if (i != j) {
 
-                    a1 = lineService.calcCoordinate_A(innerLines.get(i));
-                    a2 = lineService.calcCoordinate_A(innerLines.get(j));
+                    a1 = calcAllCordinate(innerLines.get(i))[0];
+                    a2 = calcAllCordinate(innerLines.get(j))[0];
 
                     if (Math.abs(a1 - a2) < pMin) {
                         pMin = Math.abs(a1 - a2);
                         indexOfLine_A = i;
                         indexOfLine_B = j;
-
 
                         double b_coord_line1 = calcAllCordinate(innerLines.get(i))[2];
                         double b_coord_line2 = calcAllCordinate(innerLines.get(j))[2];
@@ -120,50 +122,56 @@ public class CueService {
         }
 
         try {
-            cueLine = lineService.getDirectedLine(innerLines.get(indexOfLine_A), innerLines.get(indexOfLine_B));
-            cueLine = stabilizeWithPrevious(cueLine);
-        } catch (IndexOutOfBoundsException e) {
-            //LOGGER.error("LineList size: " + innerLines.size() + ", A: " + indexOfLine_A + ", B: " + indexOfLine_B);
-            throw new MissingCueLineException("Could not find stick line, index pout of bounds.");
-        } catch (ExtendLineException e) {
-            throw new MissingCueLineException("Could not extend finded line.");
-        }
+            double cue1length = CueService.getDistanceBetweenPoints(innerLines.get(indexOfLine_A).getBegin(), innerLines.get(indexOfLine_A).getEnd());
+            double cue2length = CueService.getDistanceBetweenPoints(innerLines.get(indexOfLine_B).getBegin(), innerLines.get(indexOfLine_B).getEnd());
 
+            if (cue1length >= cue2length) {
+                cueLine = lineService.getShortDirectedLine(innerLines.get(indexOfLine_A));
+            } else
+                cueLine = lineService.getShortDirectedLine(innerLines.get(indexOfLine_B));
 
-        if (cueLine == null){
-            throw new MissingCueLineException("Could not find stick line.");
+            cueLine = lineService.getExtendedStickLineForOneSide(cueLine);
+        } catch (LineServiceException e) {
+            throw new MissingCueLineException("Cannot extend cue line.", e);
         }
 
         return cueLine;
     }
 
-    public Line stabilizeWithPrevious(Line cueLine) {
-        double correctCueDistTollerance = 10;
-        double endMin = correctCueDistTollerance;
-        int lastCorrectIndex = detectedCueCounter;
+    public Line stabilize(Line cueLine) {
+        double minNotApproved = Double.MAX_VALUE;
+        double minDistTolerance = properties.getPreviousFramesMoveTolerance();
 
-        detectedCueCounter = (detectedCueCounter+1) % cueDetectDelay;
+        int linesApproveCounter = 0;
+        prevCueLines[detectedCueCounter] = cueLine;
+        if (cueLine != null && detectedCueCounter++ > 0){
+            detectedCueCounter = detectedCueCounter % properties.getCueDetectDelay();
 
-        for (int i = 0; i < properties.getCueDetectDelay(); i++){
-            if (prevCueLines[i] != null){
-                double beginsDist = getDistanceBetweenPoints(cueLine.getBegin(), prevCueLines[i].getBegin());
-                double endsDist = getDistanceBetweenPoints(cueLine.getEnd(), prevCueLines[i].getEnd());
+            for (int i = 0; i < properties.getCueDetectDelay() - 1; i++) {
+                int tempIdx = (detectedCueCounter + i) % properties.getCueDetectDelay();
 
-                if (endsDist <= endMin) {
-                    endMin = endsDist;
-                    lastCorrectIndex = i;
+                if (prevCueLines[tempIdx] != null) {
+                    // TODO: Compare with previous and return closest
+                    double dist = getDistanceBetweenPoints(cueLine.getEnd(), prevCueLines[tempIdx].getEnd());
+
+                    if (dist <= minDistTolerance){
+                        linesApproveCounter++;
+                    } else if (dist < minNotApproved) {
+                        minNotApproved = dist;
+                        System.out.println(dist);
+                    }
                 }
             }
         }
 
-        prevCueLines[detectedCueCounter] = cueLine;
-        if (prevCueLines[lastCorrectIndex] != null)
-            return prevCueLines[lastCorrectIndex];
+        if (linesApproveCounter >= (properties.getCueDetectDelay() - 1))
+            return cueLine;
         else {
-            LOGGER.error("RETURNED NEW CUE, incorrect stabilize.");
-            return null;
+            LOGGER.info("Lines approved: " + linesApproveCounter + " min not approved: " + minNotApproved + " min app: " + properties.getPreviousFramesMoveTolerance());
         }
 
+
+        return null;
     }
 
     private double getDistanceBetweenLines(Line line1, Line line2) {
@@ -179,7 +187,7 @@ public class CueService {
         return ((min1 + min2)/2);
     }
 
-    private double getDistanceBetweenPoints(Point point1, Point point2) {
+    public static double getDistanceBetweenPoints(Point point1, Point point2) {
         return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
 
