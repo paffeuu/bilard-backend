@@ -30,6 +30,7 @@ public class Properties {
     // Ball
     private int ballMaxRadius;
     private int ballMinRadius;
+    private int ballExpectedRadius;
     private int ballMinDistance;
     private Scalar solidDrawColor;
     private Scalar stripedDrawColor;
@@ -71,18 +72,23 @@ public class Properties {
     }
 
     public Properties() {
-        this.tableBandLeft = 165;
-        this.tableBandRight = 1948;
-        this.tableBandTop = 350;
-        this.tableBandBottom = 1236;
+        this.ballMaxRadius = 22;
+        this.ballMinRadius = 16;
+        this.ballMinDistance = 36;
+        this.ballExpectedRadius = 21;
+
+        /*
+        Pomniejszenie pola gry o promień bili białej (w celu poprawienia predykcji odbicia od bandy)
+         */
+        this.tableBandLeft = 165 + this.ballExpectedRadius;
+        this.tableBandRight = 1948 - this.ballExpectedRadius;
+        this.tableBandTop = 350 + this.ballExpectedRadius;
+        this.tableBandBottom = 1236 - this.ballExpectedRadius;
         this.predictionDepth = 3;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
 
-        this.ballMaxRadius = 22;
-        this.ballMinRadius = 16;
-        this.ballMinDistance = 36;
         this.solidDrawColor = new Scalar(0, 0, 255);
         this.stripedDrawColor = new Scalar(0, 255, 0);
 
@@ -408,6 +414,24 @@ public class Properties {
      */
     public void setImageSourceHeight(double imageSourceHeight) {
         this.imageSourceHeight = imageSourceHeight;
+    }
+
+    /**
+     * Get ball expected radius
+     *
+     * @return
+     */
+    public int getBallExpectedRadius() {
+        return ballExpectedRadius;
+    }
+
+    /**
+     * Set ball epected radius
+     *
+     * @param ballExpectedRadius
+     */
+    public void setBallExpectedRadius(int ballExpectedRadius) {
+        this.ballExpectedRadius = ballExpectedRadius;
     }
 
     public int getPredictionDepth() {

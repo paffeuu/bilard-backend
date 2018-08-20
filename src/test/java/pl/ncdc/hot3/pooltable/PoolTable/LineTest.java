@@ -15,6 +15,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.BallService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {Detector.class, CueService.class, Properties.class, LineService.class})
+@ContextConfiguration(classes = {Detector.class, CueService.class, Properties.class, LineService.class, BallService.class})
 public class LineTest {
     String BASE_PATH = "src/main/resources/";
 
@@ -43,7 +44,7 @@ public class LineTest {
     public void directedLine() throws LineServiceException, DetectorException, CueServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        String sourceImagePath = BASE_PATH + "jacek7.png";
+        String sourceImagePath = BASE_PATH + "jacek6.png";
         Mat sourceImage = Imgcodecs.imread(sourceImagePath, Imgcodecs.IMREAD_COLOR);
 
         detector.setSourceImg(sourceImage.clone());
