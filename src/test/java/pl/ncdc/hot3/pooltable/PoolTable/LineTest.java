@@ -84,8 +84,8 @@ public class LineTest {
         );
         Point point = new Point(2, 0);
 
-        double[] cordinates = cueService.calcAllCordinate(line);
-        double distance = cueService.calculateDistanceBetwenPointAndLine(point, line);
+        double[] cordinates = cueService.calcAllCoordinate(line);
+        double distance = cueService.calculateDistanceBetweenPointAndLine(point, line);
         System.out.print(cordinates[0] + " | " + cordinates[1] + " | " + cordinates[2] + " | " + distance);
     }
 

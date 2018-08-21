@@ -1,11 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +10,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static pl.ncdc.hot3.pooltable.PoolTable.services.LineService.calculateDistanceBetweenPoints;
 
@@ -136,7 +129,7 @@ public class CueService {
         return temp;
     }
 
-    public double[] calcAllCordinate(Line line) {
+    public double[] calcAllCoordinate(Line line) {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
         double a = Y / X;
@@ -145,8 +138,8 @@ public class CueService {
         return new double[]{a, -1, b};
     }
 
-    public double calculateDistanceBetwenPointAndLine(Point point, Line line) {
-        double[] cordinates = calcAllCordinate(line);
+    public double calculateDistanceBetweenPointAndLine(Point point, Line line) {
+        double[] cordinates = calcAllCoordinate(line);
 
         // http://matematyka.pisz.pl/strona/1249.html
         return Math.abs(cordinates[0] * point.x + cordinates[1] * point.y + cordinates[2]) /
@@ -154,7 +147,7 @@ public class CueService {
     }
 
     public Line findBallColisionLine(Line line, Ball ball) throws LineServiceException {
-        double[] cordinates = calcAllCordinate(line);
+        double[] cordinates = calcAllCoordinate(line);
         double A = cordinates[0];
         double B = cordinates[1];
         double C = cordinates[2];
@@ -199,8 +192,8 @@ public class CueService {
     }
 
     public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
-        double distance = calculateDistanceBetwenPointAndLine(new Point(ball.getX(), ball.getY()), line);
-        double[] cordinates = calcAllCordinate(line);
+        double distance = calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+        double[] cordinates = calcAllCoordinate(line);
         double[] newCordinates = {cordinates[0], cordinates[1], cordinates[2] + distance};
         double A = newCordinates[0];
         double B = newCordinates[1];

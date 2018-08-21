@@ -170,7 +170,7 @@ public class Detector {
 		double counter = 0;
 
 		for (Ball ball : balls) {
-			double distance = cueService.calculateDistanceBetwenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+			double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 
 			if (distance <= ball.getRadius() * 2) {
 				++counter;
