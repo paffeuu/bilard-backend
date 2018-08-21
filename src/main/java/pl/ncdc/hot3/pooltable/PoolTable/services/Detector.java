@@ -160,7 +160,7 @@ public class Detector {
         Ball collision = getCollisionBall(line, balls, isCue);
 
         if (null != collision) {
-            return cueService.findBallColisionLine(line, collision);
+            return cueService.findBallCollisionLine(line, collision);
         }
 
         return null;

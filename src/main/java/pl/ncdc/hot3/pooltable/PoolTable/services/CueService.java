@@ -139,18 +139,18 @@ public class CueService {
     }
 
     public double calculateDistanceBetweenPointAndLine(Point point, Line line) {
-        double[] cordinates = calcAllCoordinate(line);
+        double[] coordinates = calcAllCoordinate(line);
 
         // http://matematyka.pisz.pl/strona/1249.html
-        return Math.abs(cordinates[0] * point.x + cordinates[1] * point.y + cordinates[2]) /
-                Math.sqrt(Math.pow(cordinates[0], 2) + Math.pow(cordinates[1], 2));
+        return Math.abs(coordinates[0] * point.x + coordinates[1] * point.y + coordinates[2]) /
+                Math.sqrt(Math.pow(coordinates[0], 2) + Math.pow(coordinates[1], 2));
     }
 
-    public Line findBallColisionLine(Line line, Ball ball) throws LineServiceException {
-        double[] cordinates = calcAllCoordinate(line);
-        double A = cordinates[0];
-        double B = cordinates[1];
-        double C = cordinates[2];
+    public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
+        double[] coordinates = calcAllCoordinate(line);
+        double A = coordinates[0];
+        double B = coordinates[1];
+        double C = coordinates[2];
         double Sx = ball.getX();
         double Sy = ball.getY();
         double d = ball.getRadius() * 2;
@@ -193,11 +193,11 @@ public class CueService {
 
     public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
         double distance = calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
-        double[] cordinates = calcAllCoordinate(line);
-        double[] newCordinates = {cordinates[0], cordinates[1], cordinates[2] + distance};
-        double A = newCordinates[0];
-        double B = newCordinates[1];
-        double C = newCordinates[2];
+        double[] coordinates = calcAllCoordinate(line);
+        double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};
+        double A = newCoordinates[0];
+        double B = newCoordinates[1];
+        double C = newCoordinates[2];
 
         return lineService.getExtendedStickLineForOneSide(
                 new Line(

@@ -158,6 +158,8 @@ public class TableStoryService {
                 );
 
                 if (null != targetLine) {
+                    // Celowanie dla bezpośredniego trafienia
+
                     current().setTargetLine(targetLine);
                     current().setCue(new Line(
                             current().getCue().getBegin(),
@@ -167,6 +169,37 @@ public class TableStoryService {
                     List<Line> pred = new ArrayList<>();
                     pred.add(current().getCue());
                     current().setPredictions(pred);
+                } else {
+                    // Celowanie po odbiciu od bandy
+
+                    List<Line> newPredictions = new ArrayList<>();
+                    int index = 0;
+                    int colisionIndex = -1;
+
+                    for (Line prediction : current().getPredictions()) {
+                        targetLine = detector.createTargetLine(
+                                prediction,
+                                current().getBalls(),
+                                false
+                        );
+
+                        if (null != targetLine) {
+                            current().setTargetLine(targetLine);
+                            current().getPredictions().set(index, new Line(prediction.getBegin(), targetLine.getBegin()));
+//                            newPredictions.add(new Line(prediction.getBegin(), targetLine.getBegin()));
+                            colisionIndex = index;
+                        }
+
+                        ++index;
+                    }
+
+//                    if (-1 != colisionIndex) {
+//                        for (int i = colisionIndex-1; i >= 0; --i) {
+//                            current().getPredictions().remove(i);
+//                        }
+//                    }
+
+//                    current().setPredictions(newPredictions);
                 }
             }
         } catch (LineServiceException e) {

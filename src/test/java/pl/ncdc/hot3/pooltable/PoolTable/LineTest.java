@@ -128,7 +128,7 @@ public class LineTest {
 //                Imgproc.circle(sourceImage, new Point(colision.getX(), colision.getY()), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
 //                Imgproc.circle(sourceImage, c[0], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
 //                Imgproc.circle(sourceImage, c[1], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-            Line celownik = cueService.findBallColisionLine(asd, colision1);
+            Line celownik = cueService.findBallCollisionLine(asd, colision1);
             celownik = lineService.getExtendedStickLineForOneSide(celownik);
             Imgproc.line(sourceImage, celownik.getBegin(), celownik.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
             Imgproc.circle(sourceImage, celownik.getBegin(), new Double(colision1.getRadius()).intValue(), new Scalar(0, 255, 255), 3);
@@ -149,7 +149,7 @@ public class LineTest {
 //                Imgproc.circle(sourceImage, new Point(colision.getX(), colision.getY()), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
 //                Imgproc.circle(sourceImage, c[0], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
 //                Imgproc.circle(sourceImage, c[1], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-                Line celownik = cueService.findBallColisionLine(prediction, colision);
+                Line celownik = cueService.findBallCollisionLine(prediction, colision);
                 celownik = lineService.getExtendedStickLineForOneSide(celownik);
                 Imgproc.line(sourceImage, celownik.getBegin(), celownik.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
                 Imgproc.circle(sourceImage, celownik.getBegin(), new Double(colision.getRadius()).intValue(), new Scalar(0, 255, 255), 3);
