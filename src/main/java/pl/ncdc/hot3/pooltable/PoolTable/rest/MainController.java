@@ -27,7 +27,7 @@ public class MainController {
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
     public ResponseEntity<PoolTable> test() throws CameraServiceException {
-        System.gc();
+
         PoolTable table = tableStoryService
                 .next()
                 .findBalls()

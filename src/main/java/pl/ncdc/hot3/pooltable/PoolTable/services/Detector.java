@@ -90,12 +90,8 @@ public class Detector {
 	}
 
 	public ArrayList<Ball> createListOfBalls() throws BallsDetectorException {
-		Mat circles = ballService.detectBalls(sourceImg);
 
-		List<Rect> roiList = ballService.getBallsROI(ballService.convertMatToArray(circles));
-		List<Mat> ballImgList = ballService.cropImage(roiList, sourceImg);
-
-		return ballService.createListOfBalls(circles, sourceImg, ballImgList, roiList);
+		return ballService.createListOfBalls(sourceImg);
 	}
 
 	public Line findStickLine() throws MissingCueLineException, DetectorException, LineServiceException {
@@ -113,18 +109,21 @@ public class Detector {
 
 		Core.subtract(linesP, cannyImg, substractedImg);
 
-		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 70, 50, 10);
+		Mat houghImage = new Mat();
+		Imgproc.HoughLinesP(substractedImg, houghImage, 1, Math.PI/180, 70, 50, 10);
+        substractedImg.release();
 
 		List <Line> linesList = new ArrayList<>();
 
-		for (int x = 0; x < linesP.rows(); x++){
-			double line[] = linesP.get(x, 0);
+		for (int x = 0; x < houghImage.rows(); x++){
+			double line[] = houghImage.get(x, 0);
 
 			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
 			if (properties.isPointInsideBand(tempLine.getBegin()) || properties.isPointInsideBand(tempLine.getEnd())){
 				linesList.add(tempLine);
 			}
 		}
+		houghImage.release();
 
 		return linesList;
 	}
@@ -132,19 +131,26 @@ public class Detector {
 	private Mat getEdges(Mat source) throws DetectorException {
 		Mat dst = new Mat();
 		List <Mat> layers = new ArrayList<>();
+		Mat convertedImg = new Mat();
+		Mat finalImage = new Mat();
 
 		try {
 			Imgproc.blur(source, dst, new Size(6,6));
 
-			Imgproc.cvtColor(dst, dst, Imgproc.COLOR_BGR2HSV);
-			Core.split(dst, layers);
-			Imgproc.Canny(layers.get(2), dst, 50, 200, 3, false);
+			Imgproc.cvtColor(dst, convertedImg, Imgproc.COLOR_BGR2HSV);
+			dst.release();
+
+			Core.split(convertedImg, layers);
+			convertedImg.release();
+
+			Imgproc.Canny(layers.get(2), finalImage, 50, 200, 3, false);
+            layers.clear();
 
 		} catch (Exception e){
 			throw new LinesDetectorException("Could not read source stream.", e);
 		}
 
-		return dst;
+		return finalImage;
 	}
 
 	public List<Line> getPredictions(Line cueLine) throws CueServiceException, LineServiceException {
