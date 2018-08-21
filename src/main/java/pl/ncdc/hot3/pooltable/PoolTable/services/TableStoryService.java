@@ -94,8 +94,8 @@ public class TableStoryService {
     }
 
 
-    public TableStoryService next() {
-        outputImage = mockupService.getLiveSnapshot();
+    public TableStoryService next() throws CameraServiceException {
+        outputImage = cameraService.getSnap();
         detector.setSourceImg(outputImage.clone());
 
 

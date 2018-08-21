@@ -53,7 +53,7 @@ public class MainController {
     }
 
 
-    @Scheduled(fixedRate = 500)
+    @Scheduled(fixedRate = 125)
     public void socketSendTable() throws Exception{
         System.gc();
         PoolTable table = tableStoryService

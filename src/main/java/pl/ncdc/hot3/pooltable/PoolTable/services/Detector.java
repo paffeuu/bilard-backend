@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.opencv.core.*;
+import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 @ContextConfiguration(classes = {CueService.class, Properties.class})
 @Service
@@ -31,16 +33,19 @@ public class Detector {
 	private static Properties properties;
 	private CueService cueService;
 	private BallService ballService;
+	private ImageUndistorterService imageUndistorterService;
 
 	@Autowired
 	public Detector(
 			CueService cueService,
 			Properties properties,
-			BallService ballService
+			BallService ballService,
+			ImageUndistorterService imageUndistorterService
 	) {
 		this.ballService = ballService;
 		this.properties = properties;
 		this.cueService = cueService;
+		this.imageUndistorterService = imageUndistorterService;
 
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		this.cannyImg = new Mat();
