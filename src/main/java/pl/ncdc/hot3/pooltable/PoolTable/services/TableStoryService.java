@@ -13,6 +13,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class TableStoryService {
     private CameraService cameraService;
     private Drawer drawer;
     private Properties properties;
+    private MockupService mockupService;
 
     private PreviousPositionService previousPositionService;
 
@@ -44,13 +46,15 @@ public class TableStoryService {
             CameraService cameraService,
             Drawer drawer,
             Properties properties,
-            PreviousPositionService previousPositionService
+            PreviousPositionService previousPositionService,
+            MockupService mockupService
     ) {
         this.detector = detector;
         this.cameraService = cameraService;
         this.drawer = drawer;
         this.properties = properties;
         this.previousPositionService = previousPositionService;
+        this.mockupService = mockupService;
 
         currentTableIndex = -1;
 
@@ -91,13 +95,8 @@ public class TableStoryService {
 
 
     public TableStoryService next() {
-        try {
-            outputImage = cameraService.getSnap();
-            detector.setSourceImg(outputImage.clone());
-        } catch (CameraServiceException e) {
-            LOGGER.warn("Camera view not available. Empty table image as a source");
-            outputImage = detector.getSourceImg().clone();
-        }
+        outputImage = mockupService.getLiveSnapshot();
+        detector.setSourceImg(outputImage.clone());
 
 
         if (++currentTableIndex > 1)
@@ -169,8 +168,8 @@ public class TableStoryService {
 
     public TableStoryService findBalls() {
         try {
-            ArrayList<Ball> q = detector.createListOfBalls();
-            current().setBalls(q);
+            List<Ball> balls = detector.createListOfBalls();
+            current().setBalls(balls);
         } catch (BallsDetectorException e) {
             LOGGER.info("Can not find balls");
         }
@@ -227,14 +226,4 @@ public class TableStoryService {
             return this;
         }
     }
-
-    public TableStoryService save(int framesStep) {
-        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("test_frame" + OpenCVBufforFlushService.getCounter() + ".jpg", outputClone);
-        }
-        return this;
-    }
-
 }

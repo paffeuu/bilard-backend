@@ -11,9 +11,9 @@ public class Ball implements Comparable<Ball> {
 
     @Override
     public int compareTo(Ball b) {
-        if(this.x < b.x) {
+        if(this.id < b.id) {
             return -1;
-        } else if(b.x < this.x) {
+        } else if(b.id < this.id) {
             return 1;
         }else {
             return 0;

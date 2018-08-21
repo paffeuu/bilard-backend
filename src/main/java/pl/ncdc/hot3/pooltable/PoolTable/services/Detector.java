@@ -1,22 +1,17 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
-import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
@@ -56,7 +51,7 @@ public class Detector {
 			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
 			emptyTableImage = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
 
-			cannyImg = getEdges(sourceImg);
+			cannyImg = getEdges();
 		} catch (FileNotFoundException e) {
 			LOGGER.error("File with empty table not founded.");
 		} catch (DetectorException e) {
@@ -89,13 +84,10 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	public ArrayList<Ball> createListOfBalls() throws BallsDetectorException {
-		Mat circles = ballService.detectBalls(sourceImg);
+	public List<Ball> createListOfBalls() throws BallsDetectorException {
+		ballService.setSourceImg(sourceImg);
 
-		List<Rect> roiList = ballService.getBallsROI(ballService.convertMatToArray(circles));
-		List<Mat> ballImgList = ballService.cropImage(roiList, sourceImg);
-
-		return ballService.createListOfBalls(circles, sourceImg, ballImgList, roiList);
+		return ballService.createListOfBalls();
 	}
 
 	public Line findStickLine() throws MissingCueLineException, DetectorException, LineServiceException {
@@ -109,11 +101,13 @@ public class Detector {
 		Line tempLine;
 
 		Mat substractedImg = new Mat();
-		Mat linesP = getEdges(sourceImg.clone());
+		Mat linesP = getEdges();
 
 		Core.subtract(linesP, cannyImg, substractedImg);
+		linesP.release();
 
 		Imgproc.HoughLinesP(substractedImg, linesP, 1, Math.PI/180, 70, 50, 10);
+		substractedImg.release();
 
 		List <Line> linesList = new ArrayList<>();
 
@@ -129,22 +123,29 @@ public class Detector {
 		return linesList;
 	}
 
-	private Mat getEdges(Mat source) throws DetectorException {
+	private Mat getEdges() throws DetectorException {
 		Mat dst = new Mat();
-		List <Mat> layers = new ArrayList<>();
+		Mat hsv = new Mat();
+		Mat edges = new Mat();
+		List<Mat> layers = new ArrayList<>();
 
 		try {
-			Imgproc.blur(source, dst, new Size(6,6));
+			Imgproc.blur(sourceImg.clone(), dst, new Size(6, 6));
 
-			Imgproc.cvtColor(dst, dst, Imgproc.COLOR_BGR2HSV);
-			Core.split(dst, layers);
-			Imgproc.Canny(layers.get(2), dst, 50, 200, 3, false);
+			Imgproc.cvtColor(dst, hsv, Imgproc.COLOR_BGR2HSV);
+			dst.release();
 
-		} catch (Exception e){
+			Core.split(hsv, layers);
+			hsv.release();
+
+			Imgproc.Canny(layers.get(2), edges, 50, 200, 3, false);
+			layers.clear();
+
+		} catch (Exception e) {
 			throw new LinesDetectorException("Could not read source stream.", e);
 		}
 
-		return dst;
+		return edges;
 	}
 
 	public List<Line> getPredictions(Line cueLine) throws CueServiceException, LineServiceException {
@@ -161,7 +162,7 @@ public class Detector {
 		return predictions;
 	}
 
-    public Line createTargetLine(Line line, ArrayList<Ball> balls, boolean isCue) throws LineServiceException {
+    public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
         Ball collision = cueService.stopLineAtFirstBall(line, balls, isCue);
 
         if (null != collision) {

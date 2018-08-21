@@ -136,7 +136,7 @@ public class CueService {
         return temp;
     }
 
-    public Ball stopLineAtFirstBall(Line line, ArrayList<Ball> balls, boolean isCueLine) {
+    public Ball stopLineAtFirstBall(Line line, List<Ball> balls, boolean isCueLine) {
         double counter = 0;
 
         for (Ball ball : balls) {
