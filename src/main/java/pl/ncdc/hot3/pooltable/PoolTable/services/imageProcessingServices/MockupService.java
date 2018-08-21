@@ -4,7 +4,6 @@ import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.ncdc.hot3.pooltable.PoolTable.ProjectProperties;
 
 import java.io.IOException;
 import java.util.ArrayList;

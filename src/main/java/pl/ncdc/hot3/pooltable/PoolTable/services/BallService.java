@@ -9,10 +9,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -146,7 +143,7 @@ public class BallService {
         return balls;
     }
 
-    double[] convertMatToArray(Mat mat) {
+    double[] convertMatToArray(Mat mat) throws BallsDetectorException {
         double[] data = null;
         try {
             int size = (int) mat.total() * mat.channels();
