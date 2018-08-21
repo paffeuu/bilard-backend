@@ -52,8 +52,7 @@ public class MainController {
         properties.setShowPreviousPosition(!properties.isShowPreviousPosition());
     }
 
-
-    @Scheduled(fixedRate = 500)
+    @Scheduled(fixedRate = 125)
     public void socketSendTable() throws Exception{
         System.gc();
         PoolTable table = tableStoryService

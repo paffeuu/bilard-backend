@@ -148,13 +148,14 @@ public class BallService {
         // split into planes
         List<Mat> planes = new ArrayList<>(3);
         Core.split(convertedImage, planes);
-        convertedImage.release();
+
 
         Mat destinationImage = new Mat();
         // detect circles
         Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0, properties.getBallMinDistance(),
                 30, 15, properties.getBallMinRadius(), properties.getBallMaxRadius());
         planes.clear();
+        convertedImage.release();
 
         return this.filterCircles(destinationImage);
     }
