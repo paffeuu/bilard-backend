@@ -115,10 +115,13 @@ public class TableStoryService {
     public TableStoryService findCue(){
         try {
             Line cue = detector.findStickLine();
-            Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
 
-            if (0 == collisionBall.getId()) {
-                cue = cueService.refactorCueLine(cue, collisionBall);
+            if (cue instanceof Line) {
+                Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
+
+                if (collisionBall instanceof Ball && 0 == collisionBall.getId()) {
+                    cue = cueService.refactorCueLine(cue, collisionBall);
+                }
             }
 
             current().setCue(cue);

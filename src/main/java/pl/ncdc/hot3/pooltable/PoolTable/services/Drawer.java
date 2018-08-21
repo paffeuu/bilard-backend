@@ -18,61 +18,70 @@ import java.util.List;
 @Service
 public class Drawer {
 
-	private Properties properties;
+    private Properties properties;
 
-	@Autowired
-	public Drawer(
-			Properties properties
-	) {
-		this.properties = properties;
-	}
+    @Autowired
+    public Drawer(
+            Properties properties
+    ) {
+        this.properties = properties;
+    }
 
-	public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) throws DrawerException {
-		if (img == null)
-			throw new DrawerException("Cannot draw on an empty image source.");
-		else if (null == balls || balls.isEmpty())
-			return;
+    public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) throws DrawerException {
+        if (img == null) {
+            throw new DrawerException("Cannot draw on an empty image source.");
+        } else if (null == balls || balls.isEmpty()) {
+            return;
+        }
 
-		int r;
-		for (Ball ball : balls) {
-			r = (int) ball.getRadius();
-			Point center = new Point(ball.getX(), ball.getY());
+        int r;
+        for (Ball ball : balls) {
+            r = (int) ball.getRadius();
+            Point center = new Point(ball.getX(), ball.getY());
 
-			if(scalar == null){
-				if(ball.getId() >= 0 && ball.getId() < 8) {
-					Imgproc.circle(img, center, r, properties.getSolidDrawColor(), 5);
-				} else {
-					Imgproc.circle(img, center, r, properties.getStripedDrawColor(), 5);
-				}
-			} else {
-				Imgproc.circle(img, center, r, scalar, 5);
-			}
+            if (scalar == null) {
+                if (ball.getId() >= 0 && ball.getId() < 8) {
+                    Imgproc.circle(img, center, r, properties.getSolidDrawColor(), 5);
+                } else {
+                    Imgproc.circle(img, center, r, properties.getStripedDrawColor(), 5);
+                }
+            } else {
+                Imgproc.circle(img, center, r, scalar, 5);
+            }
 
-		}
-	}
+        }
+    }
 
-	private void drawLine(Mat img, Line line) {
-		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), 4);
-	}
+    private void drawLine(Mat img, Line line, Scalar scalar, int thickness) {
+        Imgproc.line(img, line.getBegin(), line.getEnd(), scalar, thickness);
+    }
 
-	public void draw(Mat img, Line cue, ArrayList<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
-		if (img == null)
-			throw new DrawerException("Cannot draw line to null image.");
+    private void drawCircle(Mat img, Point point, int radius, Scalar scalar, int thickness) {
+        Imgproc.circle(img, point, radius, scalar, thickness);
+    }
 
-		if (cue != null)
-			drawLine(img, cue);
+    public void draw(Mat img, Line cue, ArrayList<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
+        if (img == null) {
+            throw new DrawerException("Cannot draw line to null image.");
+        }
 
-		if (listOfBalls != null && !listOfBalls.isEmpty())
-			drawBalls(img, listOfBalls,  null);
+        if (cue != null) {
+            drawLine(img, cue, new Scalar(155, 155, 155), 4);
+        }
 
-		if (predictions != null && !predictions.isEmpty()) {
-			for (Line line : predictions) {
-				drawLine(img, line);
-			}
-		}
+        if (listOfBalls != null && !listOfBalls.isEmpty()) {
+            drawBalls(img, listOfBalls, null);
+        }
+
+        if (predictions != null && !predictions.isEmpty()) {
+            for (Line line : predictions) {
+                drawLine(img, line, new Scalar(155, 155, 155), 4);
+            }
+        }
 
         if (null != targetLine) {
-        	drawLine(img, targetLine);
-		}
-	}
+            drawLine(img, targetLine, new Scalar(0, 0, 255), 4);
+            drawCircle(img, targetLine.getBegin(), properties.getBallMinRadius(), new Scalar(0, 255, 255), 4);
+        }
+    }
 }
