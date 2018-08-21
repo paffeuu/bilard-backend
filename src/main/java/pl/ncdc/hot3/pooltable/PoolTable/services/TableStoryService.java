@@ -173,10 +173,16 @@ public class TableStoryService {
                     // Celowanie po odbiciu od bandy
 
                     List<Line> newPredictions = new ArrayList<>();
-                    int index = 0;
+                    int index = -1;
                     int colisionIndex = -1;
 
                     for (Line prediction : current().getPredictions()) {
+                        ++index;
+
+                        if (0 == index) {
+                            continue;
+                        }
+
                         targetLine = detector.createTargetLine(
                                 prediction,
                                 current().getBalls(),
@@ -189,15 +195,13 @@ public class TableStoryService {
 //                            newPredictions.add(new Line(prediction.getBegin(), targetLine.getBegin()));
                             colisionIndex = index;
                         }
-
-                        ++index;
                     }
 
-//                    if (-1 != colisionIndex) {
-//                        for (int i = colisionIndex-1; i >= 0; --i) {
-//                            current().getPredictions().remove(i);
-//                        }
-//                    }
+                    if (-1 != colisionIndex) {
+                        for (int i = index-1; i < current().getPredictions().size(); ++i) {
+                            current().getPredictions().remove(i);
+                        }
+                    }
 
 //                    current().setPredictions(newPredictions);
                 }
