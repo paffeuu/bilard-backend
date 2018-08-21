@@ -13,6 +13,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 import java.util.ArrayList;
@@ -152,8 +153,8 @@ public class TableStoryService {
 
     public TableStoryService findBalls() {
         try {
-            ArrayList<Ball> q = detector.createListOfBalls();
-            current().setBalls(q);
+            List<Ball> balls = detector.createListOfBalls();
+            current().setBalls(balls);
         } catch (BallsDetectorException e) {
             LOGGER.info("Can not find balls");
         }
@@ -209,27 +210,4 @@ public class TableStoryService {
             return this;
         }
     }
-
-    static int testBeforeMockupLimit = 500;
-    static int testAfterMockupLimit = 500;
-    public TableStoryService saveBefore(int framesStep) {
-        if (testBeforeMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            testBeforeMockupLimit--;
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("tests/before/test_before" + (500 - testBeforeMockupLimit) + ".jpg", outputClone);
-        }
-        return this;
-    }
-
-
-    public TableStoryService saveAfter(int framesStep) {
-        if (testAfterMockupLimit > 0 && OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            testAfterMockupLimit--;
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("tests/after/test_after" + (500 - testAfterMockupLimit) + ".jpg", outputClone);
-        }
-        return this;
-    }
-
 }

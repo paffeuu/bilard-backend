@@ -27,7 +27,7 @@ public class Drawer {
 		this.properties = properties;
 	}
 
-	public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) throws DrawerException {
+	public void drawBalls(Mat img, List<Ball> balls, Scalar scalar) throws DrawerException {
 		if (img == null)
 			throw new DrawerException("Cannot draw on an empty image source.");
 		else if (null == balls || balls.isEmpty())
@@ -40,10 +40,14 @@ public class Drawer {
 			Point center = new Point(ball.getX(), ball.getY());
 
 			if(scalar == null){
-				if(ball.getId() >= 0 && ball.getId() < 8) {
+				if(ball.getId() > 0 && ball.getId() < 8) {
 					Imgproc.circle(img, center, r, properties.getSolidDrawColor(), 5);
-				} else {
+				} else if(ball.getId() > 8 && ball.getId() < 16){
 					Imgproc.circle(img, center, r, properties.getStripedDrawColor(), 5);
+				} else if(ball.getId() == 8) {
+					Imgproc.circle(img, center, r, new Scalar(0, 0, 0), 5);
+				} else if(ball.getId() == 0) {
+					Imgproc.circle(img, center, r, new Scalar(255, 255, 255), 5);
 				}
 			} else {
 				Imgproc.circle(img, center, r, scalar, 5);
@@ -56,7 +60,7 @@ public class Drawer {
 		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), 4);
 	}
 
-	public void draw(Mat img, Line cue, ArrayList<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
+	public void draw(Mat img, Line cue, List<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
 		if (img == null)
 			throw new DrawerException("Cannot draw line to null image.");
 
