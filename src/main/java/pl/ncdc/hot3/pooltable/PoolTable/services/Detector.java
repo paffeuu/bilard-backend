@@ -49,9 +49,9 @@ public class Detector {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 		try {
-			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
+			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
 
-			emptyTableImage = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
+			emptyTableImage = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
 			emptyTableImage = prepereEmptyTableForSubs(emptyTableImage.clone());
 
 		} catch (FileNotFoundException e) {
@@ -68,6 +68,10 @@ public class Detector {
 
 	public void setSourceImg(Mat sourceImg) {
 		this.sourceImg = sourceImg;
+	}
+
+	public Mat getEmptyTableImage() {
+		return emptyTableImage;
 	}
 
 	public Mat getOutputImg() {
@@ -94,10 +98,17 @@ public class Detector {
 	public Line findStickLine() throws MissingCueLineException, DetectorException {
 		Mat substractedImg = getEdges(getSourceImg().clone());
 		List <Line> linesList = getInnerLines(substractedImg);
-		Line cueLine = cueService.findStickLine(linesList);
-		cueLine = cueService.stabilize(cueLine);
+		Line shortCueLine = cueService.findStickLine(linesList);
+		Line longCueLine = null;
 
-		return cueLine;
+
+		if (shortCueLine != null) {
+			longCueLine = cueService.directAndExtend(shortCueLine, new Point(0, 0));
+		}
+
+		//cueLine = cueService.stabilize(cueLine);
+
+		return longCueLine	;
 	}
 
 	private boolean isFrameToTestSave(){
@@ -133,20 +144,26 @@ public class Detector {
 	private static int forTestsCounter = 0;
 	public Mat getEdges(Mat source) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();
+		Mat dst = new Mat();
 
 		try {
-			Imgproc.blur(source, source, new Size(6,6));
+			Imgproc.blur(source, source, new Size(3,3));
+			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2GRAY);
 
-			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
-			Core.split(source, layers);
-			Imgproc.Canny(layers.get(2), source, 50, 200, 3, false);
-			Imgproc.threshold(source, source, 200, 255, Imgproc.THRESH_BINARY);
+			Imgproc.threshold(source, source, 140, 255, Imgproc.THRESH_BINARY);
+			Imgproc.Canny(source, dst, 100, 40, 3, false);
 
-			Core.subtract(source, emptyTableImage, source);
+
+			Core.subtract(dst, emptyTableImage, dst);
 
 		} catch (Exception e){
 			throw new LinesDetectorException("Could not read source stream.", e);
+		} finally {
+			source.release();
 		}
+
+		source = dst.clone();
+		dst.release();
 
 		return source;
 	}
@@ -181,10 +198,8 @@ public class Detector {
 		List <Mat> layers = new ArrayList<>();
 
 		try {
-			Imgproc.cvtColor(emptyTableImage, emptyTableImage, Imgproc.COLOR_BGR2HSV);
-			Core.split(emptyTableImage, layers);
-
-			Imgproc.Canny(layers.get(2), emptyTableImage, 50, 200, 3, false);
+			Imgproc.cvtColor(emptyTableImage, emptyTableImage, Imgproc.COLOR_BGR2GRAY);
+			Imgproc.threshold(emptyTableImage, emptyTableImage, 120, 255, Imgproc.THRESH_BINARY);
 
 		} catch (Exception e){
 			throw new DetectorException("Could not prepere empty table image for substract.", e);
@@ -192,6 +207,8 @@ public class Detector {
 
 		return emptyTableImage;
 	}
+
+
 }
 
 

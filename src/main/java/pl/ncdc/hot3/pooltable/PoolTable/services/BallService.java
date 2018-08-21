@@ -21,11 +21,19 @@ public class BallService {
 
     private Properties properties;
 
+    private Ball whiteBall;
+
     @Autowired
     public BallService(
             Properties properties
     ) {
         this.properties = properties;
+
+        whiteBall = null;
+    }
+
+    public Ball getWhiteBall() {
+        return whiteBall;
     }
 
     public Mat filterCircles(Mat allCircles) throws BallsDetectorException {
@@ -95,7 +103,7 @@ public class BallService {
         return balls;
     }
 
-    public double[] convertMatToArray(Mat mat) {
+    public double[] convertMatToArray(Mat mat) throws BallsDetectorException {
 
         double[] data = null;
         try {
@@ -103,7 +111,8 @@ public class BallService {
             data = new double[size];
             mat.get(0, 0, data);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            throw new BallsDetectorException(e);
         }
         return data;
     }

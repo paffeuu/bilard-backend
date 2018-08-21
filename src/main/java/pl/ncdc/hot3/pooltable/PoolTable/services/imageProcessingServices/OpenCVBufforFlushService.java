@@ -29,7 +29,7 @@ public class OpenCVBufforFlushService {
             }
             Mat newFrame = new Mat();
             try {
-                capture.read(newFrame);
+                    capture.read(newFrame);
                 if (!newFrame.empty()){
                     counter++;
                     framesArray[counter%10] = newFrame;
