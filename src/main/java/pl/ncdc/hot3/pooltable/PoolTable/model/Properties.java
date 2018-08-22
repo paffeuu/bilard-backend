@@ -27,6 +27,7 @@ public class Properties {
     private double tablePocketMinDistance;
 
     // Ball
+    private int ballExpectedRadius;
     private int ballMaxRadius;
     private int ballMinRadius;
     private int ballMinDistance;
@@ -53,15 +54,12 @@ public class Properties {
     private boolean showPreviousPosition;
     private int previousFramesFrequency;
 
-    public double getPreviousFramesMoveTolerance() {
-        return previousFramesMoveTolerance;
-    }
-
-    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
-        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
-    }
-
     public Properties() {
+        this.ballMaxRadius = 22;
+        this.ballMinRadius = 16;
+        this.ballMinDistance = 36;
+        this.ballExpectedRadius = 21;
+
         this.tableBandLeft = 130;
         this.tableBandRight = 1915;
         this.tableBandTop = 365;
@@ -73,11 +71,6 @@ public class Properties {
         this.previousFramesMoveTolerance = 10;
         this.cueDetectDelay = 4;
         this.cueStickLineThickness = 8;
-
-        this.ballMaxRadius = 22;
-        this.ballMinRadius = 16;
-        this.ballMinDistance = 36;
-
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -470,5 +463,31 @@ public class Properties {
     public String getFullPath(String filename) throws FileNotFoundException {
         String path = this.getClass().getClassLoader().getResource(filename).getPath().replaceAll("%20"," ").substring(1);
         return path;
+    }
+
+    public double getPreviousFramesMoveTolerance() {
+        return previousFramesMoveTolerance;
+    }
+
+    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
+        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
+    }
+
+    /**
+     * Get ball expected radius
+     *
+     * @return ball radius
+     */
+    public int getBallExpectedRadius() {
+        return ballExpectedRadius;
+    }
+
+    /**
+     * Set ball expected radius
+     *
+     * @param ballExpectedRadius ball expected radius
+     */
+    public void setBallExpectedRadius(int ballExpectedRadius) {
+        this.ballExpectedRadius = ballExpectedRadius;
     }
 }
