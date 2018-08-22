@@ -13,6 +13,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 import javax.validation.constraints.Null;
@@ -55,39 +56,21 @@ public class TableStoryService {
 
         currentTableIndex = -1;
 
-        tableStory = new ArrayList<>();
-    }
-
-    public TableStoryService saveBefore(int framesStep) {
-        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("before_frame" + counter + ".jpg", outputClone);
-        }
-        return this;
-    }
-
-    public TableStoryService saveAfter(int framesStep) {
-        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("after_frame" + counter + ".jpg", outputClone);
-        }
-        return this;
+        tableStory = new ArrayList<>(LIMIT_OF_TABLES);
     }
 
     private PoolTable current(int backwardStep){
         if (currentTableIndex >= backwardStep)
-            return tableStory.get((currentTableIndex - backwardStep) % LIMIT_OF_TABLES);
+            return tableStory.get(currentTableIndex - backwardStep);
 
-        return new PoolTable();
+        return null;
     }
 
     private PoolTable current(){
         if (currentTableIndex >= 0)
-            return tableStory.get(currentTableIndex % LIMIT_OF_TABLES);
+            return tableStory.get(currentTableIndex);
 
-        return new PoolTable();
+        return null;
     }
 
 
@@ -96,32 +79,35 @@ public class TableStoryService {
             outputImage = cameraService.getSnap();
             detector.setSourceImg(outputImage.clone());
         } catch (CameraServiceException e) {
-            LOGGER.warn("Camera view not available. Empty table image as a source");
+            //LOGGER.warn("Camera view not available. Empty table image as a source");
             outputImage = detector.getSourceImg().clone();
         } catch (NullPointerException e) {
             LOGGER.warn("Camera view not available. Empty table image as a source");
             outputImage = detector.getSourceImg().clone();
         }
 
-
         if (++currentTableIndex > 1)
             current(2).setTableImage(null);
-        tableStory.add(new PoolTable());
 
-        counter++;
+        currentTableIndex = currentTableIndex % LIMIT_OF_TABLES;
 
-
-
+        if (tableStory.size() < LIMIT_OF_TABLES)
+            tableStory.add(new PoolTable());
+        else
+            tableStory.set(currentTableIndex, new PoolTable());
 
         return this;
     }
+
+    @Autowired
+    LineService lineService;
 
     public TableStoryService findCue(){
         try {
             Line cue = detector.findStickLine();
             current().setCue(cue);
         } catch (MissingCueLineException e) {
-            //LOGGER.info("Cue not founded.");
+            LOGGER.info(e.getMessage());
         } catch (LineServiceException e) {
             LOGGER.warn("Missing line when try find cue.", e);
         } catch (DetectorException e) {
@@ -133,7 +119,8 @@ public class TableStoryService {
     public TableStoryService makePredictions(){
 
         try {
-            current().setPredictions(detector.getPredictions(current().getCue()));
+            if (current().getCue() != null)
+                current().setPredictions(detector.getPredictions(current().getCue()));
         } catch (CueServiceException e) {
             //LOGGER.warn("Predictions canceled.", e);
         } catch (LineServiceException e) {
@@ -173,10 +160,12 @@ public class TableStoryService {
 
     public TableStoryService findBalls() {
         try {
-            ArrayList<Ball> q = detector.createListOfBalls();
-            current().setBalls(q);
+            List<Ball> balls = detector.createListOfBalls();
+            current().setBalls(balls);
         } catch (BallsDetectorException e) {
             LOGGER.info("Can not find balls");
+        } catch (Exception e) {
+            LOGGER.info("No balls detected");
         }
         return this;
     }
@@ -194,7 +183,7 @@ public class TableStoryService {
             try {
                 drawer.drawBalls(outputImage, previousPositionService.getPreviousPosition(), new Scalar(255, 0, 255));
             } catch (DrawerException e) {
-                LOGGER.warn("Could not draw previous balls possition. Nested: " + e);
+                //LOGGER.warn("Could not draw previous balls possition. Nested: " + e.getMessage());
             }
         }
 
@@ -208,7 +197,7 @@ public class TableStoryService {
                 previousPositionService.updatePreviousBallPosition();
             }
         } catch (NullPointerException e) {
-            LOGGER.warn("Can not save previous position. Nested: ", e.getMessage());
+            //LOGGER.warn("Can not save previous position. Nested: ", e.getMessage());
         }
     }
 
@@ -221,7 +210,6 @@ public class TableStoryService {
                     current().getPredictions(),
                     current().getTargetLine()
             );
-
             MatOfByte matOfByte = new MatOfByte();
             Imgcodecs.imencode(".jpg", outputImage, matOfByte);
             current().setTableImage(matOfByte.toArray());
@@ -233,14 +221,4 @@ public class TableStoryService {
             return this;
         }
     }
-
-    public TableStoryService save(int framesStep) {
-        if (OpenCVBufforFlushService.getCounter() % framesStep == 0 && (outputImage != null || !outputImage.empty())) {
-            makeView();
-            Mat outputClone = outputImage.clone();
-            Imgcodecs.imwrite("test_frame" + OpenCVBufforFlushService.getCounter() + ".jpg", outputClone);
-        }
-        return this;
-    }
-
 }
