@@ -17,6 +17,9 @@ import java.util.List;
 
 @Service
 public class Drawer {
+	// tymczasowo
+	private final Scalar SOLID_DRAW_COLOR = new Scalar(0,0,255);
+	private final Scalar STRIPED_DRAW_COLOR = new Scalar(0,255,0);
 
 	private Properties properties;
 
@@ -41,13 +44,13 @@ public class Drawer {
 
 			if(scalar == null){
 				if(ball.getId() > 0 && ball.getId() < 8) {
-					Imgproc.circle(img, center, r, properties.getSolidDrawColor(), 5);
+					Imgproc.circle(img, center, r, SOLID_DRAW_COLOR, 5);
 				} else if(ball.getId() > 8 && ball.getId() < 16){
-					Imgproc.circle(img, center, r, properties.getStripedDrawColor(), 5);
+					Imgproc.circle(img, center, r, STRIPED_DRAW_COLOR, 5);
 				} else if(ball.getId() == 8) {
-					Imgproc.circle(img, center, r, new Scalar(0, 0, 0), 5);
-				} else if(ball.getId() == 0) {
 					Imgproc.circle(img, center, r, new Scalar(255, 255, 255), 5);
+				} else if(ball.getId() == 0) {
+					Imgproc.circle(img, center, r, new Scalar(0, 0, 0), 5);
 				}
 			} else {
 				Imgproc.circle(img, center, r, scalar, 5);
@@ -56,11 +59,8 @@ public class Drawer {
 		}
 	}
 
-	public void drawLine(Mat img, Line line) {
-		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), properties.getCueStickLineThickness());
-	}
-	public void drawLine(Mat img, Line line, Scalar colour, int thickness) {
-		Imgproc.line(img, line.getBegin(), line.getEnd(), colour, thickness);
+	private void drawLine(Mat img, Line line) {
+		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), 4);
 	}
 
 	public void draw(Mat img, Line cue, List<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {

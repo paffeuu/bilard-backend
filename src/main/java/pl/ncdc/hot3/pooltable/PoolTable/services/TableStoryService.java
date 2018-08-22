@@ -16,6 +16,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
+import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -161,6 +162,8 @@ public class TableStoryService {
         } catch (BallsDetectorException e) {
             LOGGER.info("Can not find balls");
         } catch (Exception e) {
+            LOGGER.info("No balls detected");
+        } catch (Exception e) {
             LOGGER.error("Unknow exception for no balls on table.");
         }
 
@@ -210,6 +213,8 @@ public class TableStoryService {
             MatOfByte matOfByte = new MatOfByte();
             Imgcodecs.imencode(".jpg", outputImage, matOfByte);
             current().setTableImage(matOfByte.toArray());
+            outputImage.release();
+
         } catch (DrawerException e) {
             LOGGER.error("Cannot prepere the view image.", e);
         } finally {

@@ -21,6 +21,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.PathService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
+
 @Service
 public class Detector {
 

@@ -173,7 +173,6 @@ public class BallService {
     List<Mat> cropImage(List<Rect> roi, Mat image) {
         List<Mat> crops = new ArrayList<>();
         Mat crop;
-
         for(int i = 0 ; i < roi.size() ; i ++) {
             crop = new Mat(image, roi.get(i));
             crops.add(crop);
@@ -230,15 +229,17 @@ public class BallService {
 
     List<Ball> createListOfBalls() throws BallsDetectorException {
         Mat circles = detectBalls(sourceImg);
+        List<Ball> detectedBalls = new ArrayList<Ball>();
+        if (circles.empty() || circles == null) {
+            return detectedBalls;
+        }
+            detectedBalls = convertMatToListOfBalls(circles);
+            List<Rect> roiList = getBallsROI(convertMatToArray(circles));
+            circles.release();
+            List<Mat> ballImgList = cropImage(roiList, sourceImg);
+            differentiateStripesAndSolids(detectedBalls, roiList);
+            setWhiteAndBlackBall(detectedBalls, ballImgList);
 
-        List<Ball> detectedBalls = convertMatToListOfBalls(circles);
-        List<Rect> roiList = getBallsROI(convertMatToArray(circles));
-        circles.release();
-
-        List<Mat> ballImgList = cropImage(roiList, sourceImg);
-
-        differentiateStripesAndSolids(detectedBalls, roiList);
-        setWhiteAndBlackBall(detectedBalls, ballImgList);
 
         int solidId = 1;
         int stripedId = 9;

@@ -6,16 +6,15 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
 public class PreviousPositionService {
-    private List<List<Ball>> positionsHistory;
+
+    private ArrayList<List<Ball>> positionsHistory;
     private List<Ball> previousPosition;
-    private List<Ball> playerSavedPosition;
+    private ArrayList<Ball> playerSavedPosition;
     private Line playerSavedStick;
-    private boolean showPrevious = false;
 
     public PreviousPositionService() {
         this.positionsHistory = new ArrayList<>();
@@ -68,10 +67,6 @@ public class PreviousPositionService {
         return this.previousPosition;
     }
 
-    public boolean isShowPrevious() {
-        return showPrevious;
-    }
-
     public void setPlayerSavedPosition(ArrayList<Ball> playerPosition) {
         this.playerSavedPosition = playerPosition;
     }
@@ -86,9 +81,5 @@ public class PreviousPositionService {
 
     public void clearPlayerSavedStick() {
         this.playerSavedStick = null;
-    }
-
-    public void setShowPrevious(boolean showPrevious) {
-        this.showPrevious = showPrevious;
     }
 }

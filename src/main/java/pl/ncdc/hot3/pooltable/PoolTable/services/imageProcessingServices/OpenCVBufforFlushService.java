@@ -29,23 +29,22 @@ public class OpenCVBufforFlushService {
             }
             Mat newFrame = new Mat();
             try {
-                    capture.read(newFrame);
-                if (!newFrame.empty()){
+                capture.read(newFrame);
+                if (!newFrame.empty()) {
                     counter++;
-                    framesArray[counter%10] = newFrame;
-                   // System.out.println("przeczytal klatka: "+ counter);
-                }else {
-                    capture = new VideoCapture();
-                    System.gc();
-                }
-                if (counter % 200 == 0){
-                    capture = new VideoCapture();
-                    System.gc();
+                    if (framesArray[counter % 10] != null) {
+                        framesArray[counter % 10].release();
+                    }
+                    framesArray[counter % 10] = newFrame;
                 }
             } catch ( Exception e) {
                 e.printStackTrace();
             }
         }
+        if ( counter == 100000) {
+            counter = 0;
+        }
+
     }
 
     public static Mat getLastFrame() {

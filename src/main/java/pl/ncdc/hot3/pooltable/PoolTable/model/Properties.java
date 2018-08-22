@@ -1,7 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.model;
 
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
@@ -28,8 +27,6 @@ public class Properties {
     private int ballMaxRadius;
     private int ballMinRadius;
     private int ballMinDistance;
-    private Scalar solidDrawColor;
-    private Scalar stripedDrawColor;
 
     // Canny
     private double cannyHighThreshold;
@@ -61,27 +58,11 @@ public class Properties {
         this.previousFramesMoveTolerance = previousFramesMoveTolerance;
     }
 
-    public Scalar getSolidDrawColor() {
-        return solidDrawColor;
-    }
-
-    public void setSolidDrawColor(Scalar solidDrawColor) {
-        this.solidDrawColor = solidDrawColor;
-    }
-
-    public Scalar getStripedDrawColor() {
-        return stripedDrawColor;
-    }
-
-    public void setStripedDrawColor(Scalar stripedDrawColor) {
-        this.stripedDrawColor = stripedDrawColor;
-    }
-
     public Properties() {
-        this.tableBandLeft = 165;
-        this.tableBandRight = 1948;
-        this.tableBandTop = 350;
-        this.tableBandBottom = 1236;
+        this.tableBandLeft = 130;
+        this.tableBandRight = 1915;
+        this.tableBandTop = 365;
+        this.tableBandBottom = 1250;
         this.predictionDepth = 1;
 
         this.cueThickness = 60;
@@ -93,8 +74,7 @@ public class Properties {
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
         this.ballMinDistance = 36;
-        this.solidDrawColor = new Scalar(0, 0, 255);
-        this.stripedDrawColor = new Scalar(0, 255, 0);
+
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
