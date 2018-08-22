@@ -24,22 +24,6 @@ public class MainController {
     private SimpMessagingTemplate template;
 
 
-    @CrossOrigin(origins = "http://localhost:4200")
-    @GetMapping("/get-pool-table")
-    public ResponseEntity<PoolTable> test() throws CameraServiceException {
-        System.gc();
-        PoolTable table = tableStoryService
-                .next()
-                .findBalls()
-                .findCue()
-                .makePredictions()
-                .detectCollision()
-                .showPrevious()
-                .build();
-        return ResponseEntity.ok(table);
-
-    }
-
     @PutMapping("/get-pool-table")
     public ResponseEntity<Properties> setProperties(@RequestParam Properties properties){
 //        Mapper mapper = new DozerBeanMapper();

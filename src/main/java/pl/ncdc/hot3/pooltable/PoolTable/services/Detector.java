@@ -30,7 +30,7 @@ public class Detector {
 
 	private static Properties properties;
 	private CueService cueService;
-	private BallService ballService;
+    private BallService ballService;
 
 	@Autowired
 	public Detector(
@@ -38,11 +38,10 @@ public class Detector {
 			Properties properties,
 			BallService ballService
 	) {
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		this.ballService = ballService;
 		this.properties = properties;
 		this.cueService = cueService;
-
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 		try {
 			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
@@ -95,20 +94,11 @@ public class Detector {
             Point coordinates = new Point(whiteBall.getX(), whiteBall.getY());
 
             longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
-            longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+            //longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
 
 
 		return longCueLine;
-	}
-
-	private boolean isFrameToTestSave(){
-		if (forTestsCounter++ % 4 == 0){
-			if (forTestsCounter > 40 && forTestsCounter < 120){
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public List<Line> getInnerLines(Mat substractedImage) {
@@ -132,7 +122,6 @@ public class Detector {
 		return linesList;
 	}
 
-	private static int forTestsCounter = 0;
 	public Mat getEdges(Mat source) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();
 		Mat dst = new Mat();
@@ -198,6 +187,7 @@ public class Detector {
 
 		return emptyTableImage;
 	}
+
 
 
 }

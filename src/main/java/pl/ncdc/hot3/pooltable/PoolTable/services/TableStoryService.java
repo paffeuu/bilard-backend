@@ -95,6 +95,9 @@ public class TableStoryService {
         return this;
     }
 
+    @Autowired
+    LineService lineService;
+
     public TableStoryService findCue(){
         try {
             Line cue = detector.findStickLine();
