@@ -62,10 +62,10 @@ public class Properties {
     }
 
     public Properties() {
-        this.tableBandLeft = 165;
-        this.tableBandRight = 1948;
-        this.tableBandTop = 350;
-        this.tableBandBottom = 1236;
+        this.tableBandLeft = 130;
+        this.tableBandRight = 1915;
+        this.tableBandTop = 365;
+        this.tableBandBottom = 1250;
         this.predictionDepth = 1;
 
         this.cueThickness = 60;
