@@ -13,7 +13,7 @@ public class PoolTable {
     @JsonIgnore
     private List<Line> predictions;
 
-    private ArrayList<Ball> balls;
+    private List<Ball> balls;
     private Line cue;
     private byte[] tableImage;
     private Line targetLine;
@@ -46,7 +46,7 @@ public class PoolTable {
      *
      * @return Balls
      */
-    public ArrayList<Ball> getBalls() {
+    public List<Ball> getBalls() {
         return balls;
     }
 
@@ -55,7 +55,7 @@ public class PoolTable {
      *
      * @param balls Balls
      */
-    public void setBalls(ArrayList<Ball> balls) {
+    public void setBalls(List<Ball> balls) {
         this.balls = balls;
     }
 
