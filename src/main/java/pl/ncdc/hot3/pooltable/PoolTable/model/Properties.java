@@ -47,6 +47,7 @@ public class Properties {
     private double parallelTolerance;
     private double previousFramesMoveTolerance;
     private int cueDetectDelay;
+    private int cueStickLineThickness;
 
     // Predictions
     private int predictionDepth;
@@ -90,6 +91,7 @@ public class Properties {
         this.parallelTolerance = 0.15;
         this.previousFramesMoveTolerance = 10;
         this.cueDetectDelay = 4;
+        this.cueStickLineThickness = 8;
 
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
@@ -136,6 +138,14 @@ public class Properties {
                       double imageSourceHeight,
                       int predictionDepth
     ) {}
+
+    public int getCueStickLineThickness() {
+        return cueStickLineThickness;
+    }
+
+    public void setCueStickLineThickness(int cueStickLineThickness) {
+        this.cueStickLineThickness = cueStickLineThickness;
+    }
 
     public boolean isShowPreviousPosition() {
         return showPreviousPosition;

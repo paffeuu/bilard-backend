@@ -93,11 +93,11 @@ public class Detector {
 
 		if (shortCueLine != null) {
 			longCueLine = cueService.directAndExtend(shortCueLine, new Point(0, 0));
+			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
 
-		//cueLine = cueService.stabilize(cueLine);
 
-		return longCueLine	;
+		return longCueLine;
 	}
 
 	private boolean isFrameToTestSave(){

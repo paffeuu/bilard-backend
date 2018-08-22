@@ -147,6 +147,40 @@ public class CueService {
         return newLineBetweenLong;
     }
 
+    public Line stabilizeWithPrevious(Line cueLine) {
+        Line stabileCueLine = cueLine;
+
+        prevCueLines[detectedCueCounter] = cueLine;
+        if (detectedCueCounter++ > 0){
+            detectedCueCounter = detectedCueCounter % cueDetectDelay;
+
+            double[] prevSumXs = { 0, 0 }, prevSumYs = { 0, 0 };
+            int prevLinesCounter = 0;
+            for (int i = 0; i < (cueDetectDelay - 1); i++){
+                int tempIdx = (detectedCueCounter + i) % properties.getCueDetectDelay();
+
+                if (prevCueLines[tempIdx] != null){
+                    prevLinesCounter++;
+
+                    prevSumXs[0] += prevCueLines[tempIdx].getBegin().x;
+                    prevSumXs[1] += prevCueLines[tempIdx].getEnd().x;
+                    prevSumYs[0] += prevCueLines[tempIdx].getBegin().y;
+                    prevSumYs[1] += prevCueLines[tempIdx].getEnd().y;
+                }
+            }
+
+            if (prevLinesCounter > 0) {
+                Point newBegin = new Point(prevSumXs[0] / prevLinesCounter, prevSumYs[0] / prevLinesCounter);
+                Point newEnd = new Point(prevSumXs[1] / prevLinesCounter, prevSumYs[1] / prevLinesCounter);
+
+                stabileCueLine.setBegin(newBegin);
+                stabileCueLine.setBegin(newEnd);
+            }
+        }
+
+        return stabileCueLine;
+    }
+
     public Line stabilize(Line cueLine) {
         double minNotApproved = 99999;
         double minDistTolerance = properties.getPreviousFramesMoveTolerance();
