@@ -6,14 +6,10 @@ import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
-import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DrawerException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -21,14 +17,74 @@ public class BallService {
 
     private Properties properties;
 
+    //Image processing fields
+    private Size blurSize;
+    private ArrayList<Ball> balls;
+    private Mat temporaryBallImg;
+
+    //small variables but used in two methods, no point to initialize them twice
+    private MatOfFloat ranges;
+    private MatOfInt channels;
+    private MatOfInt histSize;
+    private Mat mask;
+    private Mat temporaryHist;
+
+    private Scalar blackLowerMask;
+    private Scalar blackHigherMask;
+
+    private Mat sourceImg;
+
+    public Mat getSourceImg() {
+        return sourceImg;
+    }
+
+    public void setSourceImg(Mat sourceImg) {
+        this.sourceImg = sourceImg;
+    }
+
+    private Ball whiteBall;
+
     @Autowired
     public BallService(
             Properties properties
     ) {
         this.properties = properties;
+
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        blurSize = new Size(5, 5);
+        balls = new ArrayList<>();
+        temporaryBallImg = new Mat();
+        ranges = new MatOfFloat(0f,256f);
+        channels = new MatOfInt(0);
+        histSize = new MatOfInt(2);
+        mask = new Mat();
+        temporaryHist = new Mat();
+        blackLowerMask = new Scalar(0, 0, 0);
+        blackHigherMask = new Scalar(180, 255, 35);
+
+        whiteBall = null;
     }
 
-    public Mat filterCircles(Mat allCircles) throws BallsDetectorException {
+    public Ball getWhiteBall() {
+        return whiteBall;
+    }
+
+    public void setWhiteAndBlackBall(List<Ball> balls, List<Mat> ballImgList) {
+        try {
+            whiteBall = balls
+                    .stream()
+                    .max(Comparator.comparing(Ball::getWhitePixels))
+                    .orElseThrow(BallsDetectorException::new);
+            whiteBall.setId(0);
+        } catch (BallsDetectorException e) {
+            System.out.println("White ball not found.");
+        }
+
+        int indexOfBlackBall = getIndexOfBall(ballImgList, blackLowerMask, blackHigherMask);
+        balls.get(indexOfBlackBall).setId(8);
+    }
+
+    private Mat filterCircles(Mat allCircles) throws BallsDetectorException {
 
         Mat filteredCircles = new Mat(1, 1, CvType.CV_64FC3); // output Mat
         Mat newMat = new Mat(1, 1, CvType.CV_64FC3); // merged new column
@@ -37,10 +93,11 @@ public class BallService {
         matList.add(null);
 
         // conversion to use type double data
-        allCircles.convertTo(allCircles, CvType.CV_64FC3);
+        Mat convertedAllCircles = new Mat();
+        allCircles.convertTo(convertedAllCircles, CvType.CV_64FC3);
 
         // write circles coordinates into an array
-        double[] data = convertMatToArray(allCircles);
+        double[] data = convertMatToArray(convertedAllCircles);
 
         if (null == data) {
             throw new BallsDetectorException("Error while trying filter circles");
@@ -75,10 +132,11 @@ public class BallService {
         return filteredCircles;
     }
 
-    public ArrayList<Ball> convertMatToListOfBalls(Mat circles) throws BallsDetectorException {
-        int x,y,r;
-
-        ArrayList<Ball> balls = new ArrayList<>();
+    private ArrayList<Ball> convertMatToListOfBalls(Mat circles) {
+        int x;
+        int y;
+        int r;
+        balls.clear();
 
         for (int i = 0; i < circles.cols(); i++) {
             // read ball coordinates
@@ -88,45 +146,51 @@ public class BallService {
             y = (int) data[1];
             r = (int) data[2];
 
-            Ball ball = new Ball(i,x,y,r);
+            Ball ball = new Ball(x,y,r);
             balls.add(ball);
         }
 
         return balls;
     }
 
-    public double[] convertMatToArray(Mat mat) {
-
+    double[] convertMatToArray(Mat mat) throws BallsDetectorException {
         double[] data = null;
         try {
             int size = (int) mat.total() * mat.channels();
             data = new double[size];
             mat.get(0, 0, data);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            throw new BallsDetectorException(e);
         }
         return data;
     }
 
-    public List<Mat> cropImage(List<Rect> roi, Mat image) {
+    List<Mat> cropImage(List<Rect> roi, Mat image) {
         List<Mat> crops = new ArrayList<>();
-
-        for(Rect rect : roi) {
-            crops.add(new Mat(image, rect));
+        Mat crop;
+        for(int i = 0 ; i < roi.size() ; i ++) {
+            crop = new Mat(image, roi.get(i));
+            crops.add(crop);
         }
+
         return crops;
     }
 
-    public List<Rect> getBallsROI(double[] circles) {
+    List<Rect> getBallsROI(double[] circles) {
+        double x;
+        double y;
+        double r = 21;
+        Point topLeft;
+        Point bottomRight;
         List<Rect> roiList = new ArrayList<>();
 
         for (int i = 0; i < circles.length; i += 3) {
-            double x = circles[i];
-            double y = circles[i + 1];
-            double r = 21;
+            x = circles[i];
+            y = circles[i + 1];
 
-            Point topLeft = new Point(x - r, y - r);
-            Point bottomRight = new Point(x + r, y + r);
+            topLeft = new Point(x - r, y - r);
+            bottomRight = new Point(x + r, y + r);
 
             roiList.add(new Rect(topLeft, bottomRight));
         }
@@ -134,51 +198,121 @@ public class BallService {
         return roiList;
     }
 
-    public Mat detectBalls(Mat image) throws BallsDetectorException {
-        Mat convertedImage = new Mat();
+    Mat detectBalls(Mat image) throws BallsDetectorException {
+        Mat blurredImage = new Mat();
+        Mat convertedTypeImage = new Mat();
+        Mat destinationImage = new Mat();
+
         // blur convertedImage
-        Imgproc.blur(image, convertedImage, new Size(5, 5));
+        Imgproc.blur(image, blurredImage, blurSize);
 
         // convert to hsv
-        Imgproc.cvtColor(convertedImage, convertedImage, Imgproc.COLOR_BGR2HSV);
+        Imgproc.cvtColor(blurredImage, convertedTypeImage, Imgproc.COLOR_BGR2HSV);
+        blurredImage.release();
 
         // split into planes
         List<Mat> planes = new ArrayList<>(3);
-        Core.split(convertedImage, planes);
+        Core.split(convertedTypeImage, planes);
+        convertedTypeImage.release();
 
         // detect circles
-        Imgproc.HoughCircles(planes.get(2), convertedImage, Imgproc.CV_HOUGH_GRADIENT, 1.0, properties.getBallMinDistance(),
+        Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0, properties.getBallMinDistance(),
                 30, 15, properties.getBallMinRadius(), properties.getBallMaxRadius());
+        planes.clear();
 
-        return this.filterCircles(convertedImage);
+        return filterCircles(destinationImage);
     }
 
-    public ArrayList<Ball> createListOfBalls(Mat circles, Mat sourceImg, List<Mat> ballImgList,
-                                             List<Rect> roiList) throws BallsDetectorException {
-        ArrayList<Ball> detectedBalls = this.convertMatToListOfBalls(circles);
-        List<Mat> planes = new ArrayList<>();
+    List<Ball> createListOfBalls() throws BallsDetectorException {
+        Mat circles = detectBalls(sourceImg);
+        List<Ball> detectedBalls = new ArrayList<Ball>();
+        if (circles.empty() || circles == null) {
+            return detectedBalls;
+        }
+            detectedBalls = convertMatToListOfBalls(circles);
+            List<Rect> roiList = getBallsROI(convertMatToArray(circles));
+            circles.release();
+            List<Mat> ballImgList = cropImage(roiList, sourceImg);
+            differentiateStripesAndSolids(detectedBalls, roiList);
+            setWhiteAndBlackBall(detectedBalls, ballImgList);
 
-        Core.split(sourceImg.clone(), planes);
 
-        Imgproc.equalizeHist(planes.get(0), planes.get(0));
-        Imgproc.equalizeHist(planes.get(1), planes.get(1));
-        Imgproc.threshold(planes.get(0),planes.get(0),200,255,Imgproc.THRESH_BINARY);
-        Imgproc.threshold(planes.get(1),planes.get(1),200,255,Imgproc.THRESH_BINARY);
+        int solidId = 1;
+        int stripedId = 9;
 
-        List<Mat> listOfB = this.cropImage(roiList, planes.get(0));
-        List<Mat> listOfG = this.cropImage(roiList, planes.get(1));
+        for(int i = 0 ; i < detectedBalls.size() ; i ++) {
+            if(detectedBalls.get(i).getId() == null) {
+                if ((balls.get(i).getWhitePixels() * 100) / 1764 >= 16) {
+                    detectedBalls.get(i).setId(stripedId);
+                    stripedId++;
+                } else {
+                    detectedBalls.get(i).setId(solidId);
+                    solidId++;
+                }
+            }
+        }
+
+        Collections.sort(detectedBalls);
+
+        return detectedBalls;
+    }
+
+    private int getIndexOfBall(List<Mat> ballImgList, Scalar lowerMask, Scalar higherMask) {
+        Mat convertedImg = new Mat();
+        double numberOfWhitePixels = 0;
+        int indexOfBall = 0;
+
+        for(int i = 0 ; i < ballImgList.size() ; i ++) {
+            Imgproc.cvtColor(ballImgList.get(i), convertedImg, Imgproc.COLOR_BGR2HSV);
+            Core.inRange(convertedImg, lowerMask, higherMask, temporaryBallImg);
+            convertedImg.release();
+
+            Imgproc.calcHist(Collections.singletonList(temporaryBallImg), channels, mask, temporaryHist, histSize ,ranges);
+            temporaryBallImg.release();
+
+            if(temporaryHist.get(1,0)[0] > numberOfWhitePixels) {
+                indexOfBall = i;
+                numberOfWhitePixels = temporaryHist.get(1,0)[0];
+                temporaryHist.release();
+            }
+        }
+
+        return indexOfBall;
+    }
+
+    private void differentiateStripesAndSolids(List<Ball> detectedBalls, List<Rect> roiList) {
+        List<Mat> planes = new ArrayList<>(3);
+        Core.split(sourceImg, planes);
+
+        Mat firstPlaneEqualized = new Mat();
+        Mat secondPlaneEqualized = new Mat();
+
+        Imgproc.equalizeHist(planes.get(0), firstPlaneEqualized);
+        Imgproc.equalizeHist(planes.get(1), secondPlaneEqualized);
+        planes.get(0).release();
+        planes.get(1).release();
+
+        Mat firstPlaneThreshold = new Mat();
+        Mat secondPlaneThreshold = new Mat();
+
+        Imgproc.threshold(firstPlaneEqualized, firstPlaneThreshold,200,255,Imgproc.THRESH_BINARY);
+        Imgproc.threshold(secondPlaneEqualized, secondPlaneThreshold,200,255,Imgproc.THRESH_BINARY);
+        firstPlaneEqualized.release();
+        secondPlaneEqualized.release();
+
+        List<Mat> listOfB = cropImage(roiList, firstPlaneThreshold);
+        List<Mat> listOfG = cropImage(roiList, secondPlaneThreshold);
+        firstPlaneThreshold.release();
+        secondPlaneThreshold.release();
 
         Mat histB = new Mat();
         Mat histG = new Mat();
 
-        MatOfFloat ranges = new MatOfFloat(0f,256f);
-        MatOfInt channels = new MatOfInt(0);
-        MatOfInt histSize = new MatOfInt(2);
-        Mat mask = new Mat();
-
         for(int k = 0 ; k < listOfB.size() ; k ++) {
-            Imgproc.calcHist(Arrays.asList(listOfB.get(k)), channels, mask, histB, histSize ,ranges);
-            Imgproc.calcHist(Arrays.asList(listOfG.get(k)), channels, mask, histG, histSize ,ranges);
+            Imgproc.calcHist(Collections.singletonList(listOfB.get(k)), channels, mask, histB, histSize ,ranges);
+            Imgproc.calcHist(Collections.singletonList(listOfG.get(k)), channels, mask, histG, histSize ,ranges);
+            listOfB.get(k).release();
+            listOfG.get(k).release();
 
             if(histB.get(1,0)[0] > 3 * histG.get(1,0)[0]) {
                 detectedBalls.get(k).setWhitePixels(histG.get(1,0)[0]);
@@ -189,18 +323,8 @@ public class BallService {
             }
         }
 
-        int stripedId = 0;
-        int solidId = 0;
-        for(Ball ball : detectedBalls) {
-            if((ball.getWhitePixels()*100)/1764 >= 16) {
-                ball.setId(stripedId);
-//                stripedId++;
-            } else {
-                ball.setId(solidId);
-//                solidId++;
-            }
-        }
+        histB.release();
+        histG.release();
 
-        return detectedBalls;
     }
 }
