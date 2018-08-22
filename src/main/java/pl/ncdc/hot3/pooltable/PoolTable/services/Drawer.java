@@ -17,15 +17,13 @@ import java.util.List;
 
 @Service
 public class Drawer {
+	// tymczasowo
+	private final Scalar SOLID_DRAW_COLOR = new Scalar(0,0,255);
+	private final Scalar STRIPED_DRAW_COLOR = new Scalar(0,255,0);
 
-	private Properties properties;
 
 	@Autowired
-	public Drawer(
-			Properties properties
-	) {
-		this.properties = properties;
-	}
+	public Drawer() {}
 
 	public void drawBalls(Mat img, ArrayList<Ball> balls, Scalar scalar) throws DrawerException {
 		if (img == null)
@@ -40,9 +38,9 @@ public class Drawer {
 
 			if(scalar == null){
 				if(ball.getId() >= 0 && ball.getId() < 8) {
-					Imgproc.circle(img, center, r, properties.getSolidDrawColor(), 5);
+					Imgproc.circle(img, center, r, SOLID_DRAW_COLOR, 5);
 				} else {
-					Imgproc.circle(img, center, r, properties.getStripedDrawColor(), 5);
+					Imgproc.circle(img, center, r, STRIPED_DRAW_COLOR, 5);
 				}
 			} else {
 				Imgproc.circle(img, center, r, scalar, 5);
