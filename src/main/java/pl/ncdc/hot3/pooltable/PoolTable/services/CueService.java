@@ -156,16 +156,18 @@ public class CueService {
 
             double[] prevSumXs = { 0, 0 }, prevSumYs = { 0, 0 };
             int prevLinesCounter = 0;
-            for (int i = 0; i < (cueDetectDelay - 1); i++){
+            for (int i = 0; i < (cueDetectDelay); i++){
                 int tempIdx = (detectedCueCounter + i) % properties.getCueDetectDelay();
 
                 if (prevCueLines[tempIdx] != null){
-                    prevLinesCounter++;
-
-                    prevSumXs[0] += prevCueLines[tempIdx].getBegin().x;
-                    prevSumXs[1] += prevCueLines[tempIdx].getEnd().x;
-                    prevSumYs[0] += prevCueLines[tempIdx].getBegin().y;
-                    prevSumYs[1] += prevCueLines[tempIdx].getEnd().y;
+                    if (LineService.calculateDistanceBetweenPoints(prevCueLines[tempIdx].getBegin(), cueLine.getBegin()) <= 60 &&
+                            LineService.calculateDistanceBetweenPoints(prevCueLines[tempIdx].getEnd(), cueLine.getEnd()) <= 60) {
+                        prevLinesCounter++;
+                        prevSumXs[0] += prevCueLines[tempIdx].getBegin().x;
+                        prevSumYs[0] += prevCueLines[tempIdx].getBegin().y;
+                        prevSumXs[1] += prevCueLines[tempIdx].getEnd().x;
+                        prevSumYs[1] += prevCueLines[tempIdx].getEnd().y;
+                    }
                 }
             }
 
@@ -173,8 +175,10 @@ public class CueService {
                 Point newBegin = new Point(prevSumXs[0] / prevLinesCounter, prevSumYs[0] / prevLinesCounter);
                 Point newEnd = new Point(prevSumXs[1] / prevLinesCounter, prevSumYs[1] / prevLinesCounter);
 
+                LOGGER.info("prev lines counter: " + prevLinesCounter + " ends diff: " + Math.abs(newEnd.x - cueLine.getEnd().x) + ", " + Math.abs(newEnd.y - cueLine.getEnd().y)   );
+
                 stabileCueLine.setBegin(newBegin);
-                stabileCueLine.setBegin(newEnd);
+                stabileCueLine.setEnd(newEnd);
             }
         }
 

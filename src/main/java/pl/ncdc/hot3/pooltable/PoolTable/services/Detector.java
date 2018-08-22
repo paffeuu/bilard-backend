@@ -102,7 +102,8 @@ public class Detector {
             Ball whiteBall = ballService.getWhiteBall();
             Point coordinates = new Point(whiteBall.getX(), whiteBall.getY());
 
-            longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
+			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
+			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
 
 

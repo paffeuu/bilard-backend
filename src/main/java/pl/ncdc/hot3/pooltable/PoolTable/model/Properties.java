@@ -68,7 +68,7 @@ public class Properties {
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.previousFramesMoveTolerance = 10;
-        this.cueDetectDelay = 4;
+        this.cueDetectDelay = 16;
         this.cueStickLineThickness = 8;
 
         this.ballMaxRadius = 22;
