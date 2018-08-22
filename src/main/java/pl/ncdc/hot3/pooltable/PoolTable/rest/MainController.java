@@ -29,7 +29,7 @@ public class MainController {
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
     public ResponseEntity<PoolTable> test() throws CameraServiceException {
-        System.gc();
+
         PoolTable table = tableStoryService
                 .next()
                 .findBalls()
@@ -60,7 +60,7 @@ public class MainController {
         return ResponseEntity.ok(this.properties);
     }
 
-    @Scheduled(fixedRate = 500)
+    @Scheduled(fixedRate = 125)
     public void socketSendTable() throws Exception{
         System.gc();
         PoolTable table = tableStoryService
