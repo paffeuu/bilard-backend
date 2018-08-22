@@ -190,26 +190,4 @@ public class CueService {
                 )
         ));
     }
-
-    public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
-        double distance = calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
-        double[] coordinates = calcAllCoordinate(line);
-        double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};
-        double A = newCoordinates[0];
-        double B = newCoordinates[1];
-        double C = newCoordinates[2];
-
-        return lineService.getExtendedStickLineForOneSide(
-                new Line(
-                        new Point(
-                                ball.getX(),
-                                ball.getY()
-                        ),
-                        new Point(
-                                line.getEnd().x,
-                                (-C - A * (line.getEnd().x)) / B
-                        )
-                )
-        );
-    }
 }

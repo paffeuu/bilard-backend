@@ -189,15 +189,15 @@ public class BallService {
             }
         }
 
-        int stripedId = 8;
+        int stripedId = 0;
         int solidId = 0;
         for(Ball ball : detectedBalls) {
             if((ball.getWhitePixels()*100)/1764 >= 16) {
                 ball.setId(stripedId);
-                stripedId++;
+//                stripedId++;
             } else {
                 ball.setId(solidId);
-                solidId++;
+//                solidId++;
             }
         }
 

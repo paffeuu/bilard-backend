@@ -45,15 +45,13 @@ public class TableStoryService {
             CameraService cameraService,
             Drawer drawer,
             Properties properties,
-            PreviousPositionService previousPositionService,
-            CueService cueService
+            PreviousPositionService previousPositionService
     ) {
         this.detector = detector;
         this.cameraService = cameraService;
         this.drawer = drawer;
         this.properties = properties;
         this.previousPositionService = previousPositionService;
-        this.cueService = cueService;
 
         currentTableIndex = -1;
 
@@ -120,7 +118,7 @@ public class TableStoryService {
                 Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
 
                 if (collisionBall instanceof Ball && 0 == collisionBall.getId()) {
-                    cue = cueService.refactorCueLine(cue, collisionBall);
+                    cue = detector.refactorCueLine(cue, collisionBall);
                 }
             }
 
@@ -174,7 +172,7 @@ public class TableStoryService {
 
                     List<Line> newPredictions = new ArrayList<>();
                     int index = -1;
-                    int colisionIndex = -1;
+                    int collisionIndex = -1;
 
                     for (Line prediction : current().getPredictions()) {
                         ++index;
@@ -193,15 +191,15 @@ public class TableStoryService {
                             current().setTargetLine(targetLine);
                             current().getPredictions().set(index, new Line(prediction.getBegin(), targetLine.getBegin()));
 //                            newPredictions.add(new Line(prediction.getBegin(), targetLine.getBegin()));
-                            colisionIndex = index;
+                            collisionIndex = index;
                         }
                     }
 
-                    if (-1 != colisionIndex) {
-                        for (int i = index-1; i < current().getPredictions().size(); ++i) {
-                            current().getPredictions().remove(i);
-                        }
-                    }
+//                    if (-1 != collisionIndex) {
+//                        for (int i = index-1; i < current().getPredictions().size(); ++i) {
+//                            current().getPredictions().remove(i);
+//                        }
+//                    }
 
 //                    current().setPredictions(newPredictions);
                 }

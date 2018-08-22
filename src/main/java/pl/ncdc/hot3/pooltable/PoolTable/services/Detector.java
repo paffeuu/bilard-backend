@@ -31,16 +31,19 @@ public class Detector {
 	private static Properties properties;
 	private CueService cueService;
 	private BallService ballService;
+	private LineService lineService;
 
 	@Autowired
 	public Detector(
 			CueService cueService,
 			Properties properties,
-			BallService ballService
+			BallService ballService,
+			LineService lineService
 	) {
+		Detector.properties = properties;
 		this.ballService = ballService;
-		this.properties = properties;
 		this.cueService = cueService;
+		this.lineService = lineService;
 
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		this.cannyImg = new Mat();
@@ -182,6 +185,28 @@ public class Detector {
 		}
 
 		return null;
+	}
+
+	public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
+		double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+		double[] coordinates = cueService.calcAllCoordinate(line);
+		double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};
+		double A = newCoordinates[0];
+		double B = newCoordinates[1];
+		double C = newCoordinates[2];
+
+		return lineService.getExtendedStickLineForOneSide(
+				new Line(
+						new Point(
+								ball.getX(),
+								ball.getY()
+						),
+						new Point(
+								line.getEnd().x,
+								(-C - A * (line.getEnd().x)) / B
+						)
+				)
+		);
 	}
 }
 
