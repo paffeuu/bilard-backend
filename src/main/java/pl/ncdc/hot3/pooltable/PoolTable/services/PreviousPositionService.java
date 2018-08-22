@@ -6,12 +6,13 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Service
 public class PreviousPositionService {
 
-    private ArrayList<ArrayList<Ball>> positionsHistory;
-    private ArrayList<Ball> previousPosition;
+    private ArrayList<List<Ball>> positionsHistory;
+    private List<Ball> previousPosition;
     private ArrayList<Ball> playerSavedPosition;
     private Line playerSavedStick;
 
@@ -24,20 +25,20 @@ public class PreviousPositionService {
         this.previousPosition.addAll(position);
     }
 
-    public void addPosition(ArrayList<Ball> position) {
+    public void addPosition(List<Ball> position) {
         this.positionsHistory.add(position);
     }
 
-    private boolean comparePositions(ArrayList<Ball> col1, ArrayList<Ball> col2) {
+    private boolean comparePositions(List<Ball> col1, List<Ball> col2) {
         return col1.containsAll(col2) && col2.containsAll(col1);
 
     }
 
     public void updatePreviousBallPosition() {
-        ArrayList<Ball> currentPosition = this.positionsHistory.get(this.positionsHistory.size()-1);
+        List<Ball> currentPosition = this.positionsHistory.get(this.positionsHistory.size()-1);
         if (this.previousPosition == null) {
             this.previousPosition = this.positionsHistory.get(this.positionsHistory.size()-1);
-            System.out.println("position first set");
+            //System.out.println("position first set");
             return;
         }
 
@@ -48,7 +49,7 @@ public class PreviousPositionService {
                         continue;
                     }
                 if (!comparePositions(this.positionsHistory.get(i), this.previousPosition)) {
-                    System.out.println("new position found");
+                    //System.out.println("new position found");
                     this.previousPosition = this.positionsHistory.get(i);
                     this.positionsHistory.subList(0, i).clear();
                     return;
@@ -59,7 +60,7 @@ public class PreviousPositionService {
         }
     }
 
-    public ArrayList<Ball> getPreviousPosition() {
+    public List<Ball> getPreviousPosition() {
         if (this.playerSavedPosition != null) {
             return this.playerSavedPosition;
         }

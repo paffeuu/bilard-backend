@@ -30,6 +30,9 @@ public class CueService {
 
     private LineService lineService;
 
+    private Line[] prevCueLines;
+    private int cueDetectDelay, detectedCueCounter;
+
     @Autowired
     public CueService(
             Properties properties,
@@ -37,6 +40,10 @@ public class CueService {
     ){
         this.properties = properties;
         this.lineService = lineService;
+        this.detectedCueCounter = 0;
+
+        cueDetectDelay = properties.getCueDetectDelay();
+        prevCueLines = new Line[cueDetectDelay];
     }
 
     private double calcAbsoluteDistance(double value1, double value2){
@@ -44,7 +51,6 @@ public class CueService {
     }
 
     public Line predictTrajectoryAfterBump(Line line) throws CueServiceException, LineServiceException {
-
         Point bumpPoint = line.getEnd();
         Point halfDistance;
 
@@ -69,44 +75,142 @@ public class CueService {
 
         );
 
-        predictedLine = lineService.getExtendedStickLineForOneSide(predictedLine);
-        return predictedLine;
+        try {
+            predictedLine = lineService.getExtendedStickLineForOneSide(predictedLine);
+        }catch (ExtendLineException e) {
+            LOGGER.warn("Cannot extend predicted line. \n" + predictedLine + ". Nested: " + e);
+        }
 
+        return predictedLine;
     }
 
-    public Line findStickLine(List<Line> innerLines) throws MissingCueLineException, LineServiceException {
+    public Line findStickLine(List<Line> innerLines) throws MissingCueLineException {
 
         Line cueLine = null;
 
-        double dist;
-        double a1, a2;
+        if (innerLines.isEmpty()) {
+            return cueLine;
+        } else if (innerLines.size() == 1) {
+            return innerLines.get(0);
+        }
 
-        outerloop:
+        double dist;
+        double a1, a2, pMin = properties.getParallelTolerance();
+        int indexOfLine_A = 0, indexOfLine_B = 0;
+
         for (int i = 0; i < innerLines.size() - 1; i++){
             for (int j = 0; j < innerLines.size(); j++){
                 if (i != j) {
 
-                    a1 = lineService.calcCoordinate_A(innerLines.get(i));
-                    a2 = lineService.calcCoordinate_A(innerLines.get(j));
+                    a1 = calcAllCordinate(innerLines.get(i))[0];
+                    a2 = calcAllCordinate(innerLines.get(j))[0];
 
-                    if (Math.abs(a1 - a2) < properties.getParallelTolerance()) {
-                        dist = getDistanceBetweenLines(innerLines.get(i), innerLines.get(j));
-                        if (dist < properties.getCueThickness()) {
-                            cueLine = lineService.getDirectedLine(innerLines.get(i), innerLines.get(j));
-
-                            break outerloop;
-                        }
+                    if (Math.abs(a1 - a2) < pMin) {
+                        pMin = Math.abs(a1 - a2);
+                        indexOfLine_A = i;
+                        indexOfLine_B = j;
                     }
-
                 }
             }
         }
 
-        if (cueLine == null){
-            throw new MissingCueLineException("Could not find stick line.");
+        Line newLineBetweenShort = null;
+        if (indexOfLine_A != indexOfLine_B) {
+            double X1 = (innerLines.get(indexOfLine_A).getBegin().x + innerLines.get(indexOfLine_B).getBegin().x) / 2;
+            double X2 = (innerLines.get(indexOfLine_A).getEnd().x + innerLines.get(indexOfLine_B).getEnd().x) / 2;
+            double Y1 = (innerLines.get(indexOfLine_A).getBegin().y + innerLines.get(indexOfLine_B).getBegin().y) / 2;
+            double Y2 = (innerLines.get(indexOfLine_A).getEnd().y + innerLines.get(indexOfLine_B).getEnd().y) / 2;
+            Point newBegin = new Point(X1, Y1);
+            Point newEnd = new Point(X2, Y2);
+            newLineBetweenShort = new Line(newBegin, newEnd);
         }
 
-        return cueLine;
+        return newLineBetweenShort;
+    }
+
+    public Line directAndExtend(Line line, Point whiteBall) {
+        Line newLineBetweenLong = line;
+
+        double beginDist = getDistanceBetweenPoints(line.getBegin(), whiteBall);
+        double endDist = getDistanceBetweenPoints(line.getEnd(), whiteBall);
+
+        if (beginDist <=  endDist) {
+            newLineBetweenLong = LineService.switchPoints(newLineBetweenLong);
+        }
+
+        try {
+            newLineBetweenLong = lineService.getExtendedStickLineForOneSide(newLineBetweenLong);
+        } catch (LineServiceException e) {
+            LOGGER.warn("Cannot extend it: " + line);
+        }
+
+        return newLineBetweenLong;
+    }
+
+    public Line stabilizeWithPrevious(Line cueLine) {
+        Line stabileCueLine = cueLine;
+
+        prevCueLines[detectedCueCounter] = cueLine;
+        if (detectedCueCounter++ > 0){
+            detectedCueCounter = detectedCueCounter % cueDetectDelay;
+
+            double[] prevSumXs = { 0, 0 }, prevSumYs = { 0, 0 };
+            int prevLinesCounter = 0;
+            for (int i = 0; i < (cueDetectDelay - 1); i++){
+                int tempIdx = (detectedCueCounter + i) % properties.getCueDetectDelay();
+
+                if (prevCueLines[tempIdx] != null){
+                    prevLinesCounter++;
+
+                    prevSumXs[0] += prevCueLines[tempIdx].getBegin().x;
+                    prevSumXs[1] += prevCueLines[tempIdx].getEnd().x;
+                    prevSumYs[0] += prevCueLines[tempIdx].getBegin().y;
+                    prevSumYs[1] += prevCueLines[tempIdx].getEnd().y;
+                }
+            }
+
+            if (prevLinesCounter > 0) {
+                Point newBegin = new Point(prevSumXs[0] / prevLinesCounter, prevSumYs[0] / prevLinesCounter);
+                Point newEnd = new Point(prevSumXs[1] / prevLinesCounter, prevSumYs[1] / prevLinesCounter);
+
+                stabileCueLine.setBegin(newBegin);
+                stabileCueLine.setBegin(newEnd);
+            }
+        }
+
+        return stabileCueLine;
+    }
+
+    public Line stabilize(Line cueLine) {
+        double minNotApproved = 99999;
+        double minDistTolerance = properties.getPreviousFramesMoveTolerance();
+
+        int minimalApproveIndex = detectedCueCounter;
+        int linesApproveCounter = 0;
+        prevCueLines[detectedCueCounter] = cueLine;
+        if (cueLine != null && detectedCueCounter++ > 0){
+            detectedCueCounter = detectedCueCounter % properties.getCueDetectDelay();
+
+            for (int i = 0; i < properties.getCueDetectDelay() - 1; i++) {
+                int tempIdx = (detectedCueCounter + i) % properties.getCueDetectDelay();
+
+                if (prevCueLines[tempIdx] != null) {
+                    double dist = getDistanceBetweenPoints(cueLine.getEnd(), prevCueLines[tempIdx].getEnd());
+
+                    if (dist <= minDistTolerance){
+                        linesApproveCounter++;
+                    } else if (dist < minNotApproved) {
+                        minNotApproved = dist;
+                        minimalApproveIndex = tempIdx;
+                    }
+                }
+            }
+        }
+
+        if (linesApproveCounter >= (properties.getCueDetectDelay() - 1))
+            return cueLine;
+
+        return prevCueLines[minimalApproveIndex];
     }
 
     private double getDistanceBetweenLines(Line line1, Line line2) {
@@ -122,7 +226,7 @@ public class CueService {
         return ((min1 + min2)/2);
     }
 
-    private double getDistanceBetweenPoints(Point point1, Point point2) {
+    public static double getDistanceBetweenPoints(Point point1, Point point2) {
         return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
 
@@ -136,7 +240,7 @@ public class CueService {
         return temp;
     }
 
-    public Ball stopLineAtFirstBall(Line line, ArrayList<Ball> balls, boolean isCueLine) {
+    public Ball stopLineAtFirstBall(Line line, List<Ball> balls, boolean isCueLine) {
         double counter = 0;
 
         for (Ball ball : balls) {
@@ -157,6 +261,7 @@ public class CueService {
     public double[] calcAllCordinate(Line line) {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
+        if (X == 0) X += 0.5;
         double a = Y / X;
         double b = line.getBegin().y - line.getBegin().x * a;
 

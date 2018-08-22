@@ -176,7 +176,8 @@ public class TableStoryServiceTests {
         PoolTable table = new PoolTable();
         Mat source;
 
-        for (int i = 0; i < 64; i++){
+        int size = 1;
+        for (int i = 0; i < size; i++){
             String filename = "mock/mockupcameraCalibPic" + i + ".jpg";
             String fullPath = properties.getFullPath(filename);
 

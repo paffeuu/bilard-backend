@@ -42,6 +42,9 @@ public class Properties {
     // Stick
     private double cueThickness;
     private double parallelTolerance;
+    private double previousFramesMoveTolerance;
+    private int cueDetectDelay;
+    private int cueStickLineThickness;
 
     // Predictions
     private int predictionDepth;
@@ -50,15 +53,26 @@ public class Properties {
     private boolean showPreviousPosition;
     private int previousFramesFrequency;
 
+    public double getPreviousFramesMoveTolerance() {
+        return previousFramesMoveTolerance;
+    }
+
+    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
+        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
+    }
+
     public Properties() {
         this.tableBandLeft = 130;
         this.tableBandRight = 1915;
         this.tableBandTop = 365;
         this.tableBandBottom = 1250;
-        this.predictionDepth = 3;
+        this.predictionDepth = 1;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
+        this.previousFramesMoveTolerance = 10;
+        this.cueDetectDelay = 4;
+        this.cueStickLineThickness = 8;
 
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
@@ -104,6 +118,14 @@ public class Properties {
                       double imageSourceHeight,
                       int predictionDepth
     ) {}
+
+    public int getCueStickLineThickness() {
+        return cueStickLineThickness;
+    }
+
+    public void setCueStickLineThickness(int cueStickLineThickness) {
+        this.cueStickLineThickness = cueStickLineThickness;
+    }
 
     public boolean isShowPreviousPosition() {
         return showPreviousPosition;
@@ -397,6 +419,14 @@ public class Properties {
         this.predictionDepth = predictionDepth;
     }
 
+    public int getCueDetectDelay() {
+        return cueDetectDelay;
+    }
+
+    public void setCueDetectDelay(int cueDetectDelay) {
+        this.cueDetectDelay = cueDetectDelay;
+    }
+
     public boolean isPointInsideBand(Point point){
         if (point.x >= this.getTableBandLeft() - 5 && point.x <= this.getTableBandRight() + 5) {
             if (point.y >= this.getTableBandTop() - 5 && point.y <= this.getTableBandBottom() + 5) {
@@ -406,8 +436,35 @@ public class Properties {
         return false;
     }
 
-    public void setProperties(Properties properties){
-        System.out.println(Properties.class);
+    public boolean isPointGoingToSocket(Point point) {
+        boolean isInSocket = false;
+        double distToSocketTollerace = 45;
+
+        Point leftTop = new Point(tableBandLeft, tableBandTop);
+        Point rightTop = new Point(tableBandRight, tableBandTop);
+        Point leftBot = new Point(tableBandLeft, tableBandBottom);
+        Point rightBot = new Point(tableBandRight, tableBandBottom);
+        Point midTop = new Point((tableBandLeft + tableBandRight) / 2, tableBandTop);
+        Point midBot = new Point((tableBandLeft + tableBandRight) / 2, tableBandBottom);
+
+        if (getDistanceBetweenPoints(point, leftTop) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, rightTop) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, leftBot) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, rightBot) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, midTop) <= distToSocketTollerace)
+            isInSocket = true;
+        else if (getDistanceBetweenPoints(point, midBot) <= distToSocketTollerace)
+            isInSocket = true;
+
+        return isInSocket;
+    }
+
+    private double getDistanceBetweenPoints(Point point1, Point point2) {
+        return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
 
     public String getFullPath(String filename) throws FileNotFoundException {
