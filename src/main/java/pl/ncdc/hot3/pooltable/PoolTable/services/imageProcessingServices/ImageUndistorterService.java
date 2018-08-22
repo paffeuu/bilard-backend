@@ -21,8 +21,12 @@ public class ImageUndistorterService {
     }
 
     public Mat undistort(Mat distorted) {
-        Mat undistorted = new Mat();
-        Imgproc.undistort(distorted, undistorted, cameraMatrix, distCoeffs);
-        return undistorted;
+        try {
+            Mat undistorted = new Mat();
+            Imgproc.undistort(distorted, undistorted, cameraMatrix, distCoeffs);
+            return undistorted;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

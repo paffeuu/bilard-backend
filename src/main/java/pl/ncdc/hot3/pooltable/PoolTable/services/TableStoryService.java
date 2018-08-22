@@ -15,6 +15,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
+import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,6 +96,9 @@ public class TableStoryService {
             outputImage = cameraService.getSnap();
             detector.setSourceImg(outputImage.clone());
         } catch (CameraServiceException e) {
+            LOGGER.warn("Camera view not available. Empty table image as a source");
+            outputImage = detector.getSourceImg().clone();
+        } catch (NullPointerException e) {
             LOGGER.warn("Camera view not available. Empty table image as a source");
             outputImage = detector.getSourceImg().clone();
         }
@@ -221,6 +225,8 @@ public class TableStoryService {
             MatOfByte matOfByte = new MatOfByte();
             Imgcodecs.imencode(".jpg", outputImage, matOfByte);
             current().setTableImage(matOfByte.toArray());
+            outputImage.release();
+
         } catch (DrawerException e) {
             LOGGER.error("Cannot prepere the view image.", e);
         } finally {
