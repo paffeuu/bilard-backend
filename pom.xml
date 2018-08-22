@@ -9,7 +9,7 @@
 	<packaging>war</packaging>
 
 	<name>PoolTable</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Augmented reality pool table project</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -24,6 +24,38 @@
 		<java.version>1.8</java.version>
 	</properties>
 
+	<profiles>
+		<profile>
+			<id>linux-pom-build</id>
+			<activation>
+				<os>
+					<name>Linux</name>
+					<family>unix</family>
+					<arch>x86</arch>
+				</os>
+			</activation>
+			<properties>
+			<onLinux>true</onLinux>
+			<openCvLibraryPath>/usr/local/share/OpenCV/java/libopencv_java342.so</openCvLibraryPath>
+			</properties>
+		</profile>
+
+
+		<profile>
+			<id>windows-pom-build</id>
+			<activation>
+				<os>
+					<name>Windows</name>
+					<family>windows</family>
+					<arch>x86</arch>
+				</os>
+			</activation>
+			<properties>
+				<onLinux>false</onLinux>
+				<openCvLibraryPath>\\lib\\</openCvLibraryPath>
+			</properties>
+		</profile>
+	</profiles>
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
 		<dependency>
@@ -82,9 +114,30 @@
 			<artifactId>bootstrap</artifactId>
 			<version>3.3.7</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-model</artifactId>
+			<version>3.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-model</artifactId>
+			<version>3.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+			<version>3.1.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>

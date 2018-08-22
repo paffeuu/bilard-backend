@@ -4,6 +4,7 @@ import org.opencv.core.Point;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Properties class
@@ -52,6 +53,11 @@ public class Properties {
     // Replays
     private boolean showPreviousPosition;
     private int previousFramesFrequency;
+
+
+    //Enviroment variables
+    private String prodOpenCvPath;
+    private boolean prodEnviroment;
 
     public double getPreviousFramesMoveTolerance() {
         return previousFramesMoveTolerance;
@@ -470,5 +476,9 @@ public class Properties {
     public String getFullPath(String filename) throws FileNotFoundException {
         String path = this.getClass().getClassLoader().getResource(filename).getPath().replaceAll("%20"," ").substring(1);
         return path;
+    }
+
+    public void getSystemProperties() {
+
     }
 }
