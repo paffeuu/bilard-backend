@@ -60,18 +60,19 @@ public class Properties {
         /*
         Pomniejszenie pola gry o promień bili białej (w celu poprawienia predykcji odbicia od bandy)
          */
-        this.tableBandLeft = 165 + this.ballExpectedRadius;
-        this.tableBandRight = 1948 - this.ballExpectedRadius;
-        this.tableBandTop = 350 + this.ballExpectedRadius;
-        this.tableBandBottom = 1236 - this.ballExpectedRadius;
+//        this.tableBandLeft = 165 + this.ballExpectedRadius;
+//        this.tableBandRight = 1948 - this.ballExpectedRadius;
+//        this.tableBandTop = 350 + this.ballExpectedRadius;
+//        this.tableBandBottom = 1236 - this.ballExpectedRadius;
+
+        this.tableBandLeft = 165;
+        this.tableBandRight = 1948;
+        this.tableBandTop = 350;
+        this.tableBandBottom = 1236;
         this.predictionDepth = 3;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
-
-        this.ballMaxRadius = 22;
-        this.ballMinRadius = 16;
-        this.ballMinDistance = 36;
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
