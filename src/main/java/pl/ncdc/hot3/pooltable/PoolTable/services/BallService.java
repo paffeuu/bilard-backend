@@ -226,7 +226,7 @@ public class BallService {
     List<Ball> createListOfBalls() throws BallsDetectorException {
         Mat circles = detectBalls(sourceImg);
         List<Ball> detectedBalls = new ArrayList<Ball>();
-        if (circles.empty()) {
+        if (circles.empty() || circles == null) {
             return detectedBalls;
         }
             detectedBalls = convertMatToListOfBalls(circles);
