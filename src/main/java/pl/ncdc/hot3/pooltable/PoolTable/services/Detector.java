@@ -88,14 +88,14 @@ public class Detector {
 		Mat substractedImg = getEdges(getSourceImg().clone());
 		List <Line> linesList = getInnerLines(substractedImg);
 		Line shortCueLine = cueService.findStickLine(linesList);
-		Line longCueLine = null;
-        Ball whiteBall = ballService.getWhiteBall();
-        Point coordinates = new Point(whiteBall.getX(), whiteBall.getY());
+        Line longCueLine = null;
 
-		if (shortCueLine != null) {
-			longCueLine = cueService.directAndExtend(shortCueLine, new Point(0, 0));
-			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
-			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
+        if (shortCueLine != null) {
+            Ball whiteBall = ballService.getWhiteBall();
+            Point coordinates = new Point(whiteBall.getX(), whiteBall.getY());
+
+            longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
+            longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
 
 
