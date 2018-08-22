@@ -161,7 +161,7 @@ public class TableStoryService {
         } catch (BallsDetectorException e) {
             LOGGER.info("Can not find balls");
         } catch (Exception e) {
-            LOGGER.info("Unknow exception for no balls on table.");
+            LOGGER.error("Unknow exception for no balls on table.");
         }
 
         return this;
