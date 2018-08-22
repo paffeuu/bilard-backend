@@ -102,8 +102,8 @@ public class CueService {
             for (int j = 0; j < innerLines.size(); j++){
                 if (i != j) {
 
-                    a1 = calcAllCordinate(innerLines.get(i))[0];
-                    a2 = calcAllCordinate(innerLines.get(j))[0];
+                    a1 = calcAllCoordinate(innerLines.get(i))[0];
+                    a2 = calcAllCoordinate(innerLines.get(j))[0];
 
                     if (Math.abs(a1 - a2) < pMin) {
                         pMin = Math.abs(a1 - a2);

@@ -169,7 +169,7 @@ public class Detector {
 		return predictions;
 	}
 
-    public Line createTargetLine(Line line, ArrayList<Ball> balls, boolean isCue) throws LineServiceException {
+    public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
         Ball collision = getCollisionBall(line, balls, isCue);
 
         if (null != collision) {
@@ -179,7 +179,7 @@ public class Detector {
         return null;
     }
 
-	public Ball getCollisionBall(Line line, ArrayList<Ball> balls, boolean skipFirst) {
+	public Ball getCollisionBall(Line line, List<Ball> balls, boolean skipFirst) {
 		double counter = 0;
 
 		for (Ball ball : balls) {

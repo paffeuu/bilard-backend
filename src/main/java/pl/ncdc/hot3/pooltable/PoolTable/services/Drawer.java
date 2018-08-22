@@ -67,25 +67,27 @@ public class Drawer {
         Imgproc.circle(img, point, radius, scalar, thickness);
     }
 
-    public void draw(Mat img, Line cue, ArrayList<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
+    public void draw(Mat img, Line cue, List<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
         if (img == null) {
             throw new DrawerException("Cannot draw line to null image.");
         }
 
 		if (cue != null)
-			drawLine(img, cue);
+			drawLine(img, cue, new Scalar(155, 155, 155), 4);
 
 		if (listOfBalls != null && !listOfBalls.isEmpty())
 			drawBalls(img, listOfBalls,  null);
 
 		if (predictions != null && !predictions.isEmpty()) {
 			for (Line line : predictions) {
-				drawLine(img, line);
+				drawLine(img, line, new Scalar(155, 155, 155), 4);
 			}
 		}
 
         if (null != targetLine) {
-        	drawLine(img, targetLine);
+        	drawLine(img, targetLine, new Scalar(0, 0, 255), 4);
+        	// TODO Zmienić getBallMaxRadius na getBallExpectedRadius
+        	drawCircle(img, targetLine.getBegin(), properties.getBallMaxRadius(), new Scalar(0, 255, 255), 4);
 		}
 	}
 }
