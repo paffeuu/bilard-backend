@@ -9,9 +9,11 @@ import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.DetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.ExtendLineException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.MissingCueLineException;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.BallService;
@@ -49,6 +51,9 @@ public class DetectorTests {
 
     @Autowired
     LineService lineService;
+
+    @Autowired
+    BallService ballService;
 
     @Test
     public void shouldFindStickLineAndSaveImageWithLine() throws DetectorException, MissingCueLineException, FileNotFoundException {
@@ -228,6 +233,20 @@ public class DetectorTests {
         Core.subtract(source, detector.getEmptyTableImage(), source);
 
 
+        Imgcodecs.imwrite("tests/substracted.png", source);
+    }
+
+    @Test
+    public void shouldFindBallsEvenForHardCouses() throws BallsDetectorException {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        List <Mat> layers = new ArrayList<>();
+
+        Mat source = Imgcodecs.imread(properties.TESTS_PATH + "emptyTable.png", CvType.CV_64F);
+
+        detector.setSourceImg(source);
+        List <Ball> listOfBalls = detector.createListOfBalls();
+
+        System.out.println(listOfBalls.size());
         Imgcodecs.imwrite("tests/substracted.png", source);
     }
 

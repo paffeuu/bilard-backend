@@ -134,13 +134,13 @@ public class CueService {
         double beginDist = getDistanceBetweenPoints(line.getBegin(), whiteBall);
         double endDist = getDistanceBetweenPoints(line.getEnd(), whiteBall);
 
-        if (beginDist >= endDist) {
+        if (beginDist <=  endDist) {
             newLineBetweenLong = LineService.switchPoints(newLineBetweenLong);
         }
 
         try {
-            newLineBetweenLong = lineService.getExtendedStickLineForBothSides(line);
-        } catch (ExtendLineException e) {
+            newLineBetweenLong = lineService.getExtendedStickLineForOneSide(newLineBetweenLong);
+        } catch (LineServiceException e) {
             LOGGER.warn("Cannot extend it: " + line);
         }
 

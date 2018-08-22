@@ -18,19 +18,19 @@ public class BallService {
     private Properties properties;
 
     //Image processing fields
-    private Size blurSize = new Size(5, 5);
-    private ArrayList<Ball> balls = new ArrayList<>();
-    private Mat temporaryBallImg = new Mat();
+    private Size blurSize;
+    private ArrayList<Ball> balls;
+    private Mat temporaryBallImg;
 
     //small variables but used in two methods, no point to initialize them twice
-    private MatOfFloat ranges = new MatOfFloat(0f,256f);
-    private MatOfInt channels = new MatOfInt(0);
-    private MatOfInt histSize = new MatOfInt(2);
-    private Mat mask = new Mat();
-    private Mat temporaryHist = new Mat();
+    private MatOfFloat ranges;
+    private MatOfInt channels;
+    private MatOfInt histSize;
+    private Mat mask;
+    private Mat temporaryHist;
 
-    private Scalar blackLowerMask = new Scalar(0, 0, 0);
-    private Scalar blackHigherMask = new Scalar(180, 255, 35);
+    private Scalar blackLowerMask;
+    private Scalar blackHigherMask;
 
     private Mat sourceImg;
 
@@ -50,14 +50,24 @@ public class BallService {
     ) {
         this.properties = properties;
 
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        blurSize = new Size(5, 5);
+        balls = new ArrayList<>();
+        temporaryBallImg = new Mat();
+        ranges = new MatOfFloat(0f,256f);
+        channels = new MatOfInt(0);
+        histSize = new MatOfInt(2);
+        mask = new Mat();
+        temporaryHist = new Mat();
+        blackLowerMask = new Scalar(0, 0, 0);
+        blackHigherMask = new Scalar(180, 255, 35);
+
         whiteBall = null;
     }
 
     public Ball getWhiteBall() {
         return whiteBall;
     }
-
-
 
     public void setWhiteAndBlackBall(List<Ball> balls, List<Mat> ballImgList) {
         try {
