@@ -57,7 +57,7 @@ public class Drawer {
 	}
 
 	private void drawLine(Mat img, Line line) {
-		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), 4);
+		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), properties.getCueStickLineThickness());
 	}
 
 	public void draw(Mat img, Line cue, List<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
