@@ -61,7 +61,7 @@ public class BallService {
 
     public void setWhiteAndBlackBall(List<Ball> balls, List<Mat> ballImgList) {
         try {
-            Ball whiteBall = balls
+            whiteBall = balls
                     .stream()
                     .max(Comparator.comparing(Ball::getWhitePixels))
                     .orElseThrow(BallsDetectorException::new);
