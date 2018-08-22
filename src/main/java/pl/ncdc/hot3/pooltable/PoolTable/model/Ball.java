@@ -4,16 +4,16 @@ package pl.ncdc.hot3.pooltable.PoolTable.model;
  * Ball class
  */
 public class Ball implements Comparable<Ball> {
-    private int id;
+    private Integer id;
     private double radius;
     private double x;
     private double y;
 
     @Override
     public int compareTo(Ball b) {
-        if(this.x < b.x) {
+        if(this.id < b.id) {
             return -1;
-        } else if(b.x < this.x) {
+        } else if(b.id < this.id) {
             return 1;
         }else {
             return 0;
@@ -43,12 +43,11 @@ public class Ball implements Comparable<Ball> {
     /**
      * Ball Constructor
      *
-     * @param id Ball number (0 - cue ball)
      * @param x  position X
      * @param y  position Y
      */
-    public Ball(int id, double x, double y, double radius) {
-        this.id = id;
+    public Ball(double x, double y, double radius) {
+        this.id = null;
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -59,7 +58,7 @@ public class Ball implements Comparable<Ball> {
      *
      * @return Ball id
      */
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -68,7 +67,7 @@ public class Ball implements Comparable<Ball> {
      *
      * @param id Ball id
      */
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

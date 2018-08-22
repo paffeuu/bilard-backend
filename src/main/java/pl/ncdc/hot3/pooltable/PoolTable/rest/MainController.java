@@ -26,6 +26,8 @@ public class MainController {
     private SimpMessagingTemplate template;
 
 
+
+
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
     public ResponseEntity<PoolTable> test() throws CameraServiceException {
