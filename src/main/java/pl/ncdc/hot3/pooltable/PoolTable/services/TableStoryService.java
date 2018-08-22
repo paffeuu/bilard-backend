@@ -160,7 +160,10 @@ public class TableStoryService {
             current().setBalls(balls);
         } catch (BallsDetectorException e) {
             LOGGER.info("Can not find balls");
+        } catch (Exception e) {
+            LOGGER.info("Unknow exception for no balls on table.");
         }
+
         return this;
     }
 

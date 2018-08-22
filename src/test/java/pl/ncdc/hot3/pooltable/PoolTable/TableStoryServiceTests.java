@@ -18,6 +18,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.*;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.PathService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 import java.io.FileNotFoundException;
@@ -35,7 +36,9 @@ import static org.mockito.Mockito.when;
         LineService.class,
         Properties.class,
         CameraService.class,
-        ImageUndistorterService.class })
+        ImageUndistorterService.class,
+        PathService.class
+})
 public class TableStoryServiceTests {
 
     private TableStoryService tableStoryService;
@@ -44,7 +47,6 @@ public class TableStoryServiceTests {
     private Detector detector;
 
     @Autowired
-    //CameraService cameraService;
     private Drawer drawer;
 
     @Autowired
@@ -53,11 +55,14 @@ public class TableStoryServiceTests {
     @Autowired
     private PreviousPositionService previousPositionService;
 
+    @Autowired
+    private PathService pathService;
+
     @Test
     public void shouldReturnPoolTableModelWithAllDetailsAndSaveNewImage() throws CameraServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat source = Imgcodecs.imread(properties.TESTS_PATH + "xxxx.png", CvType.CV_64F);
+        Mat source = Imgcodecs.imread(pathService.TESTS_PATH + "xxxx.png", CvType.CV_64F);
 
 
         CameraService cameraService = mock(CameraService.class);
@@ -81,7 +86,7 @@ public class TableStoryServiceTests {
 
 
         Mat output = Imgcodecs.imdecode(new MatOfByte(table.getTableImage()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-        Imgcodecs.imwrite(properties.BASE_PATH + "TableStoryService_Test.png", output);
+        Imgcodecs.imwrite(pathService.BASE_PATH + "TableStoryService_Test.png", output);
 
         Assert.assertNotNull(table);
         Assert.assertFalse(table.getBalls().isEmpty());
@@ -91,10 +96,7 @@ public class TableStoryServiceTests {
     @Test
     public void shouldReturnEmptyTableForEmptyTablePhoto() throws CameraServiceException, FileNotFoundException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        Mat source = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
-        System.out.println("========================================================");
-        System.out.println(properties.getFullPath("emptyTable.png"));
-        System.out.println("========================================================");
+        Mat source = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), CvType.CV_64F);
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(source);
 
@@ -112,7 +114,7 @@ public class TableStoryServiceTests {
         System.out.println("Number of bills: " + table.getBalls().size());
 
         Mat output = Imgcodecs.imdecode(new MatOfByte(table.getTableImage()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-        Imgcodecs.imwrite(properties.BASE_PATH + "TableStoryService_empty_Test.png", output);
+        Imgcodecs.imwrite(pathService.BASE_PATH + "TableStoryService_empty_Test.png", output);
 
         Assert.assertNotNull(table);
         Assert.assertTrue(table.getBalls().isEmpty());
@@ -123,7 +125,7 @@ public class TableStoryServiceTests {
     public void shouldThrowCameraExceptionWhenSourceNotAvailable() throws CameraServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat source = Imgcodecs.imread(properties.BASE_PATH + "hahahhah.png", CvType.CV_64F);
+        Mat source = Imgcodecs.imread(pathService.BASE_PATH + "hahahhah.png", CvType.CV_64F);
 
         CameraService cameraService = mock(CameraService.class);
         when(cameraService.getSnap()).thenReturn(source);
@@ -179,7 +181,7 @@ public class TableStoryServiceTests {
         int size = 1;
         for (int i = 0; i < size; i++){
             String filename = "mock/mockupcameraCalibPic" + i + ".jpg";
-            String fullPath = properties.getFullPath(filename);
+            String fullPath = pathService.getFullPath(filename);
 
             source = Imgcodecs.imread(fullPath, CvType.CV_64F);
                 when(cameraService.getSnap()).thenReturn(undistorterService.undistort(source));

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 
 import java.util.*;
 
@@ -16,6 +17,7 @@ import java.util.*;
 public class BallService {
 
     private Properties properties;
+    private BandsService bandsService;
 
     //Image processing fields
     private Size blurSize;
@@ -46,9 +48,11 @@ public class BallService {
 
     @Autowired
     public BallService(
-            Properties properties
+            Properties properties,
+            BandsService bandsService
     ) {
         this.properties = properties;
+        this.bandsService = bandsService;
 
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         blurSize = new Size(5, 5);
@@ -114,7 +118,7 @@ public class BallService {
             r = data[i + 2];
 
             // check if they are within table boundaries
-            if (properties.isPointInsideBand(new Point(x, y))) {
+            if (bandsService.isPointInsideBand(new Point(x, y))) {
                 if (j == 0) {
                     filteredCircles.put(0, j, x, y, r);
                     matList.set(0, filteredCircles);

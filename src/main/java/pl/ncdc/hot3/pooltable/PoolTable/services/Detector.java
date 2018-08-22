@@ -17,6 +17,8 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.PathService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 @Service
@@ -28,25 +30,31 @@ public class Detector {
 	private Mat sourceImg;
 	private Mat outputImg;
 
-	private static Properties properties;
 	private CueService cueService;
-    private BallService ballService;
+	private BallService ballService;
+	private PathService pathService;
+	private BandsService bandsService;
+	private Properties properties;
 
 	@Autowired
 	public Detector(
 			CueService cueService,
-			Properties properties,
-			BallService ballService
-	) {
+			BallService ballService,
+			PathService pathService,
+			BandsService bandsService,
+			Properties properties
+			) {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		this.ballService = ballService;
-		this.properties = properties;
 		this.cueService = cueService;
+		this.properties = properties;
+		this.pathService = pathService;
+		this.bandsService = bandsService;
 
 		try {
-			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
+			sourceImg = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), CvType.CV_64F);
 
-			emptyTableImage = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
+			emptyTableImage = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), CvType.CV_64F);
 			emptyTableImage = prepereEmptyTableForSubs(emptyTableImage.clone());
 
 		} catch (FileNotFoundException e) {
@@ -94,7 +102,6 @@ public class Detector {
             Point coordinates = new Point(whiteBall.getX(), whiteBall.getY());
 
             longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
-            //longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
 
 
@@ -115,7 +122,7 @@ public class Detector {
 			double line[] = linesData.get(x, 0);
 
 			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
-			if (properties.isPointInsideBand(tempLine.getBegin()) || properties.isPointInsideBand(tempLine.getEnd())){
+			if (bandsService.isPointInsideBand(tempLine.getBegin()) || bandsService.isPointInsideBand(tempLine.getEnd())){
 				linesList.add(tempLine);
 			}
 		}
@@ -156,7 +163,7 @@ public class Detector {
 			for (int i = 0; i < properties.getPredictionDepth(); i++){
 				Line pred = cueService.predictTrajectoryAfterBump(predictions.get(i));
 				predictions.add(pred);
-				if (properties.isPointGoingToSocket(pred.getBegin()) || properties.isPointGoingToSocket(pred.getEnd()))
+				if (bandsService.isPointGoingToSocket(pred.getBegin()) || bandsService.isPointGoingToSocket(pred.getEnd()))
 					break;
 			}
 		}
