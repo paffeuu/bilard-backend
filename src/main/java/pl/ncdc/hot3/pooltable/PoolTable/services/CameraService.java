@@ -26,10 +26,18 @@ public class CameraService {
     }
 
     public Mat getSnap() throws CameraServiceException {
+        Mat out = null;
+
         try {
-            return undistorterService.undistort(OpenCVBufforFlushService.getLastFrame());
+            out = undistorterService.undistort(OpenCVBufforFlushService.getLastFrame());
         } catch (NullPointerException e){
             throw new CameraServiceException("Undistorted camera view is not available.");
         }
+
+        if (out == null) {
+            throw new CameraServiceException("Image to undistort cannot be null.");
+        }
+
+        return out;
     }
 }
