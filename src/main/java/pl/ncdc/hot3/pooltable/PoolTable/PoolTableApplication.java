@@ -27,20 +27,6 @@ public class PoolTableApplication extends SpringBootServletInitializer {
         return application.sources(PoolTableApplication.class);
     }
     static {
-//        Model pomModel = null;
-//        MavenXpp3Reader mavenreader = new MavenXpp3Reader();
-//
-//        try {
-//            if (new File("pom.xml").exists()) {
-//                pomModel = mavenreader.read(new FileReader("pom.xml"));
-//            }
-//        } catch (Exception e) {
-//
-//        }
-//        MavenProject project = new MavenProject(pomModel);
-//
-//
-//        boolean isLinux = pomModel.getProperties()
         boolean isOnProd;
         String openCvPath;
         try {
@@ -52,24 +38,12 @@ public class PoolTableApplication extends SpringBootServletInitializer {
             isOnProd= p.getProperty("on.linux").equals("true");
             openCvPath = p.getProperty("library.path");
             if (isOnProd) {
-                System.out.println("IS PRODD");
-                System.out.println("IS PRODD");
-                System.out.println("IS PRODD");
-                System.out.println("IS PRODD");
             System.load(openCvPath);
             } else {
-
-                String one = System.getProperty("user.dir") + openCvPath + Core.NATIVE_LIBRARY_NAME + ".dll";
-                System.out.println(one);
-                System.out.println(one);
-                System.out.println(one);
-                System.out.println(one);
-                System.setProperty("java.library.path", System.getProperty("user.dir") + openCvPath);
-                System.out.println(System.getProperty("java.library.path"));
-//                System.loadLibrary("opencv_java342.dll");
-//                System.loadLibrary("opencv_ffmpeg342_64.dll");
-                System.load(System.getProperty("user.dir") + openCvPath + Core.NATIVE_LIBRARY_NAME + ".dll");
-                System.load(System.getProperty("user.dir") + openCvPath + "opencv_ffmpeg342_64.dll");
+                String opencvpath = System.getProperty("user.dir") + "\\lib\\";
+                String libPath = System.getProperty("java.library.path");
+                System.load(opencvpath + Core.NATIVE_LIBRARY_NAME + ".dll");
+                System.load(opencvpath + "opencv_ffmpeg342_64.dll");
 
             }
         } catch (Exception e) {

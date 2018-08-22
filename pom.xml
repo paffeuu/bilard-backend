@@ -52,6 +52,7 @@
 			</activation>
 			<properties>
 				<onLinux>false</onLinux>
+				<welcome>WE ARE IN FACT, ON WINDOWS !!!</welcome>
 				<openCvLibraryPath>\\lib\\</openCvLibraryPath>
 			</properties>
 		</profile>
