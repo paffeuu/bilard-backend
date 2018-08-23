@@ -16,6 +16,10 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.PathService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
+
 
 @Service
 public class Detector {
@@ -26,29 +30,34 @@ public class Detector {
 	private Mat sourceImg;
 	private Mat outputImg;
 
-	private static Properties properties;
 	private CueService cueService;
 	private BallService ballService;
+	private PathService pathService;
+	private BandsService bandsService;
+	private Properties properties;
 	private LineService lineService;
 
 	@Autowired
 	public Detector(
 			CueService cueService,
-			Properties properties,
 			BallService ballService,
-			LineService lineService
-	) {
+			PathService pathService,
+			BandsService bandsService,
+			Properties properties,
+            LineService lineService
+			) {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-		Detector.properties = properties;
 		this.ballService = ballService;
 		this.cueService = cueService;
-		this.lineService = lineService;
+		this.properties = properties;
+		this.pathService = pathService;
+		this.bandsService = bandsService;
+        this.lineService = lineService;
 
 		try {
-			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
+			sourceImg = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), CvType.CV_64F);
 
-			emptyTableImage = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
+			emptyTableImage = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), CvType.CV_64F);
 			emptyTableImage = prepereEmptyTableForSubs(emptyTableImage.clone());
 
 		} catch (FileNotFoundException e) {
@@ -152,7 +161,7 @@ public class Detector {
 			r = data[i + 2];
 
 			// check if they are within table boundaries
-			if (properties.isPointInsideBand(new Point(x, y))) {
+			if (bandsService.isPointInsideBand(new Point(x, y))) {
 				if (j == 0) {
 					filteredCircles.put(0, j, x, y, r);
 					matList.set(0, filteredCircles);
@@ -215,13 +224,13 @@ public class Detector {
 		List <Line> linesList = getInnerLines(substractedImg);
 		Line shortCueLine = cueService.findStickLine(linesList);
         Line longCueLine = null;
+		Ball whiteBall = ballService.getWhiteBall();
 
-        if (shortCueLine != null && ballService.getWhiteBall() != null) {
-            Ball whiteBall = ballService.getWhiteBall();
+		if (shortCueLine != null && whiteBall != null) {
             Point coordinates = new Point(whiteBall.getX(), whiteBall.getY());
 
-            longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
-            //longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
+			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
 
 
@@ -242,7 +251,7 @@ public class Detector {
 			double line[] = linesData.get(x, 0);
 
 			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
-			if (properties.isPointInsideBand(tempLine.getBegin()) || properties.isPointInsideBand(tempLine.getEnd())){
+			if (bandsService.isPointInsideBand(tempLine.getBegin()) || bandsService.isPointInsideBand(tempLine.getEnd())){
 				linesList.add(tempLine);
 			}
 		}
@@ -282,9 +291,11 @@ public class Detector {
 			predictions.add(cueLine);
 			for (int i = 0; i < properties.getPredictionDepth(); i++){
 				Line pred = cueService.predictTrajectoryAfterBump(predictions.get(i));
-				predictions.add(pred);
-				if (properties.isPointGoingToSocket(pred.getBegin()) || properties.isPointGoingToSocket(pred.getEnd()))
+				if (bandsService.isPointGoingToSocket(pred.getBegin()) || bandsService.isPointGoingToSocket(pred.getEnd())) {
 					break;
+				} else {
+					predictions.add(pred);
+				}
 			}
 		}
 
@@ -354,8 +365,6 @@ public class Detector {
 
 		return emptyTableImage;
 	}
-
-
 
 
 

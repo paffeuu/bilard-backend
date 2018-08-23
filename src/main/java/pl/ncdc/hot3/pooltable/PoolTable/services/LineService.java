@@ -8,23 +8,27 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 
 import java.util.ArrayList;
 
 @Service
 public class LineService {
     private Properties properties;
+    private BandsService bandsService;
 
     private Line prevExtendedCueLines[] = new Line[10];
     private int prevLinesCounter = 0, prevLinesMax = 10;
     private double previousEndPointDistTolerance = 5;
 
     @Autowired
-    public LineService(Properties properties) {
+    public LineService(
+            Properties properties,
+            BandsService bandsService
+    ) {
         this.properties = properties;
+        this.bandsService = bandsService;
     }
-
-    public LineService() {}
 
     public double[] getDistsToBands(Point point) {
         double[] distances = new double[4];
@@ -98,8 +102,6 @@ public class LineService {
 
         Line finalLine = makeSureLineEndCorrect(new Line(newLineStart, newLineEnd));
 
-        //finalLine = getExtendedStickLineForOneSide(finalLine);
-
         return finalLine;
     }
 
@@ -143,21 +145,11 @@ public class LineService {
         double horizontalMove = stickLine.getEnd().x - stickLine.getBegin().x;
         double verticalMove = stickLine.getEnd().y - stickLine.getBegin().y;
 
-        safeMoveLine(stickLine, horizontalMove, verticalMove);
+        safeMoveLineForVertical(stickLine);
 
         Line extendedLine = new Line();
         Point crosscutPoint1 = null;
         Point crosscutPoint2 = null;
-
-        Point leftTopCornerPoint = new Point(properties.getTableBandLeft(), properties.getTableBandTop());
-        Point rightTopCornerPoint = new Point(properties.getTableBandRight(), properties.getTableBandTop());
-        Point rightBotCornerPoint = new Point(properties.getTableBandRight(), properties.getTableBandBottom());
-        Point leftBotCornerPoint = new Point(properties.getTableBandLeft(), properties.getTableBandBottom());
-
-        Line topBand = new Line(leftTopCornerPoint, rightTopCornerPoint);
-        Line rightBand = new Line(rightTopCornerPoint, rightBotCornerPoint);
-        Line botBand = new Line(leftBotCornerPoint, rightBotCornerPoint);
-        Line leftBand = new Line(leftBotCornerPoint, leftTopCornerPoint);
 
         double Y = (stickLine.getBegin().y - stickLine.getEnd().y);
         double X = (stickLine.getBegin().x - stickLine.getEnd().x);
@@ -166,9 +158,6 @@ public class LineService {
         double b = stickLine.getBegin().y - (a * stickLine.getBegin().x);
 
         if (horizontalMove >= 0 && verticalMove <= 0) {
-
-            crosscutPoint1 = getCrosscutPointForLines(stickLine, topBand);
-            crosscutPoint2 = getCrosscutPointForLines(stickLine, rightBand);
 
             Point maxTop = new Point();
             maxTop.y = properties.getTableBandTop();
@@ -181,24 +170,7 @@ public class LineService {
             crosscutPoint1 = maxTop;
             crosscutPoint2 = maxRight;
 
-//            System.out.println("============================");
-//            System.out.println("lineService::getExtendedStickLineForOneSide()");
-//            System.out.println(stickLine.toString());
-//            System.out.println(crosscutPoint1);
-//            System.out.println(crosscutPoint2);
-//            System.out.println("----------------------------");
-//            System.out.println(maxTop);
-//            System.out.println(maxRight);
-//            System.out.println(properties.isPointInsideBand(crosscutPoint1) + ", " + properties.isPointInsideBand(maxTop));
-//            System.out.println(properties.isPointInsideBand(crosscutPoint2) + ", " + properties.isPointInsideBand(maxRight));
-//            System.out.println(properties.getTableBandLeft() + ", " + properties.getTableBandTop());
-//            System.out.println(", " + properties.getTableBandRight() + ", " + properties.getTableBandBottom());
-//            System.out.println("1===========================");
-
         } else if (horizontalMove < 0 && verticalMove > 0) {
-
-            crosscutPoint1 = getCrosscutPointForLines(stickLine, leftBand);
-            crosscutPoint2 = getCrosscutPointForLines(stickLine, botBand);
 
             Point maxBot = new Point();
             maxBot.y = properties.getTableBandBottom();
@@ -210,22 +182,8 @@ public class LineService {
 
             crosscutPoint1 = maxLeft;
             crosscutPoint2 = maxBot;
-            //           System.out.println("2===========================");
-//            System.out.println("lineService::getExtendedStickLineForOneSide()");
-//            System.out.println(stickLine.toString());
-//            System.out.println(crosscutPoint1);
-//            System.out.println(crosscutPoint2);
-//            System.out.println("----------------------------");
-//            System.out.println(maxLeft);
-//            System.out.println(maxBot);
-//            System.out.println(properties.isPointInsideBand(crosscutPoint1) + ", " + properties.isPointInsideBand(maxLeft));
-//            System.out.println(properties.isPointInsideBand(crosscutPoint2) + ", " + properties.isPointInsideBand(maxBot));
-//            System.out.println("============================");
 
         } else if (horizontalMove < 0 && verticalMove < 0) {
-
-            crosscutPoint1 = getCrosscutPointForLines(stickLine, leftBand);
-            crosscutPoint2 = getCrosscutPointForLines(stickLine, topBand);
 
             Point maxTop = new Point();
             maxTop.y = properties.getTableBandTop();
@@ -234,15 +192,11 @@ public class LineService {
             Point maxLeft = new Point();
             maxLeft.x = properties.getTableBandLeft();
             maxLeft.y = properties.getTableBandLeft() * a + b;
-            //          System.out.println("33===========================");
 
             crosscutPoint1 = maxLeft;
             crosscutPoint2 = maxTop;
 
         } else if (horizontalMove >= 0 && verticalMove >= 0) {
-
-            crosscutPoint1 = getCrosscutPointForLines(stickLine, rightBand);
-            crosscutPoint2 = getCrosscutPointForLines(stickLine, botBand);
 
             Point maxBot = new Point();
             maxBot.y = properties.getTableBandBottom();
@@ -251,7 +205,6 @@ public class LineService {
             Point maxRight = new Point();
             maxRight.x = properties.getTableBandRight();
             maxRight.y = properties.getTableBandRight() * a + b;
-            //          System.out.println("444===========================");
 
             crosscutPoint1 = maxRight;
             crosscutPoint2 = maxBot;
@@ -259,10 +212,10 @@ public class LineService {
         }
 
         try {
-            if (properties.isPointInsideBand(crosscutPoint1)) {
+            if (bandsService.isPointInsideBand(crosscutPoint1)) {
                 extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint1);
-            } else if (properties.isPointInsideBand(crosscutPoint2)) {
+            } else if (bandsService.isPointInsideBand(crosscutPoint2)) {
                 extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint2);
             } else {
@@ -300,19 +253,19 @@ public class LineService {
         maxRight.x = properties.getTableBandRight();
         maxRight.y = properties.getTableBandRight() * a + b;
 
-        if (properties.isPointInsideBand(maxTop)) {
+        if (bandsService.isPointInsideBand(maxTop)) {
             extendedLine.setPoint(maxTop);
         }
 
-        if (properties.isPointInsideBand(maxLeft)) {
+        if (bandsService.isPointInsideBand(maxLeft)) {
             extendedLine.setPoint(maxLeft);
         }
 
-        if (properties.isPointInsideBand(maxBot)) {
+        if (bandsService.isPointInsideBand(maxBot)) {
             extendedLine.setPoint(maxBot);
         }
 
-        if (properties.isPointInsideBand(maxRight)) {
+        if (bandsService.isPointInsideBand(maxRight)) {
             extendedLine.setPoint(maxRight);
         }
 
@@ -330,15 +283,11 @@ public class LineService {
     }
 
 
-    private void safeMoveLine(Line origin, double horizontalMove, double verticalMove) {
+    public void safeMoveLineForVertical(Line origin) {
         Point newBegin = origin.getBegin();
 
-        if (horizontalMove == 0) {
+        if (origin.getBegin().x == origin.getEnd().x) {
             newBegin.x += 3;
-        }
-
-        if (verticalMove == 0) {
-            newBegin.y += 3;
         }
 
         origin.setBegin(newBegin);
@@ -372,5 +321,9 @@ public class LineService {
         double X = (line.getBegin().x - line.getEnd().x);
 
         return (Y / X);
+    }
+
+    public static double getDistanceBetweenPoints(Point point1, Point point2) {
+        return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
 }

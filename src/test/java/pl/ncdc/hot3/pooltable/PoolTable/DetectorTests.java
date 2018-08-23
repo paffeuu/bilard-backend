@@ -20,6 +20,8 @@ import pl.ncdc.hot3.pooltable.PoolTable.services.BallService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
 import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.PathService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 import java.io.FileNotFoundException;
@@ -33,7 +35,9 @@ import java.util.List;
         BallService.class,
         Properties.class,
         LineService.class,
-        ImageUndistorterService.class
+        ImageUndistorterService.class,
+        PathService.class,
+        BandsService.class
 })
 public class DetectorTests {
 
@@ -55,11 +59,17 @@ public class DetectorTests {
     @Autowired
     BallService ballService;
 
+    @Autowired
+    PathService pathService;
+
+    @Autowired
+    BandsService bandsService;
+
     @Test
     public void shouldFindStickLineAndSaveImageWithLine() throws DetectorException, MissingCueLineException, FileNotFoundException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat source = Imgcodecs.imread(properties.TESTS_PATH + "jacek1.jpg", CvType.CV_64F);
+        Mat source = Imgcodecs.imread(pathService.TESTS_PATH + "jacek1.jpg", CvType.CV_64F);
         source = undistorterService.undistort(source);
 
         Mat substractedImg = detector.getEdges(source.clone());
@@ -97,7 +107,7 @@ public class DetectorTests {
     public void tresholdingTests() throws FileNotFoundException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat emptyTable = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
+        Mat emptyTable = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
         Imgproc.cvtColor(emptyTable, emptyTable, Imgproc.COLOR_BGR2GRAY);
         Imgproc.threshold(emptyTable, emptyTable, 120, 255, Imgproc.THRESH_BINARY);
 
@@ -106,7 +116,7 @@ public class DetectorTests {
         for (int imgCounter = 1; imgCounter <= 500; imgCounter++) {
             Mat sClone1 = new Mat();
 
-            String filename = properties.TESTS_PATH + "before/test_before" + imgCounter + ".jpg";
+            String filename = pathService.TESTS_PATH + "before/test_before" + imgCounter + ".jpg";
             Mat source = Imgcodecs.imread( filename, CvType.CV_64F);
             Mat sCloneOrigin = source.clone();
 
@@ -114,7 +124,6 @@ public class DetectorTests {
             Imgproc.blur(source, source, new Size(3,3));
             Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2GRAY);
             Imgproc.threshold(source, source, 140, 255, Imgproc.THRESH_BINARY);
-//            Imgcodecs.imwrite("tests/edges/treshold/aft-treshold" + imgCounter + ".png", source);
 
             Imgproc.Canny(source, sClone1, 100, 40, 3, false);
             Imgcodecs.imwrite("tests/edges/canny/canny" + imgCounter + ".png", sClone1);
@@ -122,7 +131,6 @@ public class DetectorTests {
             Mat forSub = new Mat();
 
             Core.subtract(sClone1, emptyTable, forSub);
-//            Imgcodecs.imwrite("tests/edges/sub1.png", sClone1);
 
             Mat linesData1 = new Mat();
             Imgproc.HoughLinesP(forSub, linesData1, 1, Math.PI/180, 70, 50, 10);
@@ -133,7 +141,7 @@ public class DetectorTests {
                 double line[] = linesData1.get(i, 0);
 
                 Line tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
-                if (properties.isPointInsideBand(tempLine.getBegin()) || properties.isPointInsideBand(tempLine.getEnd())){
+                if (bandsService.isPointInsideBand(tempLine.getBegin()) || bandsService.isPointInsideBand(tempLine.getEnd())){
                     linesList.add(tempLine);
                     approvedLinesCounter++;
                 }
@@ -220,7 +228,7 @@ public class DetectorTests {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         List <Mat> layers = new ArrayList<>();
 
-        Mat source = Imgcodecs.imread(properties.TESTS_PATH + "jacek1.jpg", CvType.CV_64F);
+        Mat source = Imgcodecs.imread(pathService.TESTS_PATH + "jacek1.jpg", CvType.CV_64F);
         source = undistorterService.undistort(source);
 
         Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2HSV);
@@ -241,7 +249,7 @@ public class DetectorTests {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         List <Mat> layers = new ArrayList<>();
 
-        Mat source = Imgcodecs.imread(properties.TESTS_PATH + "emptyTable.png", CvType.CV_64F);
+        Mat source = Imgcodecs.imread(pathService.TESTS_PATH + "emptyTable.png", CvType.CV_64F);
 
         detector.setSourceImg(source);
         List <Ball> listOfBalls = detector.createListOfBalls();

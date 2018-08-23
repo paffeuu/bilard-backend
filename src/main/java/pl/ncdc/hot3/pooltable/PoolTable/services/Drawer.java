@@ -89,4 +89,8 @@ public class Drawer {
         	drawCircle(img, targetLine.getBegin(), properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
 		}
 	}
+
+	public void drawPoint(Mat img, Point point) {
+		Imgproc.circle(img, point, properties.getTablePocketRadius(), new Scalar(0, 0, 255), 5);
+	}
 }

@@ -13,9 +13,6 @@ import java.io.IOException;
 @Component
 public class Properties {
 
-    public final String BASE_PATH = this.getClass().getClassLoader().getResource("emptyTable.png").toString();
-    public final String TESTS_PATH = "src/main/resources/";
-
     // Bands
     private double tableBandLeft;
     private double tableBandRight;
@@ -23,9 +20,16 @@ public class Properties {
     private double tableBandBottom;
 
     // Pocket
+    private int tablePocketRadius;
     private double tablePocketMinRadius;
     private double tablePocketMaxRadius;
     private double tablePocketMinDistance;
+    private Point leftTopPocketPoint;
+    private Point rightTopPocketPoint;
+    private Point leftBotPocketPoint;
+    private Point rightBotPocketPoint;
+    private Point midTopPocketPoint;
+    private Point midBotPocketPoint;
 
     // Ball
     private int ballExpectedRadius;
@@ -65,13 +69,22 @@ public class Properties {
         this.tableBandRight = 1915;
         this.tableBandTop = 365;
         this.tableBandBottom = 1250;
+        this.tablePocketRadius = 45;
+
         this.predictionDepth = 1;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.previousFramesMoveTolerance = 10;
-        this.cueDetectDelay = 4;
+        this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
+
+        this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 10);
+        this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
+        this.leftBotPocketPoint = new Point(tableBandLeft - 10, tableBandBottom + 10);
+        this.rightBotPocketPoint = new Point(tableBandRight + 10, tableBandBottom + 10);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandTop - 25);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandBottom + 25);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -421,49 +434,60 @@ public class Properties {
         this.cueDetectDelay = cueDetectDelay;
     }
 
-    public boolean isPointInsideBand(Point point){
-        if (point.x >= this.getTableBandLeft() - 5 && point.x <= this.getTableBandRight() + 5) {
-            if (point.y >= this.getTableBandTop() - 5 && point.y <= this.getTableBandBottom() + 5) {
-                return true;
-            }
-        }
-        return false;
+    public int getTablePocketRadius() {
+        return tablePocketRadius;
     }
 
-    public boolean isPointGoingToSocket(Point point) {
-        boolean isInSocket = false;
-        double distToSocketTollerace = 45;
-
-        Point leftTop = new Point(tableBandLeft, tableBandTop);
-        Point rightTop = new Point(tableBandRight, tableBandTop);
-        Point leftBot = new Point(tableBandLeft, tableBandBottom);
-        Point rightBot = new Point(tableBandRight, tableBandBottom);
-        Point midTop = new Point((tableBandLeft + tableBandRight) / 2, tableBandTop);
-        Point midBot = new Point((tableBandLeft + tableBandRight) / 2, tableBandBottom);
-
-        if (getDistanceBetweenPoints(point, leftTop) <= distToSocketTollerace)
-            isInSocket = true;
-        else if (getDistanceBetweenPoints(point, rightTop) <= distToSocketTollerace)
-            isInSocket = true;
-        else if (getDistanceBetweenPoints(point, leftBot) <= distToSocketTollerace)
-            isInSocket = true;
-        else if (getDistanceBetweenPoints(point, rightBot) <= distToSocketTollerace)
-            isInSocket = true;
-        else if (getDistanceBetweenPoints(point, midTop) <= distToSocketTollerace)
-            isInSocket = true;
-        else if (getDistanceBetweenPoints(point, midBot) <= distToSocketTollerace)
-            isInSocket = true;
-
-        return isInSocket;
+    public void setTablePocketRadius(int tablePocketRadius) {
+        this.tablePocketRadius = tablePocketRadius;
     }
 
-    private double getDistanceBetweenPoints(Point point1, Point point2) {
-        return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
+    public Point getLeftTopPocketPoint() {
+        return leftTopPocketPoint;
     }
 
-    public String getFullPath(String filename) throws FileNotFoundException {
-        String path = this.getClass().getClassLoader().getResource(filename).getPath().replaceAll("%20"," ").substring(1);
-        return path;
+    public void setLeftTopPocketPoint(Point leftTopPocketPoint) {
+        this.leftTopPocketPoint = leftTopPocketPoint;
+    }
+
+    public Point getRightTopPocketPoint() {
+        return rightTopPocketPoint;
+    }
+
+    public void setRightTopPocketPoint(Point rightTopPocketPoint) {
+        this.rightTopPocketPoint = rightTopPocketPoint;
+    }
+
+    public Point getLeftBotPocketPoint() {
+        return leftBotPocketPoint;
+    }
+
+    public void setLeftBotPocketPoint(Point leftBotPocketPoint) {
+        this.leftBotPocketPoint = leftBotPocketPoint;
+    }
+
+    public Point getRightBotPocketPoint() {
+        return rightBotPocketPoint;
+    }
+
+    public void setRightBotPocketPoint(Point rightBotPocketPoint) {
+        this.rightBotPocketPoint = rightBotPocketPoint;
+    }
+
+    public Point getMidTopPocketPoint() {
+        return midTopPocketPoint;
+    }
+
+    public void setMidTopPocketPoint(Point midTopPocketPoint) {
+        this.midTopPocketPoint = midTopPocketPoint;
+    }
+
+    public Point getMidBotPocketPoint() {
+        return midBotPocketPoint;
+    }
+
+    public void setMidBotPocketPoint(Point midBotPocketPoint) {
+        this.midBotPocketPoint = midBotPocketPoint;
     }
 
 

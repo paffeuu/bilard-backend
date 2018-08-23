@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 
 import java.util.*;
 
@@ -15,6 +16,7 @@ import java.util.*;
 public class BallService {
 
     private Properties properties;
+    private BandsService bandsService;
 
     //small variables but used in two methods, no point to initialize them twice
     private MatOfFloat ranges;
@@ -30,9 +32,11 @@ public class BallService {
 
     @Autowired
     public BallService(
-            Properties properties
+            Properties properties,
+            BandsService bandsService
     ) {
         this.properties = properties;
+        this.bandsService = bandsService;
 
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         ranges = new MatOfFloat(0f,256f);
@@ -89,9 +93,11 @@ public class BallService {
         List<Mat> crops = new ArrayList<>();
         Mat crop;
 
-        for(Rect rect : roi) {
-            crop = new Mat(image, rect);
-            crops.add(crop);
+        if (roi != null && !roi.isEmpty()){
+            for(Rect rect : roi) {
+                crop = new Mat(image, rect);
+                crops.add(crop);
+            }
         }
 
         return crops;

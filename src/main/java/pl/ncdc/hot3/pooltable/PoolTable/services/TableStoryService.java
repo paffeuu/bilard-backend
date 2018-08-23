@@ -2,6 +2,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.slf4j.Logger;
@@ -73,16 +74,12 @@ public class TableStoryService {
         return null;
     }
 
-
     public TableStoryService next() {
         try {
             outputImage = cameraService.getSnap();
             detector.setSourceImg(outputImage.clone());
         } catch (CameraServiceException e) {
             //LOGGER.warn("Camera view not available. Empty table image as a source");
-            outputImage = detector.getSourceImg().clone();
-        } catch (NullPointerException e) {
-            LOGGER.warn("Camera view not available. Empty table image as a source");
             outputImage = detector.getSourceImg().clone();
         }
 
@@ -97,9 +94,6 @@ public class TableStoryService {
 
         return this;
     }
-
-    @Autowired
-    LineService lineService;
 
     public TableStoryService findCue(){
         try {
@@ -185,10 +179,13 @@ public class TableStoryService {
     }
 
     public TableStoryService findBalls() {
-        List<Ball> balls = detector.createListOfBalls();
-        if (current() != null) {
+        try {
+            List<Ball> balls = detector.createListOfBalls();
             current().setBalls(balls);
+        } catch (Exception e) {
+            LOGGER.error("Unknow exception for no balls on table.");
         }
+
         return this;
     }
 
