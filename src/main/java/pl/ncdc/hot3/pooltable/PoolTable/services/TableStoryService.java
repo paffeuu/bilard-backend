@@ -2,6 +2,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.slf4j.Logger;
@@ -73,6 +74,15 @@ public class TableStoryService {
         return null;
     }
 
+    private void drawPocketsForTests(){
+        drawer.drawPoint(outputImage, properties.getLeftTopPocketPoint());
+        drawer.drawPoint(outputImage, properties.getRightTopPocketPoint());
+        drawer.drawPoint(outputImage, properties.getLeftBotPocketPoint());
+        drawer.drawPoint(outputImage, properties.getRightBotPocketPoint());
+
+        drawer.drawPoint(outputImage, properties.getMidTopPocketPoint());
+        drawer.drawPoint(outputImage, properties.getMidBotPocketPoint());
+    }
 
     public TableStoryService next() {
         try {
@@ -82,6 +92,8 @@ public class TableStoryService {
             //LOGGER.warn("Camera view not available. Empty table image as a source");
             outputImage = detector.getSourceImg().clone();
         }
+
+        drawPocketsForTests();
 
         if (++currentTableIndex > 1)
             current(2).setTableImage(null);

@@ -83,4 +83,8 @@ public class Drawer {
         	drawLine(img, targetLine);
 		}
 	}
+
+	public void drawPoint(Mat img, Point point) {
+		Imgproc.circle(img, point, properties.getTablePocketRadius(), new Scalar(0, 0, 255), 5);
+	}
 }

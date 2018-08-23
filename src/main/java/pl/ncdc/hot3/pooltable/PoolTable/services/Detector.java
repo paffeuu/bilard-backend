@@ -97,9 +97,9 @@ public class Detector {
 		List <Line> linesList = getInnerLines(substractedImg);
 		Line shortCueLine = cueService.findStickLine(linesList);
         Line longCueLine = null;
+		Ball whiteBall = ballService.getWhiteBall();
 
-        if (shortCueLine != null) {
-            Ball whiteBall = ballService.getWhiteBall();
+		if (shortCueLine != null && whiteBall != null) {
             Point coordinates = new Point(whiteBall.getX(), whiteBall.getY());
 
 			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);

@@ -3,8 +3,6 @@ package pl.ncdc.hot3.pooltable.PoolTable.model;
 import org.opencv.core.Point;
 import org.springframework.stereotype.Component;
 
-import java.io.FileNotFoundException;
-
 /**
  * Properties class
  */
@@ -19,9 +17,16 @@ public class Properties {
     private double tableBandBottom;
 
     // Pocket
+    private int tablePocketRadius;
     private double tablePocketMinRadius;
     private double tablePocketMaxRadius;
     private double tablePocketMinDistance;
+    private Point leftTopPocketPoint;
+    private Point rightTopPocketPoint;
+    private Point leftBotPocketPoint;
+    private Point rightBotPocketPoint;
+    private Point midTopPocketPoint;
+    private Point midBotPocketPoint;
 
     // Ball
     private int ballMaxRadius;
@@ -63,18 +68,26 @@ public class Properties {
         this.tableBandRight = 1915;
         this.tableBandTop = 365;
         this.tableBandBottom = 1250;
+        this.tablePocketRadius = 45;
+
         this.predictionDepth = 1;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.previousFramesMoveTolerance = 10;
-        this.cueDetectDelay = 16;
+        this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
         this.ballMinDistance = 36;
 
+        this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 10);
+        this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
+        this.leftBotPocketPoint = new Point(tableBandLeft - 10, tableBandBottom + 10);
+        this.rightBotPocketPoint = new Point(tableBandRight + 10, tableBandBottom + 10);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandTop - 25);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandBottom + 25);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -424,6 +437,59 @@ public class Properties {
         this.cueDetectDelay = cueDetectDelay;
     }
 
+    public int getTablePocketRadius() {
+        return tablePocketRadius;
+    }
 
+    public void setTablePocketRadius(int tablePocketRadius) {
+        this.tablePocketRadius = tablePocketRadius;
+    }
 
+    public Point getLeftTopPocketPoint() {
+        return leftTopPocketPoint;
+    }
+
+    public void setLeftTopPocketPoint(Point leftTopPocketPoint) {
+        this.leftTopPocketPoint = leftTopPocketPoint;
+    }
+
+    public Point getRightTopPocketPoint() {
+        return rightTopPocketPoint;
+    }
+
+    public void setRightTopPocketPoint(Point rightTopPocketPoint) {
+        this.rightTopPocketPoint = rightTopPocketPoint;
+    }
+
+    public Point getLeftBotPocketPoint() {
+        return leftBotPocketPoint;
+    }
+
+    public void setLeftBotPocketPoint(Point leftBotPocketPoint) {
+        this.leftBotPocketPoint = leftBotPocketPoint;
+    }
+
+    public Point getRightBotPocketPoint() {
+        return rightBotPocketPoint;
+    }
+
+    public void setRightBotPocketPoint(Point rightBotPocketPoint) {
+        this.rightBotPocketPoint = rightBotPocketPoint;
+    }
+
+    public Point getMidTopPocketPoint() {
+        return midTopPocketPoint;
+    }
+
+    public void setMidTopPocketPoint(Point midTopPocketPoint) {
+        this.midTopPocketPoint = midTopPocketPoint;
+    }
+
+    public Point getMidBotPocketPoint() {
+        return midBotPocketPoint;
+    }
+
+    public void setMidBotPocketPoint(Point midBotPocketPoint) {
+        this.midBotPocketPoint = midBotPocketPoint;
+    }
 }
