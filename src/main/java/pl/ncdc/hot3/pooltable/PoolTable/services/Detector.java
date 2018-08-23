@@ -17,7 +17,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-@ContextConfiguration(classes = {CueService.class, Properties.class})
 @Service
 public class Detector {
 
@@ -308,7 +307,7 @@ public class Detector {
 		for (Ball ball : balls) {
 			double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 
-			if (distance <= ball.getRadius() * 2) {
+			if (distance <= properties.getBallExpectedRadius() * 2) {
 				++counter;
 
 				if (!skipFirst || 2 == counter) {

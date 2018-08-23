@@ -55,16 +55,6 @@ public class Properties {
     private boolean showPreviousPosition;
     private int previousFramesFrequency;
 
-
-
-    public double getPreviousFramesMoveTolerance() {
-        return previousFramesMoveTolerance;
-    }
-
-    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
-        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
-    }
-
     public Properties() {
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;

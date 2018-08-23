@@ -86,8 +86,7 @@ public class Drawer {
 
         if (null != targetLine) {
         	drawLine(img, targetLine, new Scalar(0, 0, 255), 8);
-        	// TODO Zmienić getBallMaxRadius na getBallExpectedRadius
-        	drawCircle(img, targetLine.getBegin(), properties.getBallMaxRadius(), new Scalar(0, 255, 255), 4);
+        	drawCircle(img, targetLine.getBegin(), properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
 		}
 	}
 }
