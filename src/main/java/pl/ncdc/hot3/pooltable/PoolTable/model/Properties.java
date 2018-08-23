@@ -59,7 +59,7 @@ public class Properties {
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
         this.ballMinDistance = 36;
-        this.ballExpectedRadius = 21;
+        this.ballExpectedRadius = 19;
 
         this.tableBandLeft = 130;
         this.tableBandRight = 1915;

@@ -143,7 +143,8 @@ public class TableStoryService {
         try {
             if (current() != null &&
                     null != current().getCue() &&
-                    null != current().getBalls()) {
+                    null != current().getBalls() &&
+                    null != current().getPredictions()) {
 
                 List<Line> currentPredictions = current().getPredictions();
                 List<Line> newPredictions = new ArrayList<>();
