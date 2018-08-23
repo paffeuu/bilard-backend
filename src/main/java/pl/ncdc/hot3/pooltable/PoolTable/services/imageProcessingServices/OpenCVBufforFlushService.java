@@ -21,7 +21,7 @@ public class OpenCVBufforFlushService {
 
     private static Mat[] framesArray = new Mat[10];
 
-    @Scheduled(fixedRate = 125)
+
     public static void getFrame() {
         if (isNotNeeded) {
 
@@ -49,7 +49,8 @@ public class OpenCVBufforFlushService {
     }
 
     public static Mat getLastFrame() {
-        return framesArray[counter%10];
+
+        return framesArray[(counter-1)%10].clone();
     }
 
     public static void setIsNotNeeded(boolean b) {

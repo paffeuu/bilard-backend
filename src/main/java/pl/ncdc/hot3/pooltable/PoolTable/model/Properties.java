@@ -466,13 +466,6 @@ public class Properties {
         return path;
     }
 
-    public double getPreviousFramesMoveTolerance() {
-        return previousFramesMoveTolerance;
-    }
-
-    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
-        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
-    }
 
     /**
      * Get ball expected radius

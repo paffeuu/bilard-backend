@@ -29,5 +29,10 @@ public class PoolTableApplication extends SpringBootServletInitializer {
     }
     public static void main(String[] args) {
         SpringApplication.run(PoolTableApplication.class, args);
+        new Thread(() -> {
+            while (true) {
+                OpenCVBufforFlushService.getFrame();
+            }
+        }).start();
     }
 }
