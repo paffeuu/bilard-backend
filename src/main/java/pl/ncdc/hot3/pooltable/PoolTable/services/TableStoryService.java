@@ -159,13 +159,9 @@ public class TableStoryService {
     }
 
     public TableStoryService findBalls() {
-        try {
-            List<Ball> balls = detector.createListOfBalls();
+        List<Ball> balls = detector.createListOfBalls();
+        if (current() != null) {
             current().setBalls(balls);
-        } catch (BallsDetectorException e) {
-            LOGGER.info("Can not find balls");
-        } catch (Exception e) {
-            LOGGER.info("No balls detected");
         }
         return this;
     }
