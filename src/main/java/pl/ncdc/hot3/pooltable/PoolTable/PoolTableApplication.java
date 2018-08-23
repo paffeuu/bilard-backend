@@ -1,6 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable;
 
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.MavenProject;
@@ -27,28 +28,15 @@ public class PoolTableApplication extends SpringBootServletInitializer {
         return application.sources(PoolTableApplication.class);
     }
     static {
-        boolean isOnProd;
-        String openCvPath;
-        try {
-
-            java.io.InputStream is = PoolTableApplication.class.getClassLoader().getResourceAsStream("application.properties");
-            java.util.Properties p = new java.util.Properties();
-            p.load(is);
-
-            isOnProd= p.getProperty("on.linux").equals("true");
-            openCvPath = p.getProperty("library.path");
-            if (isOnProd) {
-            System.load(openCvPath);
-            } else {
-                String opencvpath = System.getProperty("user.dir") + "\\lib\\";
-                String libPath = System.getProperty("java.library.path");
-                System.load(opencvpath + Core.NATIVE_LIBRARY_NAME + ".dll");
-                System.load(opencvpath + "opencv_ffmpeg342_64.dll");
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (SystemUtils.IS_OS_WINDOWS) {
+            String opencvpath = System.getProperty("user.dir") + "\\lib\\";
+            String libPath = System.getProperty("java.library.path");
+            System.load(opencvpath + Core.NATIVE_LIBRARY_NAME + ".dll");
+            System.load(opencvpath + "opencv_ffmpeg342_64.dll");
+            } else if (SystemUtils.IS_OS_LINUX) {
+            System.load("/usr/local/share/OpenCV/java/" + "libopencv_java342" + ".so");
         }
+
     }
     public static void main(String[] args) {
         SpringApplication.run(PoolTableApplication.class, args);
