@@ -102,8 +102,8 @@ public class CueService {
         for (int i = 0; i < innerLines.size() - 1; i++){
             for (int j = 0; j < innerLines.size(); j++){
                 if (i != j) {
-                    ABCCoordinatesLine1 = calcAllCordinate(innerLines.get(i));
-                    ABCCoordinatesLine2 = calcAllCordinate(innerLines.get(j));
+                    ABCCoordinatesLine1 = calcAllCoordinate(innerLines.get(i));
+                    ABCCoordinatesLine2 = calcAllCoordinate(innerLines.get(j));
 
                     if (ABCCoordinatesLine1[1] != 0 && ABCCoordinatesLine2[1] != 0){
                         double a1 = ABCCoordinatesLine1[0] / ABCCoordinatesLine1[1] * -1;
@@ -121,8 +121,6 @@ public class CueService {
                         }
 
                     }
-
-
                 }
             }
         }
@@ -255,27 +253,7 @@ public class CueService {
         return temp;
     }
 
-    public Ball stopLineAtFirstBall(Line line, List<Ball> balls, boolean isCueLine) {
-        double counter = 0;
-
-        for (Ball ball : balls) {
-            double distance = calculateDistanceBetwenPointAndLine(new Point(ball.getX(), ball.getY()), line);
-
-            if (distance <= ball.getRadius() * 2) {
-                ++counter;
-
-                if (!isCueLine || 2 == counter) {
-                    return ball;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public double[] calcAllCordinate(Line line) {
-        lineService.safeMoveLineForVertical(line);
-
+    public double[] calcAllCoordinate(Line line) {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
         if (X == 0) X += 0.5;
@@ -285,19 +263,19 @@ public class CueService {
         return new double[]{a, -1, b};
     }
 
-    public double calculateDistanceBetwenPointAndLine(Point point, Line line) {
-        double[] cordinates = calcAllCordinate(line);
+    public double calculateDistanceBetweenPointAndLine(Point point, Line line) {
+        double[] coordinates = calcAllCoordinate(line);
 
         // http://matematyka.pisz.pl/strona/1249.html
-        return Math.abs(cordinates[0] * point.x + cordinates[1] * point.y + cordinates[2]) /
-                Math.sqrt(Math.pow(cordinates[0], 2) + Math.pow(cordinates[1], 2));
+        return Math.abs(coordinates[0] * point.x + coordinates[1] * point.y + coordinates[2]) /
+                Math.sqrt(Math.pow(coordinates[0], 2) + Math.pow(coordinates[1], 2));
     }
 
-    public Line findBallColisionLine(Line line, Ball ball) throws LineServiceException {
-        double[] cordinates = calcAllCordinate(line);
-        double A = cordinates[0];
-        double B = cordinates[1];
-        double C = cordinates[2];
+    public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
+        double[] coordinates = calcAllCoordinate(line);
+        double A = coordinates[0];
+        double B = coordinates[1];
+        double C = coordinates[2];
         double Sx = ball.getX();
         double Sy = ball.getY();
         double d = ball.getRadius() * 2;

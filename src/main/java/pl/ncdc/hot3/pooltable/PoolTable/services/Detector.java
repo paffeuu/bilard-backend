@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.test.context.ContextConfiguration;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
@@ -36,6 +35,7 @@ public class Detector {
 	private PathService pathService;
 	private BandsService bandsService;
 	private Properties properties;
+	private LineService lineService;
 
 	@Autowired
 	public Detector(
@@ -43,7 +43,8 @@ public class Detector {
 			BallService ballService,
 			PathService pathService,
 			BandsService bandsService,
-			Properties properties
+			Properties properties,
+            LineService lineService
 			) {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		this.ballService = ballService;
@@ -51,6 +52,7 @@ public class Detector {
 		this.properties = properties;
 		this.pathService = pathService;
 		this.bandsService = bandsService;
+        this.lineService = lineService;
 
 		try {
 			sourceImg = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), CvType.CV_64F);
@@ -86,10 +88,135 @@ public class Detector {
 		this.outputImg = outputImg;
 	}
 
-	public List<Ball> createListOfBalls() throws BallsDetectorException {
-		ballService.setSourceImg(sourceImg);
+	public List<Ball> createListOfBalls() {
 
-		return ballService.createListOfBalls();
+		// detect all balls on image, it returns Mat with x,y,r
+		Mat detectedBalls = detectBalls();
+
+		// filter circles to get only those inside bands
+		Mat filteredBalls = filterCircles(detectedBalls);
+
+		// Create list of rectangles around detected balls
+		List<Rect> roiList = getBallsROI(convertMatToArray(filteredBalls));
+
+
+		return ballService.createListOfBalls(filteredBalls, sourceImg.clone(), roiList);
+	}
+
+	private Mat detectBalls() {
+		Mat blurredImage = new Mat();
+		Mat convertedTypeImage = new Mat();
+		Mat destinationImage = new Mat();
+		Size blurSize = new Size(5, 5);
+
+		// blur convertedImage
+		Imgproc.blur(sourceImg, blurredImage, blurSize);
+
+		// convert to hsv
+		Imgproc.cvtColor(blurredImage, convertedTypeImage, Imgproc.COLOR_BGR2HSV);
+		blurredImage.release();
+
+		// split into planes
+		List<Mat> planes = new ArrayList<>(3);
+		Core.split(convertedTypeImage, planes);
+		convertedTypeImage.release();
+
+		// detect circles
+		Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0, properties.getBallMinDistance(),
+				30, 15, properties.getBallMinRadius(), properties.getBallMaxRadius());
+		planes.clear();
+
+		return destinationImage;
+	}
+
+	private Mat filterCircles(Mat allCircles) {
+
+		// output mat
+		Mat filteredCircles = new Mat(1, 1, CvType.CV_64FC3);
+
+		// merged new column
+		Mat newMat = new Mat(1, 1, CvType.CV_64FC3);
+
+		// 2-element list for merging in Core.hconcat
+		List<Mat> matList = new ArrayList<>();
+		matList.add(null);
+		matList.add(null);
+
+		// conversion to use type double data
+		Mat convertedAllCircles = new Mat();
+		allCircles.convertTo(convertedAllCircles, CvType.CV_64FC3);
+
+		// write circles coordinates into an array
+		double[] data;
+		data = convertMatToArray(convertedAllCircles);
+
+		// filter circles
+		double x, y, r;
+
+		for (int i = 0, j = 0; i < data.length; i += 3) {
+
+			// read coordinates
+			x = data[i];
+			y = data[i + 1];
+			r = data[i + 2];
+
+			// check if they are within table boundaries
+			if (bandsService.isPointInsideBand(new Point(x, y))) {
+				if (j == 0) {
+					filteredCircles.put(0, j, x, y, r);
+					matList.set(0, filteredCircles);
+				} else {
+					// merge horizontally filteredCircles with newMat and save to filteredCircles
+					newMat.put(0, 0, x, y, r);
+					matList.set(1, newMat);
+					Core.hconcat(matList, filteredCircles);
+					matList.set(0, filteredCircles);
+				}
+				j++;
+			}
+		}
+
+		return filteredCircles;
+	}
+
+	private List<Rect> getBallsROI(double[] circles) {
+		double x, y, r;
+		Point topLeft = new Point();
+		Point bottomRight = new Point();
+
+		List<Rect> roiList = new ArrayList<>();
+
+		for (int i = 0; i < circles.length; i += 3) {
+			x = circles[i];
+			y = circles[i + 1];
+			r = 21;
+
+			topLeft.x = x - r;
+			topLeft.y = y - r;
+			bottomRight.x = x + r;
+			bottomRight.y = y + r;
+
+			if(topLeft.x > properties.getTableBandLeft() && topLeft.y > properties.getTableBandTop()) {
+				if(bottomRight.x < properties.getTableBandRight() && bottomRight.y < properties.getTableBandBottom()) {
+					roiList.add(new Rect(topLeft, bottomRight));
+				}
+			}
+		}
+
+		return roiList;
+	}
+
+	private double[] convertMatToArray(Mat mat) {
+		double[] data = new double[0];
+		try {
+			int size = (int) mat.total() * mat.channels();
+			data = new double[size];
+			mat.get(0, 0, data);
+		} catch (Exception e) {
+//			LOGGER.warn("No balls were detected.");
+		}
+
+		return data;
 	}
 
 	public Line findStickLine() throws MissingCueLineException, DetectorException {
@@ -176,14 +303,54 @@ public class Detector {
 	}
 
     public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
-        Ball collision = cueService.stopLineAtFirstBall(line, balls, isCue);
+        Ball collision = getCollisionBall(line, balls, isCue);
 
         if (null != collision) {
-            return cueService.findBallColisionLine(line, collision);
+            return cueService.findBallCollisionLine(line, collision);
         }
 
         return null;
     }
+
+	public Ball getCollisionBall(Line line, List<Ball> balls, boolean skipFirst) {
+		double counter = 0;
+
+		for (Ball ball : balls) {
+			double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+
+			if (distance <= properties.getBallExpectedRadius() * 2) {
+				++counter;
+
+				if (!skipFirst || 2 == counter) {
+					return ball;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
+		double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+		double[] coordinates = cueService.calcAllCoordinate(line);
+		double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};
+		double A = newCoordinates[0];
+		double B = newCoordinates[1];
+		double C = newCoordinates[2];
+
+		return lineService.getExtendedStickLineForOneSide(
+				new Line(
+						new Point(
+								ball.getX(),
+								ball.getY()
+						),
+						new Point(
+								line.getEnd().x,
+								(-C - A * (line.getEnd().x)) / B
+						)
+				)
+		);
+	}
 
     private Mat prepereEmptyTableForSubs(Mat emptyTableImage) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();
