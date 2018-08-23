@@ -141,26 +141,42 @@ public class TableStoryService {
 
     public TableStoryService detectCollision() {
         try {
-            if (null != current().getCue() && null != current().getBalls()) {
-                Line targetLine = detector.createTargetLine(
-                        current().getCue(),
-                        current().getBalls(),
-                        true
-                );
+            if (current() != null &&
+                    null != current().getCue() &&
+                    null != current().getBalls()) {
 
-                if (null != targetLine) {
-                    // Celowanie dla bezpośredniego trafienia
+                List<Line> currentPredictions = current().getPredictions();
+                List<Line> newPredictions = new ArrayList<>();
 
-                    current().setTargetLine(targetLine);
-                    current().setCue(new Line(
-                            current().getCue().getBegin(),
-                            targetLine.getBegin()
-                    ));
+                for (Line prediction : currentPredictions) {
+                    boolean isCue = 0 == currentPredictions.indexOf(prediction); // Pierwsza predykcja to kij
 
-                    List<Line> pred = new ArrayList<>();
-                    pred.add(current().getCue());
-                    current().setPredictions(pred);
+                    Line targetLine = detector.createTargetLine(
+                            prediction,
+                            current().getBalls(),
+                            isCue
+                    );
+
+                    if (null != targetLine) {
+                        current().setTargetLine(targetLine);
+                        Line newLine = new Line(
+                                prediction.getBegin(),
+                                targetLine.getBegin()
+                        );
+
+                        if (isCue) {
+                            current().setCue(newLine);
+                        }
+
+                        newPredictions.add(newLine);
+                        break;
+                    } else {
+                        newPredictions.add(prediction);
+                    }
                 }
+
+                current().getPredictions().clear();
+                current().setPredictions(newPredictions);
             }
         } catch (LineServiceException e) {
             LOGGER.info("Can not find target line");
