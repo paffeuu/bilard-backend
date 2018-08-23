@@ -4,6 +4,7 @@ import org.opencv.core.Point;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Properties class
@@ -53,6 +54,16 @@ public class Properties {
     // Replays
     private boolean showPreviousPosition;
     private int previousFramesFrequency;
+
+
+
+    public double getPreviousFramesMoveTolerance() {
+        return previousFramesMoveTolerance;
+    }
+
+    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
+        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
+    }
 
     public Properties() {
         this.ballMaxRadius = 22;
