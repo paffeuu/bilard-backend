@@ -175,7 +175,6 @@ public class TableStoryService {
                     }
                 }
 
-                current().getPredictions().clear();
                 current().setPredictions(newPredictions);
             }
         } catch (LineServiceException e) {
