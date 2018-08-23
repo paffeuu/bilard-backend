@@ -73,19 +73,19 @@ public class Drawer {
         }
 
 		if (cue != null)
-			drawLine(img, cue, new Scalar(155, 155, 155), 4);
+			drawLine(img, cue, new Scalar(155, 155, 155), 8);
 
 		if (listOfBalls != null && !listOfBalls.isEmpty())
 			drawBalls(img, listOfBalls,  null);
 
 		if (predictions != null && !predictions.isEmpty()) {
 			for (Line line : predictions) {
-				drawLine(img, line, new Scalar(155, 155, 155), 4);
+				drawLine(img, line, new Scalar(155, 155, 155), 8);
 			}
 		}
 
         if (null != targetLine) {
-        	drawLine(img, targetLine, new Scalar(0, 0, 255), 4);
+        	drawLine(img, targetLine, new Scalar(0, 0, 255), 8);
         	// TODO Zmienić getBallMaxRadius na getBallExpectedRadius
         	drawCircle(img, targetLine.getBegin(), properties.getBallMaxRadius(), new Scalar(0, 255, 255), 4);
 		}
