@@ -55,21 +55,11 @@ public class Properties {
     private boolean showPreviousPosition;
     private int previousFramesFrequency;
 
-
-
-    public double getPreviousFramesMoveTolerance() {
-        return previousFramesMoveTolerance;
-    }
-
-    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
-        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
-    }
-
     public Properties() {
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
         this.ballMinDistance = 36;
-        this.ballExpectedRadius = 21;
+        this.ballExpectedRadius = 19;
 
         this.tableBandLeft = 130;
         this.tableBandRight = 1915;

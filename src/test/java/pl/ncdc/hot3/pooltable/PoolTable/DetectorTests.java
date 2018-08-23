@@ -147,8 +147,8 @@ public class DetectorTests {
                 for (int j = 0; j < linesList.size(); j++){
                     if (i != j) {
 
-                        a1 = cueService.calcAllCordinate(linesList.get(i))[0];
-                        a2 = cueService.calcAllCordinate(linesList.get(j))[0];
+                        a1 = cueService.calcAllCoordinate(linesList.get(i))[0];
+                        a2 = cueService.calcAllCoordinate(linesList.get(j))[0];
 
                         if (Math.abs(a1 - a2) < pMin) {
                             pMin = Math.abs(a1 - a2);

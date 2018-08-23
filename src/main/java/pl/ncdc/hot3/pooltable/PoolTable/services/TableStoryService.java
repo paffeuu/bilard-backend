@@ -104,6 +104,15 @@ public class TableStoryService {
     public TableStoryService findCue(){
         try {
             Line cue = detector.findStickLine();
+
+            if (cue instanceof Line && null != current().getBalls()) {
+                Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
+
+                if (collisionBall instanceof Ball && 0 == collisionBall.getId()) {
+                    cue = detector.refactorCueLine(cue, collisionBall);
+                }
+            }
+
             current().setCue(cue);
         } catch (MissingCueLineException e) {
             LOGGER.info(e.getMessage());
@@ -131,24 +140,42 @@ public class TableStoryService {
 
     public TableStoryService detectCollision() {
         try {
-            if (null != current().getCue() && null != current().getBalls()) {
-                Line targetLine = detector.createTargetLine(
-                        current().getCue(),
-                        current().getBalls(),
-                        true
-                );
+            if (current() != null &&
+                    null != current().getCue() &&
+                    null != current().getBalls() &&
+                    null != current().getPredictions()) {
 
-                if (null != targetLine) {
-                    current().setTargetLine(targetLine);
-                    current().setCue(new Line(
-                            current().getCue().getBegin(),
-                            targetLine.getBegin()
-                    ));
+                List<Line> currentPredictions = current().getPredictions();
+                List<Line> newPredictions = new ArrayList<>();
 
-                    List<Line> pred = new ArrayList<>();
-                    pred.add(current().getCue());
-                    current().setPredictions(pred);
+                for (Line prediction : currentPredictions) {
+                    boolean isCue = 0 == currentPredictions.indexOf(prediction); // Pierwsza predykcja to kij
+
+                    Line targetLine = detector.createTargetLine(
+                            prediction,
+                            current().getBalls(),
+                            isCue
+                    );
+
+                    if (null != targetLine) {
+                        current().setTargetLine(targetLine);
+                        Line newLine = new Line(
+                                prediction.getBegin(),
+                                targetLine.getBegin()
+                        );
+
+                        if (isCue) {
+                            current().setCue(newLine);
+                        }
+
+                        newPredictions.add(newLine);
+                        break;
+                    } else {
+                        newPredictions.add(prediction);
+                    }
                 }
+
+                current().setPredictions(newPredictions);
             }
         } catch (LineServiceException e) {
             LOGGER.info("Can not find target line");

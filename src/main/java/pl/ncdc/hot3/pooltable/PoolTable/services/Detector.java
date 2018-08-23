@@ -17,7 +17,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-
 @Service
 public class Detector {
 
@@ -29,18 +28,22 @@ public class Detector {
 
 	private static Properties properties;
 	private CueService cueService;
-    private BallService ballService;
+	private BallService ballService;
+	private LineService lineService;
 
 	@Autowired
 	public Detector(
 			CueService cueService,
 			Properties properties,
-			BallService ballService
+			BallService ballService,
+			LineService lineService
 	) {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+		Detector.properties = properties;
 		this.ballService = ballService;
-		this.properties = properties;
 		this.cueService = cueService;
+		this.lineService = lineService;
 
 		try {
 			sourceImg = Imgcodecs.imread(properties.getFullPath("emptyTable.png"), CvType.CV_64F);
@@ -289,14 +292,54 @@ public class Detector {
 	}
 
     public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
-        Ball collision = cueService.stopLineAtFirstBall(line, balls, isCue);
+        Ball collision = getCollisionBall(line, balls, isCue);
 
         if (null != collision) {
-            return cueService.findBallColisionLine(line, collision);
+            return cueService.findBallCollisionLine(line, collision);
         }
 
         return null;
     }
+
+	public Ball getCollisionBall(Line line, List<Ball> balls, boolean skipFirst) {
+		double counter = 0;
+
+		for (Ball ball : balls) {
+			double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+
+			if (distance <= properties.getBallExpectedRadius() * 2) {
+				++counter;
+
+				if (!skipFirst || 2 == counter) {
+					return ball;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
+		double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+		double[] coordinates = cueService.calcAllCoordinate(line);
+		double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};
+		double A = newCoordinates[0];
+		double B = newCoordinates[1];
+		double C = newCoordinates[2];
+
+		return lineService.getExtendedStickLineForOneSide(
+				new Line(
+						new Point(
+								ball.getX(),
+								ball.getY()
+						),
+						new Point(
+								line.getEnd().x,
+								(-C - A * (line.getEnd().x)) / B
+						)
+				)
+		);
+	}
 
     private Mat prepereEmptyTableForSubs(Mat emptyTableImage) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();
