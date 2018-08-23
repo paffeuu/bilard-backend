@@ -55,9 +55,6 @@ public class Properties {
     private int previousFramesFrequency;
 
 
-    //Enviroment variables
-    private String prodOpenCvPath;
-    private boolean prodEnviroment;
 
     public double getPreviousFramesMoveTolerance() {
         return previousFramesMoveTolerance;
