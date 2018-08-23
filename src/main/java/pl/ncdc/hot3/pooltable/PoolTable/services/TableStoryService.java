@@ -106,7 +106,7 @@ public class TableStoryService {
         try {
             Line cue = detector.findStickLine();
 
-            if (cue instanceof Line) {
+            if (cue instanceof Line && null != current().getBalls()) {
                 Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
 
                 if (collisionBall instanceof Ball && 0 == collisionBall.getId()) {
