@@ -28,6 +28,7 @@ public class Properties {
     private double tablePocketMinDistance;
 
     // Ball
+    private int ballExpectedRadius;
     private int ballMaxRadius;
     private int ballMinRadius;
     private int ballMinDistance;
@@ -65,10 +66,15 @@ public class Properties {
     }
 
     public Properties() {
-        this.tableBandLeft = 165;
-        this.tableBandRight = 1948;
-        this.tableBandTop = 350;
-        this.tableBandBottom = 1236;
+        this.ballMaxRadius = 22;
+        this.ballMinRadius = 16;
+        this.ballMinDistance = 36;
+        this.ballExpectedRadius = 21;
+
+        this.tableBandLeft = 130;
+        this.tableBandRight = 1915;
+        this.tableBandTop = 365;
+        this.tableBandBottom = 1250;
         this.predictionDepth = 1;
 
         this.cueThickness = 60;
@@ -76,11 +82,6 @@ public class Properties {
         this.previousFramesMoveTolerance = 10;
         this.cueDetectDelay = 4;
         this.cueStickLineThickness = 8;
-
-        this.ballMaxRadius = 22;
-        this.ballMinRadius = 16;
-        this.ballMinDistance = 36;
-
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -475,7 +476,29 @@ public class Properties {
         return path;
     }
 
-    public void getSystemProperties() {
+    public double getPreviousFramesMoveTolerance() {
+        return previousFramesMoveTolerance;
+    }
 
+    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
+        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
+    }
+
+    /**
+     * Get ball expected radius
+     *
+     * @return ball radius
+     */
+    public int getBallExpectedRadius() {
+        return ballExpectedRadius;
+    }
+
+    /**
+     * Set ball expected radius
+     *
+     * @param ballExpectedRadius ball expected radius
+     */
+    public void setBallExpectedRadius(int ballExpectedRadius) {
+        this.ballExpectedRadius = ballExpectedRadius;
     }
 }
