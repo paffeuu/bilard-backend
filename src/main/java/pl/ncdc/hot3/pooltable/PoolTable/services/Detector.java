@@ -164,9 +164,11 @@ public class Detector {
 			predictions.add(cueLine);
 			for (int i = 0; i < properties.getPredictionDepth(); i++){
 				Line pred = cueService.predictTrajectoryAfterBump(predictions.get(i));
-				predictions.add(pred);
-				if (bandsService.isPointGoingToSocket(pred.getBegin()) || bandsService.isPointGoingToSocket(pred.getEnd()))
+				if (bandsService.isPointGoingToSocket(pred.getBegin()) || bandsService.isPointGoingToSocket(pred.getEnd())) {
 					break;
+				} else {
+					predictions.add(pred);
+				}
 			}
 		}
 

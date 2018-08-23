@@ -84,8 +84,9 @@ public class CueService {
         return predictedLine;
     }
 
+    static int cueIndexTestCounter = 0;
     public Line findStickLine(List<Line> innerLines) throws MissingCueLineException {
-
+        cueIndexTestCounter++;
         Line cueLine = null;
 
         if (innerLines.isEmpty()) {
@@ -94,22 +95,35 @@ public class CueService {
             return innerLines.get(0);
         }
 
-        double dist;
-        double a1, a2, pMin = properties.getParallelTolerance();
+        double pMin = properties.getParallelTolerance();
+        double[] ABCCoordinatesLine1 = new double[3], ABCCoordinatesLine2 = new double[3];
+
         int indexOfLine_A = 0, indexOfLine_B = 0;
 
         for (int i = 0; i < innerLines.size() - 1; i++){
             for (int j = 0; j < innerLines.size(); j++){
                 if (i != j) {
+                    ABCCoordinatesLine1 = calcAllCordinate(innerLines.get(i));
+                    ABCCoordinatesLine2 = calcAllCordinate(innerLines.get(j));
 
-                    a1 = calcAllCordinate(innerLines.get(i))[0];
-                    a2 = calcAllCordinate(innerLines.get(j))[0];
+                    if (ABCCoordinatesLine1[1] != 0 && ABCCoordinatesLine2[1] != 0){
+                        double a1 = ABCCoordinatesLine1[0] / ABCCoordinatesLine1[1] * -1;
+                        double a2 = ABCCoordinatesLine2[0] / ABCCoordinatesLine2[1] * -1;
 
-                    if (Math.abs(a1 - a2) < pMin) {
-                        pMin = Math.abs(a1 - a2);
-                        indexOfLine_A = i;
-                        indexOfLine_B = j;
+                        double b1 = ABCCoordinatesLine1[2] / ABCCoordinatesLine1[1] * -1;
+                        double b2 = ABCCoordinatesLine2[2] / ABCCoordinatesLine2[1] * -1;
+
+
+                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= 5) {
+                            pMin = Math.abs(a1 - a2);
+                            indexOfLine_A = i;
+                            indexOfLine_B = j;
+//                            LOGGER.info("For 2 paralell B diff : " + Math.abs(b1 - b2) + " for idx: " + cueIndexTestCounter);
+                        }
+
                     }
+
+
                 }
             }
         }
@@ -174,8 +188,6 @@ public class CueService {
             if (prevLinesCounter > 0) {
                 Point newBegin = new Point(prevSumXs[0] / prevLinesCounter, prevSumYs[0] / prevLinesCounter);
                 Point newEnd = new Point(prevSumXs[1] / prevLinesCounter, prevSumYs[1] / prevLinesCounter);
-
-                LOGGER.info("prev lines counter: " + prevLinesCounter + " ends diff: " + Math.abs(newEnd.x - cueLine.getEnd().x) + ", " + Math.abs(newEnd.y - cueLine.getEnd().y)   );
 
                 stabileCueLine.setBegin(newBegin);
                 stabileCueLine.setEnd(newEnd);
