@@ -25,21 +25,22 @@ public class MainController {
     @Autowired
     private SimpMessagingTemplate template;
 
+    private int counter = 0;
 
+    private PoolTable previousTable;
 
 
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
     public ResponseEntity<PoolTable> test() throws CameraServiceException {
-
-        PoolTable table = tableStoryService
-                .next()
-                .findBalls()
-                .findCue()
-                .makePredictions()
-                .detectCollision()
-                .showPrevious()
-                .build();
+            PoolTable table = tableStoryService
+                    .next()
+                    .findBalls()
+                    .findCue()
+                    .makePredictions()
+                    .detectCollision()
+                    .showPrevious()
+                    .build();
         return ResponseEntity.ok(table);
 
     }

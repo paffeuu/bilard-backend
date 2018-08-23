@@ -13,6 +13,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,5 +41,10 @@ public class PoolTableApplication extends SpringBootServletInitializer {
     }
     public static void main(String[] args) {
         SpringApplication.run(PoolTableApplication.class, args);
+        new Thread(() -> {
+            while (true) {
+                OpenCVBufforFlushService.getFrame();
+            }
+        }).start();
     }
 }
