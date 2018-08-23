@@ -74,16 +74,6 @@ public class TableStoryService {
         return null;
     }
 
-    private void drawPocketsForTests(){
-        drawer.drawPoint(outputImage, properties.getLeftTopPocketPoint());
-        drawer.drawPoint(outputImage, properties.getRightTopPocketPoint());
-        drawer.drawPoint(outputImage, properties.getLeftBotPocketPoint());
-        drawer.drawPoint(outputImage, properties.getRightBotPocketPoint());
-
-        drawer.drawPoint(outputImage, properties.getMidTopPocketPoint());
-        drawer.drawPoint(outputImage, properties.getMidBotPocketPoint());
-    }
-
     public TableStoryService next() {
         try {
             outputImage = cameraService.getSnap();
@@ -92,8 +82,6 @@ public class TableStoryService {
             //LOGGER.warn("Camera view not available. Empty table image as a source");
             outputImage = detector.getSourceImg().clone();
         }
-
-        drawPocketsForTests();
 
         if (++currentTableIndex > 1)
             current(2).setTableImage(null);
@@ -107,9 +95,6 @@ public class TableStoryService {
 
         return this;
     }
-
-    @Autowired
-    LineService lineService;
 
     public TableStoryService findCue(){
         try {

@@ -145,7 +145,7 @@ public class LineService {
         double horizontalMove = stickLine.getEnd().x - stickLine.getBegin().x;
         double verticalMove = stickLine.getEnd().y - stickLine.getBegin().y;
 
-        safeMoveLine(stickLine, horizontalMove, verticalMove);
+        safeMoveLineForVertical(stickLine);
 
         Line extendedLine = new Line();
         Point crosscutPoint1 = null;
@@ -283,15 +283,11 @@ public class LineService {
     }
 
 
-    private void safeMoveLine(Line origin, double horizontalMove, double verticalMove) {
+    public void safeMoveLineForVertical(Line origin) {
         Point newBegin = origin.getBegin();
 
-        if (horizontalMove == 0) {
+        if (origin.getBegin().x == origin.getEnd().x) {
             newBegin.x += 3;
-        }
-
-        if (verticalMove == 0) {
-            newBegin.y += 3;
         }
 
         origin.setBegin(newBegin);

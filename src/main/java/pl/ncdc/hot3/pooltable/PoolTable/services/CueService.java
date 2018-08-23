@@ -84,9 +84,8 @@ public class CueService {
         return predictedLine;
     }
 
-    static int cueIndexTestCounter = 0;
     public Line findStickLine(List<Line> innerLines) throws MissingCueLineException {
-        cueIndexTestCounter++;
+
         Line cueLine = null;
 
         if (innerLines.isEmpty()) {
@@ -275,6 +274,8 @@ public class CueService {
     }
 
     public double[] calcAllCordinate(Line line) {
+        lineService.safeMoveLineForVertical(line);
+
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
         if (X == 0) X += 0.5;
