@@ -183,8 +183,12 @@ public class CueService {
             }
 
             if (prevLinesCounter > 0) {
-                Point newBegin = new Point(prevSumXs[0] / prevLinesCounter, prevSumYs[0] / prevLinesCounter);
-                Point newEnd = new Point(prevSumXs[1] / prevLinesCounter, prevSumYs[1] / prevLinesCounter);
+                Point averageBegin = new Point(prevSumXs[0] / prevLinesCounter, prevSumYs[0] / prevLinesCounter);
+                Point averageEnd = new Point(prevSumXs[1] / prevLinesCounter, prevSumYs[1] / prevLinesCounter);
+
+                Point newBegin = new Point((averageBegin.x + cueLine.getBegin().x) / 2, (averageBegin.y + cueLine.getBegin().y) / 2);
+                Point newEnd = new Point((averageEnd.x + cueLine.getEnd().x) / 2, (averageEnd.y + cueLine.getEnd().y) / 2);
+
 
                 stabileCueLine.setBegin(newBegin);
                 stabileCueLine.setEnd(newEnd);
