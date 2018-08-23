@@ -21,14 +21,14 @@ public class Drawer {
 	private final Scalar SOLID_DRAW_COLOR = new Scalar(0,0,255);
 	private final Scalar STRIPED_DRAW_COLOR = new Scalar(0,255,0);
 
-	private Properties properties;
+    private Properties properties;
 
-	@Autowired
-	public Drawer(
-			Properties properties
-	) {
-		this.properties = properties;
-	}
+    @Autowired
+    public Drawer(
+            Properties properties
+    ) {
+        this.properties = properties;
+    }
 
 	public void drawBalls(Mat img, List<Ball> balls, Scalar scalar) throws DrawerException {
 		if (img == null)
@@ -59,28 +59,34 @@ public class Drawer {
 		}
 	}
 
-	private void drawLine(Mat img, Line line) {
-		Imgproc.line(img, line.getBegin(), line.getEnd(), new Scalar(155, 155, 155), 4);
-	}
+    private void drawLine(Mat img, Line line, Scalar scalar, int thickness) {
+        Imgproc.line(img, line.getBegin(), line.getEnd(), scalar, thickness);
+    }
 
-	public void draw(Mat img, Line cue, List<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
-		if (img == null)
-			throw new DrawerException("Cannot draw line to null image.");
+    private void drawCircle(Mat img, Point point, int radius, Scalar scalar, int thickness) {
+        Imgproc.circle(img, point, radius, scalar, thickness);
+    }
+
+    public void draw(Mat img, Line cue, List<Ball> listOfBalls, List<Line> predictions, Line targetLine) throws DrawerException {
+        if (img == null) {
+            throw new DrawerException("Cannot draw line to null image.");
+        }
 
 		if (cue != null)
-			drawLine(img, cue);
+			drawLine(img, cue, new Scalar(155, 155, 155), 8);
 
 		if (listOfBalls != null && !listOfBalls.isEmpty())
 			drawBalls(img, listOfBalls,  null);
 
 		if (predictions != null && !predictions.isEmpty()) {
 			for (Line line : predictions) {
-				drawLine(img, line);
+				drawLine(img, line, new Scalar(155, 155, 155), 8);
 			}
 		}
 
         if (null != targetLine) {
-        	drawLine(img, targetLine);
+        	drawLine(img, targetLine, new Scalar(0, 0, 255), 8);
+        	drawCircle(img, targetLine.getBegin(), properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
 		}
 	}
 }

@@ -53,6 +53,9 @@ public class TableStoryServiceTests {
     @Autowired
     private PreviousPositionService previousPositionService;
 
+    @Autowired
+    private CueService cueService;
+
     @Test
     public void shouldReturnPoolTableModelWithAllDetailsAndSaveNewImage() throws CameraServiceException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
