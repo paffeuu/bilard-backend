@@ -46,7 +46,7 @@ public class Detector {
 			Properties properties,
             LineService lineService
 			) {
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
 		this.ballService = ballService;
 		this.cueService = cueService;
 		this.properties = properties;

@@ -50,7 +50,6 @@ public class BallService {
         this.properties = properties;
         this.bandsService = bandsService;
 
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         ranges = new MatOfFloat(0f,256f);
         channels = new MatOfInt(0);
         histSize = new MatOfInt(2);
