@@ -1,5 +1,8 @@
 package pl.ncdc.hot3.pooltable.PoolTable.model;
 
+
+import org.opencv.core.Point;
+
 /**
  * Ball class
  */
@@ -18,6 +21,16 @@ public class Ball implements Comparable<Ball> {
         }else {
             return 0;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Ball{" +
+                "id=" + id +
+                ", radius=" + radius +
+                ", x=" + x +
+                ", y=" + y +
+                '}';
     }
 
     public double getWhitePixels() {
@@ -119,5 +132,9 @@ public class Ball implements Comparable<Ball> {
         double yDelta = this.y - b.getY();
 
         return (xDelta <= 5.0 && yDelta <= 5.0);
+    }
+
+    public Point getCenter() {
+        return new Point(x, y);
     }
 }
