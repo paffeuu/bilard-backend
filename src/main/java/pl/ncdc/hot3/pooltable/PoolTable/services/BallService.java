@@ -2,6 +2,8 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
@@ -10,11 +12,16 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 
 @Service
 public class BallService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BallService.class);
 
     private Properties properties;
     private BandsService bandsService;
@@ -158,11 +165,18 @@ public class BallService {
     }
 
     private List<Ball> stabilizeWithPrevious(List<Ball> currentList) {
+        LOGGER.info("START List of balls size: " + currentList.size());
         if (currentList != null && !currentList.isEmpty()) {
+            prevBallsIndexCounter = (++prevBallsIndexCounter) % properties.getPrevBallsCorrectorCount();
+            if (previousBalls.size() < properties.getPrevBallsCorrectorCount()){
+                previousBalls.add(currentList);
+            } else {
+                LOGGER.info("in idx: " + prevBallsIndexCounter);
+                previousBalls.set(prevBallsIndexCounter, currentList);
+            }
 
             List<Ball> listOfApprovedBalls = new ArrayList<>();
             int[] ballsApprovedWithPrevious = new int[currentList.size()];
-            previousBalls.set(prevBallsIndexCounter++, currentList);
 
             int currentBallIndex = 0;
             for (Ball currentBall : currentList) {
@@ -175,13 +189,15 @@ public class BallService {
                     }
                 }
 
-                if (ballsApprovedWithPrevious[currentBallIndex] >= (properties.getPrevBallsCorrectorCount() * 0.8)){
+                if (ballsApprovedWithPrevious[currentBallIndex] >= Math.floor(previousBalls.size() * 0.8)){
                     listOfApprovedBalls.add(currentBall);
                 }
                 currentBallIndex++;
             }
-            return listOfApprovedBalls;
+            currentList = listOfApprovedBalls;
         }
+
+        LOGGER.info("END List of balls size: " + currentList.size());
         return currentList;
     }
 

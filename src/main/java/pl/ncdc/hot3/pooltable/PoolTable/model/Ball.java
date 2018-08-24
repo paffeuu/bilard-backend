@@ -23,6 +23,16 @@ public class Ball implements Comparable<Ball> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Ball{" +
+                "id=" + id +
+                ", radius=" + radius +
+                ", x=" + x +
+                ", y=" + y +
+                '}';
+    }
+
     public double getWhitePixels() {
         return whitePixels;
     }
