@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Properties class
@@ -36,6 +37,7 @@ public class Properties {
     private int ballMaxRadius;
     private int ballMinRadius;
     private int ballMinDistance;
+    private final int prevBallsCorrectorCount;
 
     // Canny
     private double cannyHighThreshold;
@@ -64,6 +66,7 @@ public class Properties {
         this.ballMinRadius = 16;
         this.ballMinDistance = 36;
         this.ballExpectedRadius = 19;
+        this.prevBallsCorrectorCount = 12;
 
         this.tableBandLeft = 130;
         this.tableBandRight = 1915;
@@ -90,41 +93,6 @@ public class Properties {
         this.previousFramesFrequency = 4;
     }
 
-    /**
-     * Properties constructor
-     *
-     * @param tableBandLeft
-     * @param tableBandRight
-     * @param tableBandTop
-     * @param tableBandBottom
-     * @param tablePocketMinRadius
-     * @param tablePocketMaxRadius
-     * @param tablePocketMinDistance
-     * @param ballMaxRadius
-     * @param ballMinRadius
-     * @param ballMinDistance
-     * @param cannyHighThreshold
-     * @param cannyRatio
-     * @param imageSourceWidth
-     * @param imageSourceHeight
-     * @param predictionDepth
-     */
-    public Properties(double tableBandLeft,
-                      double tableBandRight,
-                      double tableBandTop,
-                      double tableBandBottom,
-                      double tablePocketMinRadius,
-                      double tablePocketMaxRadius,
-                      double tablePocketMinDistance,
-                      double ballMaxRadius,
-                      double ballMinRadius,
-                      double ballMinDistance,
-                      double cannyHighThreshold,
-                      double cannyRatio,
-                      double imageSourceWidth,
-                      double imageSourceHeight,
-                      int predictionDepth
-    ) {}
 
     public int getCueStickLineThickness() {
         return cueStickLineThickness;
@@ -515,4 +483,9 @@ public class Properties {
     public void setBallExpectedRadius(int ballExpectedRadius) {
         this.ballExpectedRadius = ballExpectedRadius;
     }
+
+    public final int getPrevBallsCorrectorCount() {
+        return prevBallsCorrectorCount;
+    }
+
 }
