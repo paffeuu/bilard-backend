@@ -336,7 +336,7 @@ public class Detector {
 		double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};
 		double A = newCoordinates[0];
 		double B = newCoordinates[1];
-		double C = newCoordinates[2];
+		double newC = -ball.getY() - (A / B * ball.getX());
 
 		return lineService.getExtendedStickLineForOneSide(
 				new Line(
@@ -346,7 +346,7 @@ public class Detector {
 						),
 						new Point(
 								line.getEnd().x,
-								(-C - A * (line.getEnd().x)) / B
+								(newC - (A * (line.getEnd().x))) / B
 						)
 				)
 		);
