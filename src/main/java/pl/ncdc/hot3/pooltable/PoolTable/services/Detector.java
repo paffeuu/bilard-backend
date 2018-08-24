@@ -284,6 +284,16 @@ public class Detector {
 		return source;
 	}
 
+	/**
+	 * Get predictions after bump
+	 *
+	 * @param cueLine cue line
+	 *
+	 * @return list of predictions
+	 *
+	 * @throws CueServiceException  if can not predict trajectory after bump
+	 * @throws LineServiceException if can not predict trajectory after bump
+	 */
 	public List<Line> getPredictions(Line cueLine) throws CueServiceException, LineServiceException {
 		List <Line> predictions = new ArrayList<>();
 

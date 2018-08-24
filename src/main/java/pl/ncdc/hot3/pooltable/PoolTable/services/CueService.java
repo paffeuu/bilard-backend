@@ -259,6 +259,13 @@ public class CueService {
         return temp;
     }
 
+    /**
+     * Calculate A, B, C from Ax + By + C = 0 model, based on two points from line
+     *
+     * @param line line
+     *
+     * @return cordinates
+     */
     public double[] calcAllCoordinate(Line line) {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
@@ -269,6 +276,14 @@ public class CueService {
         return new double[]{a, -1, b};
     }
 
+    /**
+     * Calculate distance between point and line
+     *
+     * @param point point
+     * @param line  line
+     *
+     * @return distance
+     */
     public double calculateDistanceBetweenPointAndLine(Point point, Line line) {
         double[] coordinates = calcAllCoordinate(line);
 
