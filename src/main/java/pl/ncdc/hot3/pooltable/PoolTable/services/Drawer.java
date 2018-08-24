@@ -42,8 +42,6 @@ public class Drawer {
 			r = (int) ball.getRadius();
 			Point center = new Point(ball.getX(), ball.getY());
 
-			System.out.println("center : "+center+" id: "+ball.getId() + " whitePixels: " + (ball.getWhitePixels()*100) / 1764);
-
 			if(scalar == null){
 				if(ball.getId() >= 10 && ball.getId() < 30) {
 					Imgproc.circle(img, center, r, SOLID_DRAW_COLOR, 5);
