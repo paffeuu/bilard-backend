@@ -44,16 +44,16 @@ public class Drawer {
 
 			if(scalar == null){
 				if(ball.getId() >= 10 && ball.getId() < 30) {
-					Imgproc.circle(img, center, r, SOLID_DRAW_COLOR, 5);
+					Imgproc.circle(img, center, properties.getBallExpectedRadius(), SOLID_DRAW_COLOR, 5);
 				} else if(ball.getId() >= 30 && ball.getId() < 50){
-					Imgproc.circle(img, center, r, STRIPED_DRAW_COLOR, 5);
+					Imgproc.circle(img, center, properties.getBallExpectedRadius(), STRIPED_DRAW_COLOR, 5);
 				} else if(ball.getId() == 8) {
-					Imgproc.circle(img, center, r, new Scalar(255, 255, 255), 5);
+					Imgproc.circle(img, center, properties.getBallExpectedRadius(), new Scalar(255, 255, 255), 5);
 				} else if(ball.getId() == 0) {
-					Imgproc.circle(img, center, r, new Scalar(0, 0, 0), 5);
+					Imgproc.circle(img, center, properties.getBallExpectedRadius(), new Scalar(0, 0, 0), 5);
 				}
 			} else {
-				Imgproc.circle(img, center, r, scalar, 5);
+				Imgproc.circle(img, center, properties.getBallExpectedRadius(), scalar, 5);
 			}
 
 		}
