@@ -1,6 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.opencv.core.*;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,8 +129,8 @@ public class BallService {
         setWhiteAndBlackBall(detectedBalls, ballImgList);
 
         // Set id of every ball excluding white and black ball
-        int solidId = 1;
-        int stripedId = 9;
+        int solidId = 10;
+        int stripedId = 30;
         for(Ball ball : detectedBalls) {
             if(ball.getId() == null) {
                 if ((ball.getWhitePixels() * 100) / 1764 >= 16) {
