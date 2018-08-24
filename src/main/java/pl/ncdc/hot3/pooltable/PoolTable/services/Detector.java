@@ -99,8 +99,13 @@ public class Detector {
 		// Create list of rectangles around detected balls
 		List<Rect> roiList = getBallsROI(convertMatToArray(filteredBalls));
 
+		// List of current detected balls
+		List<Ball> ballList = ballService.createListOfBalls(filteredBalls, sourceImg.clone(), roiList);
 
-		return ballService.createListOfBalls(filteredBalls, sourceImg.clone(), roiList);
+		// List of stabile with previous static balls
+		ballList = ballService.stabilize(ballList);
+
+		return ballList;
 	}
 
 	private Mat detectBalls() {

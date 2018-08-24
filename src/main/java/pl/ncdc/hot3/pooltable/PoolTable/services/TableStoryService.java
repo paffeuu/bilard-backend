@@ -38,6 +38,7 @@ public class TableStoryService {
     private CameraService cameraService;
     private Drawer drawer;
     private Properties properties;
+    List<Ball> prevFrameBalls;
 
     private PreviousPositionService previousPositionService;
 
@@ -54,6 +55,7 @@ public class TableStoryService {
         this.drawer = drawer;
         this.properties = properties;
         this.previousPositionService = previousPositionService;
+        this.prevFrameBalls = new ArrayList<>();
 
         currentTableIndex = -1;
 
@@ -183,8 +185,10 @@ public class TableStoryService {
         try {
             List<Ball> balls = detector.createListOfBalls();
             current().setBalls(balls);
+            prevFrameBalls = balls;
         } catch (Exception e) {
-            LOGGER.error("Unknow exception for no balls on table.");
+            LOGGER.error("Unknow exception for no balls on table, returned previous.");
+            current().setBalls(prevFrameBalls);
         }
 
         return this;

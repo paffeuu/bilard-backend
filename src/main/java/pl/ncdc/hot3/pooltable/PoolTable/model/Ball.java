@@ -137,4 +137,9 @@ public class Ball implements Comparable<Ball> {
     public Point getCenter() {
         return new Point(x, y);
     }
+
+    public void setCenter(Point point) {
+        this.x = point.x;
+        this.y = point.y;
+    }
 }

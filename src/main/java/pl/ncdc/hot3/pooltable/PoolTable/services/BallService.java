@@ -40,6 +40,7 @@ public class BallService {
 
     private int prevBallsIndexCounter = 0;
     private List<List<Ball>> previousBalls;
+    private List<Ball> staticBalls;
 
     @Autowired
     public BallService(
@@ -58,6 +59,7 @@ public class BallService {
         blackHigherMask = new Scalar(180, 255, 35);
 
         previousBalls = new ArrayList<List<Ball>>(properties.getPrevBallsCorrectorCount());
+        staticBalls = new ArrayList<>();
 
         whiteBall = null;
     }
@@ -155,9 +157,6 @@ public class BallService {
             }
         }
 
-        // Stabilize with previous detected balls
-        detectedBalls = stabilizeWithPrevious(detectedBalls);
-
         // Sort list of balls by id
         Collections.sort(detectedBalls);
 
@@ -165,13 +164,11 @@ public class BallService {
     }
 
     private List<Ball> stabilizeWithPrevious(List<Ball> currentList) {
-        LOGGER.info("START List of balls size: " + currentList.size());
         if (currentList != null && !currentList.isEmpty()) {
             prevBallsIndexCounter = (++prevBallsIndexCounter) % properties.getPrevBallsCorrectorCount();
             if (previousBalls.size() < properties.getPrevBallsCorrectorCount()){
                 previousBalls.add(currentList);
             } else {
-                LOGGER.info("in idx: " + prevBallsIndexCounter);
                 previousBalls.set(prevBallsIndexCounter, currentList);
             }
 
@@ -184,7 +181,7 @@ public class BallService {
                     int tempBallListIndex = (prevBallsIndexCounter + i) % properties.getPrevBallsCorrectorCount();
 
                     if (previousBalls.get(tempBallListIndex) != null &&
-                            isBallInPreviousList(currentBall, previousBalls.get(tempBallListIndex))){
+                            indexOfBallInPreviousList(currentBall, previousBalls.get(tempBallListIndex)) != -1){
                         ballsApprovedWithPrevious[currentBallIndex] += 1;
                     }
                 }
@@ -197,20 +194,54 @@ public class BallService {
             currentList = listOfApprovedBalls;
         }
 
-        LOGGER.info("END List of balls size: " + currentList.size());
         return currentList;
     }
 
-    private boolean isBallInPreviousList(Ball ball, List<Ball> listOfPreviousBallsPosition) {
-        double prevPositionTolerance = properties.getBallExpectedRadius() / 2;
+    public List<Ball> stabilize(List<Ball> currentBallList){
+        // Stabilize with previous detected balls
+        currentBallList = stabilizeWithPrevious(currentBallList);
 
-        for (Ball currentBall : listOfPreviousBallsPosition) {
-            if (LineService.getDistanceBetweenPoints(ball.getCenter(), currentBall.getCenter()) <= prevPositionTolerance){
-                return true;
+        if (currentBallList == null || currentBallList.isEmpty()){
+            return staticBalls;
+        }
+
+        if (staticBalls.isEmpty()) {
+            staticBalls = currentBallList;
+            return staticBalls;
+        }
+
+        for (Ball currentBall : currentBallList) {
+            int idx = indexOfBallInPreviousList(currentBall, staticBalls);
+            if (idx >= 0){
+                currentBall.setCenter(staticBalls.get(idx).getCenter());
+            } else {
+                staticBalls.add(currentBall);
             }
         }
 
-        return false;
+        if (staticBalls.size() > currentBallList.size()) {
+            for (Ball currentBall : staticBalls){
+                if (indexOfBallInPreviousList(currentBall, currentBallList) == -1){
+                    staticBalls.remove(currentBall);
+                }
+            }
+        }
+
+        return staticBalls;
+    }
+
+    private int indexOfBallInPreviousList(Ball ball, List<Ball> listOfPreviousBallsPosition) {
+        double prevPositionTolerance = properties.getBallExpectedRadius() / 2;
+
+        int index = -1;
+        for (Ball currentBall : listOfPreviousBallsPosition) {
+            index++;
+            if (LineService.getDistanceBetweenPoints(ball.getCenter(), currentBall.getCenter()) <= prevPositionTolerance){
+                return index;
+            }
+        }
+
+        return -1;
     }
 
     private int getIndexOfBall(List<Mat> ballImgList, Scalar lowerMask, Scalar higherMask) {
