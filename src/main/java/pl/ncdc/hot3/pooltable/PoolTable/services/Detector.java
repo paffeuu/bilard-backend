@@ -196,11 +196,7 @@ public class Detector {
 			bottomRight.x = x + r;
 			bottomRight.y = y + r;
 
-			if(topLeft.x > properties.getTableBandLeft() && topLeft.y > properties.getTableBandTop()) {
-				if(bottomRight.x < properties.getTableBandRight() && bottomRight.y < properties.getTableBandBottom()) {
-					roiList.add(new Rect(topLeft, bottomRight));
-				}
-			}
+			roiList.add(new Rect(topLeft, bottomRight));
 		}
 
 		return roiList;
