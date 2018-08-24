@@ -190,6 +190,8 @@ public class CueService {
                 Point newEnd = new Point((averageEnd.x + cueLine.getEnd().x) / 2, (averageEnd.y + cueLine.getEnd().y) / 2);
 
 
+                LOGGER.info("prev lines counter: " + prevLinesCounter + " ends diff: " + Math.abs(newEnd.x - cueLine.getEnd().x) + ", " + Math.abs(newEnd.y - cueLine.getEnd().y)   );
+
                 stabileCueLine.setBegin(newBegin);
                 stabileCueLine.setEnd(newEnd);
             }

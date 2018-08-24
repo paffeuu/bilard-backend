@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 
 @SpringBootApplication(scanBasePackages={"pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices","pl.ncdc.hot3.pooltable"})
@@ -29,5 +30,10 @@ public class PoolTableApplication extends SpringBootServletInitializer {
     }
     public static void main(String[] args) {
         SpringApplication.run(PoolTableApplication.class, args);
+        new Thread(() -> {
+            while (true) {
+                OpenCVBufforFlushService.getFrame();
+            }
+        }).start();
     }
 }

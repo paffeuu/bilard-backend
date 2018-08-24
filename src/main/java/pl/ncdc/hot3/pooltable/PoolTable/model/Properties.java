@@ -126,6 +126,14 @@ public class Properties {
                       int predictionDepth
     ) {}
 
+    public double getPreviousFramesMoveTolerance() {
+        return previousFramesMoveTolerance;
+    }
+
+    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
+        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
+    }
+
     public int getCueStickLineThickness() {
         return cueStickLineThickness;
     }
@@ -490,13 +498,6 @@ public class Properties {
         this.midBotPocketPoint = midBotPocketPoint;
     }
 
-    public double getPreviousFramesMoveTolerance() {
-        return previousFramesMoveTolerance;
-    }
-
-    public void setPreviousFramesMoveTolerance(double previousFramesMoveTolerance) {
-        this.previousFramesMoveTolerance = previousFramesMoveTolerance;
-    }
 
     /**
      * Get ball expected radius
