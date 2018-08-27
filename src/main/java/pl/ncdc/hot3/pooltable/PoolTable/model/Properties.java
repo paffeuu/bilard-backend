@@ -97,7 +97,7 @@ public class Properties {
     public Properties() {
         this.ballMaxRadius = 11;
         this.ballMinRadius = 8;
-        this.ballMinDistance = 36;
+        this.ballMinDistance = 18;
         this.ballExpectedRadius = 19;
         this.houghCirclesParam1 = 30;
         this.houghCirclesParam2 = 15;
