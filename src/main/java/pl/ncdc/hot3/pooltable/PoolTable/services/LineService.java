@@ -39,6 +39,11 @@ public class LineService {
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
+    /**
+     * Switch points in line (begin, end)
+     *
+     * @param a line
+     */
     public static void switchPoints(Line a) {
         Point tmp = a.getBegin();
         a.setBegin(a.getEnd());

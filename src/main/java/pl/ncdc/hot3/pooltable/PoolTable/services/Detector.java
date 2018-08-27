@@ -44,7 +44,6 @@ public class Detector {
 	private Properties properties;
 	private LineService lineService;
 
-	public boolean isDebugActive;
 	private List<Line> debugDetectedLines;
 	private Line debugAverageLine;
 
@@ -65,7 +64,6 @@ public class Detector {
 		this.bandsService = bandsService;
         this.lineService = lineService;
 
-        this.isDebugActive = true;
 		this.debugDetectedLines = new ArrayList<>();
 		this.debugAverageLine = null;
 
@@ -145,8 +143,13 @@ public class Detector {
 		convertedTypeImage.release();
 
 		// detect circles
-		Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0, properties.getBallMinDistance(),
-				30, 15, properties.getBallMinRadius(), properties.getBallMaxRadius());
+		Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0,
+				properties.getBallMinDistance(), properties.getHoughCirclesParam1(),
+				properties.getHoughCirclesParam2(), properties.getBallMinRadius(), properties.getBallMaxRadius());
+
+		for (Mat mat: planes) {
+			mat.release();
+		}
 		planes.clear();
 
 		return destinationImage;
@@ -212,18 +215,14 @@ public class Detector {
 		for (int i = 0; i < circles.length; i += 3) {
 			x = circles[i];
 			y = circles[i + 1];
-			r = 21;
+			r = properties.getBallExpectedRadius();
 
 			topLeft.x = x - r;
 			topLeft.y = y - r;
 			bottomRight.x = x + r;
 			bottomRight.y = y + r;
 
-			if(topLeft.x > properties.getTableBandLeft() && topLeft.y > properties.getTableBandTop()) {
-				if(bottomRight.x < properties.getTableBandRight() && bottomRight.y < properties.getTableBandBottom()) {
-					roiList.add(new Rect(topLeft, bottomRight));
-				}
-			}
+			roiList.add(new Rect(topLeft, bottomRight));
 		}
 
 		return roiList;
@@ -259,14 +258,13 @@ public class Detector {
 			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
 
-		if (isDebugActive) {
+		if (properties.isDebugActive()) {
 			this.debugDetectedLines = linesList;
 			this.debugAverageLine = shortCueLine;
 		}
 
 		return longCueLine;
 	}
-
 
 	public List<Line> getInnerLines(Mat substractedImage) {
 		Line tempLine;
@@ -309,6 +307,16 @@ public class Detector {
 		return dst;
 	}
 
+	/**
+	 * Get predictions after bump
+	 *
+	 * @param cueLine cue line
+	 *
+	 * @return list of predictions
+	 *
+	 * @throws CueServiceException  if can not predict trajectory after bump
+	 * @throws LineServiceException if can not predict trajectory after bump
+	 */
 	public List<Line> getPredictions(Line cueLine) throws CueServiceException, LineServiceException {
 		List <Line> predictions = new ArrayList<>();
 
@@ -326,6 +334,17 @@ public class Detector {
 		return predictions;
 	}
 
+    /**
+     * Create target line based on ball collision and aiming line
+     *
+     * @param line  aiming line
+     * @param balls list of balls
+     * @param isCue do not return cue ball if it is a cue line
+     *
+     * @return target line
+     *
+     * @throws LineServiceException if can not find ball collision line
+     */
     public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
         Ball collision = getCollisionBall(line, balls, isCue);
 
@@ -336,6 +355,15 @@ public class Detector {
         return null;
     }
 
+    /**
+     * Get ball which is in collision with line
+     *
+     * @param line aiming line
+     * @param balls list of balls
+     * @param skipFirst do not return cue ball if it is a cue line
+     *
+     * @return single ball
+     */
 	public Ball getCollisionBall(Line line, List<Ball> balls, boolean skipFirst) {
 		double counter = 0;
 
@@ -354,13 +382,23 @@ public class Detector {
 		return null;
 	}
 
+    /**
+     * Return line parallel to cue line started at center of cue ball
+     *
+     * @param line cue line
+     * @param ball cue ball (white ball)
+     *
+     * @return line started at center of cue ball
+     *
+     * @throws LineServiceException if can not extend cue line for one side
+     */
 	public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
 		double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 		double[] coordinates = cueService.calcAllCoordinate(line);
 		double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};
 		double A = newCoordinates[0];
 		double B = newCoordinates[1];
-		double C = newCoordinates[2];
+		double newC = -ball.getY() - (A / B * ball.getX());
 
 		return lineService.getExtendedStickLineForOneSide(
 				new Line(
@@ -370,7 +408,7 @@ public class Detector {
 						),
 						new Point(
 								line.getEnd().x,
-								(-C - A * (line.getEnd().x)) / B
+								(newC - (A * (line.getEnd().x))) / B
 						)
 				)
 		);
@@ -407,5 +445,3 @@ public class Detector {
 	}
 
 }
-
-

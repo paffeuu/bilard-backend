@@ -67,7 +67,7 @@ public class DetectorTests {
 
     @Test
     public void shouldFindStickLineAndSaveImageWithLine() throws DetectorException, MissingCueLineException, FileNotFoundException {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Mat source = Imgcodecs.imread(pathService.TESTS_PATH + "jacek1.jpg", CvType.CV_64F);
         source = undistorterService.undistort(source);
@@ -105,7 +105,7 @@ public class DetectorTests {
 
     @Test
     public void tresholdingTests() throws FileNotFoundException {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Mat emptyTable = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), Imgcodecs.IMREAD_COLOR);
         Imgproc.cvtColor(emptyTable, emptyTable, Imgproc.COLOR_BGR2GRAY);
@@ -225,7 +225,7 @@ public class DetectorTests {
 
     @Test
     public void shouldFindStickEvenForHardCouses(){
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         List <Mat> layers = new ArrayList<>();
 
         Mat source = Imgcodecs.imread(pathService.TESTS_PATH + "jacek1.jpg", CvType.CV_64F);
@@ -246,7 +246,7 @@ public class DetectorTests {
 
     @Test
     public void shouldFindBallsEvenForHardCouses() throws BallsDetectorException {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         List <Mat> layers = new ArrayList<>();
 
         Mat source = Imgcodecs.imread(pathService.TESTS_PATH + "emptyTable.png", CvType.CV_64F);

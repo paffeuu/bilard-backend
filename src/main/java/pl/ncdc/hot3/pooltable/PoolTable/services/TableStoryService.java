@@ -87,10 +87,9 @@ public class TableStoryService {
             outputImage = detector.getSourceImg().clone();
         }
 
-        if (++currentTableIndex > 1)
-            current(2).setTableImage(null);
 
-        currentTableIndex = currentTableIndex % LIMIT_OF_TABLES;
+
+        currentTableIndex = (currentTableIndex + 1) % LIMIT_OF_TABLES;
 
         if (tableStory.size() < LIMIT_OF_TABLES)
             tableStory.add(new PoolTable());
@@ -137,6 +136,11 @@ public class TableStoryService {
 
     }
 
+    /**
+     * Detect collision and set target line based on collision
+     *
+     * @return this object
+     */
     public TableStoryService detectCollision() {
         try {
             if (current() != null &&

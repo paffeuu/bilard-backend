@@ -49,6 +49,16 @@ public class CueService {
         prevCueLines = new Line[cueDetectDelay];
     }
 
+    /**
+     * Returns prediction line after bump
+     *
+     * @param line aiming line
+     *
+     * @return prediction line
+     *
+     * @throws CueServiceException  if bump point is out of band
+     * @throws LineServiceException if can not extend cue line for one side
+     */
     private double calcAbsoluteDistance(double value1, double value2){
         return Math.abs(value1 - value2);
     }
@@ -67,20 +77,20 @@ public class CueService {
         Point bumpPoint = line.getEnd();
         Point halfDistance;
 
-        if (calcAbsoluteDistance(properties.getTableBandLeft(), bumpPoint.x) <= 2) {
+        if (Math.abs(properties.getTableBandLeft() - bumpPoint.x) <= properties.getBumpPointDelta()) {
             halfDistance = new Point(line.getBegin().x, line.getEnd().y);
-        } else if (calcAbsoluteDistance(properties.getTableBandRight(), bumpPoint.x) <= 2) {
+        } else if (Math.abs(properties.getTableBandRight() - bumpPoint.x) <= properties.getBumpPointDelta()) {
             halfDistance = new Point(line.getBegin().x, line.getEnd().y);
-        } else if (calcAbsoluteDistance(properties.getTableBandTop(), bumpPoint.y) <= 2) {
+        } else if (Math.abs(properties.getTableBandTop() - bumpPoint.y) <= properties.getBumpPointDelta()) {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
-        } else if (calcAbsoluteDistance(properties.getTableBandBottom(), bumpPoint.y) <= 2) {
+        } else if (Math.abs(properties.getTableBandBottom() - bumpPoint.y) <= properties.getBumpPointDelta()) {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
         } else {
             throw new CueServiceException("Cannot find predicted line. Bump point out of bands!");
         }
 
-        double distanceX = (halfDistance.x - line.getBegin().x);
-        double distanceY = (halfDistance.y - line.getBegin().y);
+        double distanceX = halfDistance.x - line.getBegin().x;
+        double distanceY = halfDistance.y - line.getBegin().y;
 
         Line predictedLine = new Line(
                 bumpPoint,
@@ -230,6 +240,14 @@ public class CueService {
         return new double[]{a, -1, b};
     }
 
+    /**
+     * Calculate distance between point and line
+     *
+     * @param point point
+     * @param line  line
+     *
+     * @return distance
+     */
     public double calculateDistanceBetweenPointAndLine(Point point, Line line) {
         double[] coordinates = calcAllCoordinate(line);
 
@@ -237,6 +255,17 @@ public class CueService {
                 Math.sqrt(Math.pow(coordinates[0], 2) + Math.pow(coordinates[1], 2));
     }
 
+    /**
+     * Magic method which calculate two points on aiming line based on distance from ball center. Ghost ball definition
+     * - http://www.easypooltutor.com/img/lessons/ghost_ball.png
+     *
+     * @param line aiming line
+     * @param ball collision ball
+     *
+     * @return collision line based on object ball and ghost ball
+     *
+     * @throws LineServiceException if can not get extended cue line for one side
+     */
     public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
         double[] coordinates = calcAllCoordinate(line);
         double A = coordinates[0];

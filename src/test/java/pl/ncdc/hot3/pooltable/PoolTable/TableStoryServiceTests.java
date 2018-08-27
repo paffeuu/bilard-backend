@@ -61,7 +61,7 @@ public class TableStoryServiceTests {
 
     @Test
     public void shouldReturnPoolTableModelWithAllDetailsAndSaveNewImage() throws CameraServiceException {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Mat source = Imgcodecs.imread(pathService.TESTS_PATH + "xxxx.png", CvType.CV_64F);
 
@@ -96,7 +96,7 @@ public class TableStoryServiceTests {
 
     @Test
     public void shouldReturnEmptyTableForEmptyTablePhoto() throws CameraServiceException, FileNotFoundException {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         Mat source = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), CvType.CV_64F);
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(source);
@@ -124,7 +124,7 @@ public class TableStoryServiceTests {
 
     @Test(expected = CameraServiceException.class)
     public void shouldThrowCameraExceptionWhenSourceNotAvailable() throws CameraServiceException {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Mat source = Imgcodecs.imread(pathService.BASE_PATH + "hahahhah.png", CvType.CV_64F);
 
@@ -148,7 +148,8 @@ public class TableStoryServiceTests {
 
     @Test(expected = CameraServiceException.class)
     public void shouldThrowCameraExceptionWhenSourceNull() throws CameraServiceException {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(null);
@@ -172,7 +173,7 @@ public class TableStoryServiceTests {
     public void shouldMakeTablesForManyImagesAndSaveThemAll() throws CameraServiceException, FileNotFoundException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        ImageUndistorterService undistorterService = new ImageUndistorterService();
+        ImageUndistorterService undistorterService = new ImageUndistorterService(properties);
         CameraService cameraService = mock(CameraService.class);
         tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
 
