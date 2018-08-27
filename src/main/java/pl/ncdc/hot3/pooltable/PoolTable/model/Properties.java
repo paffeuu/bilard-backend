@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class Properties {
 
+    private boolean isDebugActive;
+
     // Bands
     private double tableBandLeft;
     private double tableBandRight;
@@ -60,6 +62,8 @@ public class Properties {
     private int previousFramesFrequency;
 
     public Properties() {
+        this.isDebugActive = true;
+
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
         this.ballMinDistance = 36;
@@ -494,5 +498,13 @@ public class Properties {
 
     public void setMinBCoordinateForLines(double minBCoordinateForLines) {
         this.minBCoordinateForLines = minBCoordinateForLines;
+    }
+
+    public boolean isDebugActive() {
+        return isDebugActive;
+    }
+
+    public void setDebugActive(boolean debugActive) {
+        isDebugActive = debugActive;
     }
 }

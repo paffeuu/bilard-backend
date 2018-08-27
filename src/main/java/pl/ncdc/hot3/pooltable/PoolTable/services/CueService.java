@@ -33,6 +33,9 @@ public class CueService {
     private Line[] prevCueLines;
     private int cueDetectDelay, detectedCueCounter;
 
+    public Point debugCloserToWhite;
+    public Point debugFurtherToWhite;
+
     @Autowired
     public CueService(
             Properties properties,
@@ -159,6 +162,8 @@ public class CueService {
         if (beginDist <=  endDist) {
             LineService.switchPoints(newLineBetweenLong);
         }
+        debugCloserToWhite = newLineBetweenLong.getEnd();
+        debugFurtherToWhite = newLineBetweenLong.getBegin();
 
         try {
             newLineBetweenLong = lineService.getExtendedStickLineForOneSide(newLineBetweenLong);

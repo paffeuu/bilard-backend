@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 
 import java.util.ArrayList;
 import java.util.Collections;

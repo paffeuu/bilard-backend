@@ -7,7 +7,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.ExtendLineException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 
 import java.util.*;
 

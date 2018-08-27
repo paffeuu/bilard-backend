@@ -17,8 +17,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.PathService;
 
 
 @Service
@@ -46,6 +44,10 @@ public class Detector {
 	private Properties properties;
 	private LineService lineService;
 
+	public boolean isDebugActive;
+	private List<Line> debugDetectedLines;
+	private Line debugAverageLine;
+
 	@Autowired
 	public Detector(
 			CueService cueService,
@@ -62,6 +64,10 @@ public class Detector {
 		this.pathService = pathService;
 		this.bandsService = bandsService;
         this.lineService = lineService;
+
+        this.isDebugActive = true;
+		this.debugDetectedLines = new ArrayList<>();
+		this.debugAverageLine = null;
 
 		try {
 			sourceImg = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), CvType.CV_64F);
@@ -238,18 +244,25 @@ public class Detector {
 
 	public Line findStickLine() throws MissingCueLineException, DetectorException {
 		Mat substractedImg = getEdges(getSourceImg().clone());
+
 		List <Line> linesList = getInnerLines(substractedImg);
+
 		Line shortCueLine = cueService.findStickLine(linesList);
-        Line longCueLine = null;
+
+		Line longCueLine = null;
 		Ball whiteBall = ballService.getWhiteBall();
 
 		if (shortCueLine != null && whiteBall != null) {
-            Point coordinates = new Point(whiteBall.getX(), whiteBall.getY());
+            Point coordinates = whiteBall.getCenter();
 
 			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
 			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
 
+		if (isDebugActive) {
+			this.debugDetectedLines = linesList;
+			this.debugAverageLine = shortCueLine;
+		}
 
 		return longCueLine;
 	}
@@ -377,7 +390,21 @@ public class Detector {
 		return emptyTableImage;
 	}
 
+	public List<Line> getDebugDetectedLines() {
+		return debugDetectedLines;
+	}
 
+	public Line getDebugAverageLine() {
+		return debugAverageLine;
+	}
+
+	public Point getPointCloserToWhiteBall() {
+		return cueService.debugCloserToWhite;
+	}
+
+	public Point getPointFurtherToWhiteBall() {
+		return cueService.debugFurtherToWhite;
+	}
 
 }
 
