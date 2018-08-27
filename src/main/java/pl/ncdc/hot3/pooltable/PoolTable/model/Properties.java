@@ -6,16 +6,14 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.springframework.stereotype.Component;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.List;
-
 /**
  * Properties class
  */
 
 @Component
 public class Properties {
+
+    private boolean isDebugActive;
 
     // Bands
     private double tableBandLeft;
@@ -57,6 +55,7 @@ public class Properties {
 
     // Ball correction counter
     private final int prevBallsCorrectorCount;
+    private final int previousBallsPositionsToCompare;
 
     // Canny
     private double cannyHighThreshold;
@@ -69,7 +68,9 @@ public class Properties {
     // Stick
     private double cueThickness;
     private double parallelTolerance;
+    private double minBCoordinateForLines;
     private double previousFramesMoveTolerance;
+
     private int cueDetectDelay;
     private int cueStickLineThickness;
 
@@ -95,6 +96,8 @@ public class Properties {
 
 
     public Properties() {
+        this.isDebugActive = true;
+
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
         this.ballMinDistance = 36;
@@ -108,6 +111,7 @@ public class Properties {
         this.ballThickness = 5;
         this.whitePixelsPercentageBorder = 16;
         this.prevBallsCorrectorCount = 12;
+        this.previousBallsPositionsToCompare = 12;
 
         this.tableBandLeft = 130;
         this.tableBandRight = 1915;
@@ -120,9 +124,11 @@ public class Properties {
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
-        this.previousFramesMoveTolerance = 10;
+        this.minBCoordinateForLines = 5;
+        this.previousFramesMoveTolerance = 60;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
+
 
         this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 10);
         this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
@@ -580,8 +586,16 @@ public class Properties {
         this.ballExpectedRadius = ballExpectedRadius;
     }
 
-    public final int getPrevBallsCorrectorCount() {
-        return prevBallsCorrectorCount;
+    public final int getPreviousBallsPositionsToCompare() {
+        return previousBallsPositionsToCompare;
+    }
+
+    public double getMinBCoordinateForLines() {
+        return minBCoordinateForLines;
+    }
+
+    public void setMinBCoordinateForLines(double minBCoordinateForLines) {
+        this.minBCoordinateForLines = minBCoordinateForLines;
     }
 
     public static String getCameraUrl() {
@@ -611,5 +625,12 @@ public class Properties {
      */
     public void setBumpPointDelta(int bumpPointDelta) {
         this.bumpPointDelta = bumpPointDelta;
+    }
+    public boolean isDebugActive() {
+        return isDebugActive;
+    }
+
+    public void setDebugActive(boolean debugActive) {
+        isDebugActive = debugActive;
     }
 }

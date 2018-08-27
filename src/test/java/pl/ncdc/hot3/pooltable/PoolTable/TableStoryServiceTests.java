@@ -3,22 +3,19 @@ package pl.ncdc.hot3.pooltable.PoolTable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CameraServiceException;
-import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.*;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.PathService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.PathService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 import java.io.FileNotFoundException;
@@ -37,7 +34,8 @@ import static org.mockito.Mockito.when;
         Properties.class,
         CameraService.class,
         ImageUndistorterService.class,
-        PathService.class
+        PathService.class,
+        BandsService.class
 })
 public class TableStoryServiceTests {
 
@@ -58,6 +56,9 @@ public class TableStoryServiceTests {
     @Autowired
     private PathService pathService;
 
+    @Autowired
+    private BandsService bandsService;
+
     @Test
     public void shouldReturnPoolTableModelWithAllDetailsAndSaveNewImage() throws CameraServiceException {
         //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -71,7 +72,7 @@ public class TableStoryServiceTests {
 
         System.out.println(source.width());
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -100,7 +101,7 @@ public class TableStoryServiceTests {
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(source);
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -130,7 +131,7 @@ public class TableStoryServiceTests {
         CameraService cameraService = mock(CameraService.class);
         when(cameraService.getSnap()).thenReturn(source);
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -153,7 +154,7 @@ public class TableStoryServiceTests {
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(null);
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -174,7 +175,7 @@ public class TableStoryServiceTests {
 
         ImageUndistorterService undistorterService = new ImageUndistorterService(properties);
         CameraService cameraService = mock(CameraService.class);
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
 
         PoolTable table = new PoolTable();
         Mat source;

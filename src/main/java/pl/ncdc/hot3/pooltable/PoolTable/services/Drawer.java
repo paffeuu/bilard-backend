@@ -64,11 +64,19 @@ public class Drawer {
 		}
 	}
 
-    private void drawLine(Mat img, Line line, Scalar scalar, int thickness) {
+	public void drawLines(Mat img, List <Line> lines, Scalar scalar, int thickness) {
+		if (lines != null && !lines.isEmpty()) {
+			for (Line line : lines) {
+				Imgproc.line(img, line.getBegin(), line.getEnd(), scalar, thickness);
+			}
+		}
+	}
+
+	public void drawLine(Mat img, Line line, Scalar scalar, int thickness) {
         Imgproc.line(img, line.getBegin(), line.getEnd(), scalar, thickness);
     }
 
-    private void drawCircle(Mat img, Point point, int radius, Scalar scalar, int thickness) {
+    public void drawCircle(Mat img, Point point, int radius, Scalar scalar, int thickness) {
         Imgproc.circle(img, point, radius, scalar, thickness);
     }
 
@@ -99,5 +107,9 @@ public class Drawer {
 
 	public void drawPoint(Mat img, Point point) {
 		Imgproc.circle(img, point, properties.getTablePocketRadius(), new Scalar(0, 0, 255), 5);
+	}
+
+	public void drawPoint(Mat img, Point point, Scalar color, int thickness) {
+		Imgproc.circle(img, point, 14, color, thickness);
 	}
 }
