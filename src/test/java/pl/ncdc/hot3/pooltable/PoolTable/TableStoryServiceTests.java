@@ -147,8 +147,8 @@ public class TableStoryServiceTests {
 
     @Test(expected = CameraServiceException.class)
     public void shouldThrowCameraExceptionWhenSourceNull() throws CameraServiceException {
-        //
-        // System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(null);
@@ -170,9 +170,9 @@ public class TableStoryServiceTests {
 
     @Test
     public void shouldMakeTablesForManyImagesAndSaveThemAll() throws CameraServiceException, FileNotFoundException {
-        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        ImageUndistorterService undistorterService = new ImageUndistorterService();
+        ImageUndistorterService undistorterService = new ImageUndistorterService(properties);
         CameraService cameraService = mock(CameraService.class);
         tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService);
 
