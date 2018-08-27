@@ -46,28 +46,34 @@ public class CueService {
         prevCueLines = new Line[cueDetectDelay];
     }
 
-    private double calcAbsoluteDistance(double value1, double value2){
-        return Math.abs(value1 - value2);
-    }
-
+    /**
+     * Returns prediction line after bump
+     *
+     * @param line aiming line
+     *
+     * @return prediction line
+     *
+     * @throws CueServiceException  if bump point is out of band
+     * @throws LineServiceException if can not extend cue line for one side
+     */
     public Line predictTrajectoryAfterBump(Line line) throws CueServiceException, LineServiceException {
         Point bumpPoint = line.getEnd();
         Point halfDistance;
 
-        if (calcAbsoluteDistance(properties.getTableBandLeft(), bumpPoint.x) <= 2) {
+        if (Math.abs(properties.getTableBandLeft() - bumpPoint.x) <= properties.getBumpPointDelta()) {
             halfDistance = new Point(line.getBegin().x, line.getEnd().y);
-        } else if (calcAbsoluteDistance(properties.getTableBandRight(), bumpPoint.x) <= 2) {
+        } else if (Math.abs(properties.getTableBandRight() - bumpPoint.x) <= properties.getBumpPointDelta()) {
             halfDistance = new Point(line.getBegin().x, line.getEnd().y);
-        } else if (calcAbsoluteDistance(properties.getTableBandTop(), bumpPoint.y) <= 2) {
+        } else if (Math.abs(properties.getTableBandTop() - bumpPoint.y) <= properties.getBumpPointDelta()) {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
-        } else if (calcAbsoluteDistance(properties.getTableBandBottom(), bumpPoint.y) <= 2) {
+        } else if (Math.abs(properties.getTableBandBottom() - bumpPoint.y) <= properties.getBumpPointDelta()) {
             halfDistance = new Point(line.getEnd().x, line.getBegin().y);
         } else {
             throw new CueServiceException("Cannot find predicted line. Bump point out of bands!");
         }
 
-        double distanceX = (halfDistance.x - line.getBegin().x);
-        double distanceY = (halfDistance.y - line.getBegin().y);
+        double distanceX = halfDistance.x - line.getBegin().x;
+        double distanceY = halfDistance.y - line.getBegin().y;
 
         Line predictedLine = new Line(
                 bumpPoint,
@@ -146,7 +152,7 @@ public class CueService {
         double endDist = getDistanceBetweenPoints(line.getEnd(), whiteBall);
 
         if (beginDist <=  endDist) {
-            newLineBetweenLong = LineService.switchPoints(newLineBetweenLong);
+            LineService.switchPoints(newLineBetweenLong);
         }
 
         try {
@@ -272,7 +278,7 @@ public class CueService {
      *
      * @param line line
      *
-     * @return cordinates
+     * @return coordinates
      */
     public double[] calcAllCoordinate(Line line) {
         double Y = line.getBegin().y - line.getEnd().y;

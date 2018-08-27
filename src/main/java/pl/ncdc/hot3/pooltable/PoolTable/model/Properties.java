@@ -56,6 +56,7 @@ public class Properties {
 
     // Predictions
     private int predictionDepth;
+    private int bumpPointDelta;
 
     // Replays
     private boolean showPreviousPosition;
@@ -75,6 +76,7 @@ public class Properties {
         this.tablePocketRadius = 45;
 
         this.predictionDepth = 1;
+        this.bumpPointDelta = 2;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
@@ -489,4 +491,21 @@ public class Properties {
         return prevBallsCorrectorCount;
     }
 
+    /**
+     * Get bump point delta
+     *
+     * @return
+     */
+    public int getBumpPointDelta() {
+        return bumpPointDelta;
+    }
+
+    /**
+     * Set bump point delta
+     *
+     * @param bumpPointDelta
+     */
+    public void setBumpPointDelta(int bumpPointDelta) {
+        this.bumpPointDelta = bumpPointDelta;
+    }
 }
