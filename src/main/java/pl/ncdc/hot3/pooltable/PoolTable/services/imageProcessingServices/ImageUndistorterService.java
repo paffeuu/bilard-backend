@@ -18,17 +18,6 @@ public class ImageUndistorterService {
 
     @Autowired
     public ImageUndistorterService() {
-        //2K
-        /*cameraMatrix.put(2, 2, 1);
-        cameraMatrix.put(0, 0, 1755.73196841084);
-        cameraMatrix.put(0, 2, 1024);
-        cameraMatrix.put(1, 1, 1747.254824521836);
-        cameraMatrix.put(1, 2, 768);
-
-        distCoeffs.put(0, 0, -0.4001622593334911);
-        distCoeffs.put(1, 0, 0.1676437868703358);*/
-
-        //HD
         cameraMatrix.put(2, 2, 1);
         cameraMatrix.put(0, 0, 991.4262945972393);
         cameraMatrix.put(0, 2, 640);
@@ -38,22 +27,18 @@ public class ImageUndistorterService {
         distCoeffs.put(0, 0, -0.4110309525718729);
         distCoeffs.put(1, 0, 0.2250083648489881);
 
-        double hdTo2kRatioX = 2048.0 / 1280.0;
-        double hdTo2kRatioY = 1536.0 / 720.0;
-
         srcPoints = new Point[] {
-                new Point(177.0 / hdTo2kRatioX, 349.0 / hdTo2kRatioY),
-                new Point(1942.0 / hdTo2kRatioX, 340.0 / hdTo2kRatioY),
-                new Point(1963.0 / hdTo2kRatioX, 1225.0 / hdTo2kRatioY),
-                new Point(176.0 / hdTo2kRatioX, 1255.0 / hdTo2kRatioY)
+                new Point(151.0, 128.0),
+                new Point(1131.0, 141.0),
+                new Point(1133.0, 628.0),
+                new Point(142.5, 631.0)
         };
 
-
         dstPoints = new Point[] {
-                new Point(130.0 / hdTo2kRatioX, 365.0 / hdTo2kRatioY),
-                new Point(1915.0 / hdTo2kRatioX, 365.0 / hdTo2kRatioY),
-                new Point(1915.0 / hdTo2kRatioX, 1250.0 / hdTo2kRatioY),
-                new Point(130.0 / hdTo2kRatioX, 1250.0 / hdTo2kRatioY)
+                new Point(148.0, 135.0),
+                new Point(1131.0, 135.0),
+                new Point(1131.0, 630.0),
+                new Point(148.0, 630.0)
         };
 
         MatOfPoint2f src = new MatOfPoint2f(srcPoints);
@@ -66,12 +51,12 @@ public class ImageUndistorterService {
         try {
             Mat undistorted = new Mat();
             Imgproc.undistort(distorted, undistorted, cameraMatrix, distCoeffs);
-            //distorted = undistorted.clone();
-            //undistorted = new Mat();
-            //Imgproc.warpPerspective(distorted, undistorted, transformPerspective, new Size(2048,1536));
+            distorted = undistorted.clone();
+            undistorted.release();
+            Imgproc.warpPerspective(distorted, undistorted, transformPerspective, new Size(1280,720));
             for (int i = 0; i < dstPoints.length; i++) {
-                //Imgproc.line(undistorted, dstPoints[i], dstPoints[(i+1)%dstPoints.length], new Scalar(255,255,100));
-                Imgproc.line(undistorted, srcPoints[i], srcPoints[(i+1)%dstPoints.length], new Scalar(0,255,255), 1);
+                Imgproc.line(undistorted, dstPoints[i], dstPoints[(i+1)%dstPoints.length], new Scalar(255,255,100));
+                //Imgproc.line(undistorted, srcPoints[i], srcPoints[(i+1)%dstPoints.length], new Scalar(0,255,255), 1);
             }
             return undistorted;
         } catch (Exception e) {
