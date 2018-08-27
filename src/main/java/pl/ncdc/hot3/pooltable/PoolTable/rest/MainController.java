@@ -25,10 +25,6 @@ public class MainController {
     @Autowired
     private SimpMessagingTemplate template;
 
-    private int counter = 0;
-
-    private PoolTable previousTable;
-
 
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")

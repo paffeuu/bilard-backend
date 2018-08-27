@@ -24,7 +24,6 @@ import java.util.List;
 @Service
 public class TableStoryService {
 
-
     final static int LIMIT_OF_TABLES = 32;
     final static int LIMIT_OF_VIEWS = 6;
     final static Logger LOGGER = LoggerFactory.getLogger(TableStoryService.class);
@@ -38,6 +37,8 @@ public class TableStoryService {
     private CameraService cameraService;
     private Drawer drawer;
     private Properties properties;
+    private BandsService bandsService;
+    List<Ball> prevFrameBalls;
 
     private PreviousPositionService previousPositionService;
 
@@ -47,14 +48,17 @@ public class TableStoryService {
             CameraService cameraService,
             Drawer drawer,
             Properties properties,
-            PreviousPositionService previousPositionService
+            PreviousPositionService previousPositionService,
+            BandsService bandsService
     ) {
         this.detector = detector;
         this.cameraService = cameraService;
         this.drawer = drawer;
         this.properties = properties;
         this.previousPositionService = previousPositionService;
+        this.bandsService = bandsService;
 
+        this.prevFrameBalls = new ArrayList<>();
         currentTableIndex = -1;
 
         tableStory = new ArrayList<>(LIMIT_OF_TABLES);
@@ -132,6 +136,11 @@ public class TableStoryService {
 
     }
 
+    /**
+     * Detect collision and set target line based on collision
+     *
+     * @return this object
+     */
     public TableStoryService detectCollision() {
         try {
             if (current() != null &&
@@ -182,15 +191,18 @@ public class TableStoryService {
         try {
             List<Ball> balls = detector.createListOfBalls();
             current().setBalls(balls);
+            prevFrameBalls = balls;
         } catch (Exception e) {
-            LOGGER.error("Unknow exception for no balls on table.");
+            LOGGER.error("Unknow exception for no balls on table, returned previous.");
+            current().setBalls(prevFrameBalls);
         }
 
         return this;
     }
 
     public PoolTable build() {
-        return  makeView()
+        return  drawForDebug()
+                .makeView()
                 .current();
     }
 
@@ -218,6 +230,34 @@ public class TableStoryService {
         } catch (NullPointerException e) {
             //LOGGER.warn("Can not save previous position. Nested: ", e.getMessage());
         }
+    }
+
+    public TableStoryService drawForDebug(){
+        if (properties.isDebugActive()) {
+            drawer.drawLines(outputImage, bandsService.getBandLines(), new Scalar(255, 0, 0), 4);
+
+            if (detector.getPointCloserToWhiteBall() != null) {
+                drawer.drawPoint(outputImage, detector.getPointCloserToWhiteBall(), new Scalar(255, 0, 0), 4);
+            }
+
+            if (detector.getPointFurtherToWhiteBall() != null) {
+                drawer.drawPoint(outputImage, detector.getPointFurtherToWhiteBall(), new Scalar(0, 0, 0), 2);
+            }
+
+            if (detector.getDebugAverageLine() != null){
+                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 6);
+            }
+
+            if (!detector.getDebugDetectedLines().isEmpty()) {
+                drawer.drawLines(
+                        outputImage,
+                        detector.getDebugDetectedLines(),
+                        new Scalar(0, 0, 255),
+                        5
+                );
+            }
+        }
+        return this;
     }
 
     private TableStoryService makeView(){

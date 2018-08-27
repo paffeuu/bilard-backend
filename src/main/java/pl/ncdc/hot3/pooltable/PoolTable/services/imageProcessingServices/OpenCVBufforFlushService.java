@@ -1,5 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices;
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -9,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 
@@ -21,12 +23,10 @@ public class OpenCVBufforFlushService {
 
     private static Mat[] framesArray = new Mat[10];
 
-
     public static void getFrame() {
-        if (isNotNeeded) {
 
             if (!capture.isOpened()) {
-                capture.open("rtsp://hot:kamerabilardowa@192.168.253.214:554/Streaming/Channels/1?transportmode=unicast&profile=Profile_1");
+                capture.open(Properties.getCameraUrl());
             }
             Mat newFrame = new Mat();
             try {
@@ -41,15 +41,14 @@ public class OpenCVBufforFlushService {
             } catch ( Exception e) {
                 e.printStackTrace();
             }
-        }
-        if ( counter == 100000) {
-            counter = 0;
+
+        if ( counter >= 100000) {
+            counter = 1;
         }
 
     }
 
     public static Mat getLastFrame() {
-
         return framesArray[(counter-1)%10].clone();
     }
 

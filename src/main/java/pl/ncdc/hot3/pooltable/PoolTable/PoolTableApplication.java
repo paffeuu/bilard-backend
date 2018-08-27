@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 
@@ -19,12 +20,10 @@ public class PoolTableApplication extends SpringBootServletInitializer {
     }
     static {
         if (SystemUtils.IS_OS_WINDOWS) {
-            String opencvpath = System.getProperty("user.dir") + "\\lib\\";
-            String libPath = System.getProperty("java.library.path");
-            System.load(opencvpath + Core.NATIVE_LIBRARY_NAME + ".dll");
-            System.load(opencvpath + "opencv_ffmpeg342_64.dll");
+            System.load(Properties.getWindowsOpencvPath());
+            System.load(Properties.getWindowsFfmpegPath());
             } else if (SystemUtils.IS_OS_LINUX) {
-            System.load("/usr/local/share/OpenCV/java/" + "libopencv_java342" + ".so");
+            System.load(Properties.getLinuxOpencvPath());
         }
 
     }

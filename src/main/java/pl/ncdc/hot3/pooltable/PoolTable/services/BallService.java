@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,10 +35,14 @@ public class BallService {
     private Scalar blackLowerMask;
     private Scalar blackHigherMask;
 
+    private final int THRESH = 200;
+    private final int MAX_VAL_THRESH = 255;
+
     private Ball whiteBall;
 
-    private int prevBallsIndexCounter = 0;
+    private int prevBallsIndexCounter;
     private List<List<Ball>> previousBalls;
+    private List<Ball> staticBalls;
 
     @Autowired
     public BallService(
@@ -50,7 +52,6 @@ public class BallService {
         this.properties = properties;
         this.bandsService = bandsService;
 
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         ranges = new MatOfFloat(0f,256f);
         channels = new MatOfInt(0);
         histSize = new MatOfInt(2);
@@ -58,12 +59,14 @@ public class BallService {
         blackLowerMask = new Scalar(0, 0, 0);
         blackHigherMask = new Scalar(180, 255, 35);
 
-        previousBalls = new ArrayList<List<Ball>>(properties.getPrevBallsCorrectorCount());
+        previousBalls = new ArrayList<List<Ball>>(properties.getPreviousBallsPositionsToCompare());
+        prevBallsIndexCounter = 0;
+        staticBalls = new ArrayList<>();
 
         whiteBall = null;
     }
 
-    Ball getWhiteBall() {
+    public Ball getWhiteBall() {
         return whiteBall;
     }
 
@@ -73,13 +76,13 @@ public class BallService {
                     .stream()
                     .max(Comparator.comparing(Ball::getWhitePixels))
                     .orElseThrow(BallsDetectorException::new);
-            whiteBall.setId(0);
+            whiteBall.setId(properties.getWhiteBallId());
         } catch (BallsDetectorException e) {
             System.out.println("White ball not found.");
         }
 
         int indexOfBlackBall = getIndexOfBall(ballImgList, blackLowerMask, blackHigherMask);
-        balls.get(indexOfBlackBall).setId(8);
+        balls.get(indexOfBlackBall).setId(properties.getBlackBallId());
     }
 
     private List<Ball> convertMatToListOfBalls(Mat circles) {
@@ -117,17 +120,9 @@ public class BallService {
         return crops;
     }
 
-    List<Ball> createListOfBalls(Mat circles, Mat sourceImg, List<Rect> roiList) {
+    public List<Ball> createListOfBalls(Mat circles, Mat sourceImg, List<Rect> roiList) {
 
-        List<Ball> detectedBalls = new ArrayList<>();
-
-        if(circles.get(0,0)[0] < properties.getTableBandLeft()
-                || circles.get(0,0)[0] > properties.getTableBandRight()
-                || circles.get(0,0)[1] < properties.getTableBandTop()
-                || circles.get(0,0)[1] > properties.getTableBandBottom()){
-
-                return detectedBalls;
-        }
+        List<Ball> detectedBalls;
 
         // Make a list of balls from a MAT that includes x,y,r of a Ball
         detectedBalls = convertMatToListOfBalls(circles);
@@ -141,12 +136,14 @@ public class BallService {
         // Set white ball id to 0 and black ball id to 8
         setWhiteAndBlackBall(detectedBalls, ballImgList);
 
+        int solidId = properties.getFirstSolidBallId();
+        int stripedId = properties.getFirstStripedBallId();
+        int rectangleSideLength = 2 * properties.getBallExpectedRadius();
+
         // Set id of every ball excluding white and black ball
-        int solidId = 10;
-        int stripedId = 30;
         for(Ball ball : detectedBalls) {
-            if(ball.getId() == null) {
-                if ((ball.getWhitePixels() * 100) / 1764 >= 16) {
+            if(ball.getId() == Ball.DEFAULT_ID) {
+                if ((ball.getWhitePixels() * 100) / Math.pow(rectangleSideLength, 2) >= properties.getWhitePixelsPercentageBorder()) {
                     ball.setId(stripedId);
                     stripedId++;
                 } else {
@@ -156,62 +153,90 @@ public class BallService {
             }
         }
 
-        // Stabilize with previous detected balls
-        detectedBalls = stabilizeWithPrevious(detectedBalls);
-
-        // Sort list of balls by id
-        Collections.sort(detectedBalls);
-
         return detectedBalls;
     }
 
     private List<Ball> stabilizeWithPrevious(List<Ball> currentList) {
-        LOGGER.info("START List of balls size: " + currentList.size());
         if (currentList != null && !currentList.isEmpty()) {
-            prevBallsIndexCounter = (++prevBallsIndexCounter) % properties.getPrevBallsCorrectorCount();
-            if (previousBalls.size() < properties.getPrevBallsCorrectorCount()){
+            if (previousBalls.size() < properties.getPreviousBallsPositionsToCompare()){
                 previousBalls.add(currentList);
             } else {
-                LOGGER.info("in idx: " + prevBallsIndexCounter);
                 previousBalls.set(prevBallsIndexCounter, currentList);
             }
+            prevBallsIndexCounter = (++prevBallsIndexCounter) % properties.getPreviousBallsPositionsToCompare();
 
             List<Ball> listOfApprovedBalls = new ArrayList<>();
-            int[] ballsApprovedWithPrevious = new int[currentList.size()];
+            int[] ballsApprovePoints = new int[currentList.size()];
 
             int currentBallIndex = 0;
             for (Ball currentBall : currentList) {
-                for (int i = 0; i < properties.getPrevBallsCorrectorCount() - 1; i++) {
-                    int tempBallListIndex = (prevBallsIndexCounter + i) % properties.getPrevBallsCorrectorCount();
+                for (int i = 0; i < properties.getPreviousBallsPositionsToCompare() - 1; i++) {
+                    int tempBallListIndex = (prevBallsIndexCounter + i) % properties.getPreviousBallsPositionsToCompare();
 
                     if (previousBalls.get(tempBallListIndex) != null &&
-                            isBallInPreviousList(currentBall, previousBalls.get(tempBallListIndex))){
-                        ballsApprovedWithPrevious[currentBallIndex] += 1;
+                            indexOfBallInPreviousList(currentBall, previousBalls.get(tempBallListIndex)) != -1){
+                        ballsApprovePoints[currentBallIndex] += 1;
                     }
                 }
 
-                if (ballsApprovedWithPrevious[currentBallIndex] >= Math.floor(previousBalls.size() * 0.8)){
+                if (ballsApprovePoints[currentBallIndex] >= Math.floor(previousBalls.size() * 0.8)){
                     listOfApprovedBalls.add(currentBall);
                 }
                 currentBallIndex++;
             }
-            currentList = listOfApprovedBalls;
-        }
-
-        LOGGER.info("END List of balls size: " + currentList.size());
-        return currentList;
-    }
-
-    private boolean isBallInPreviousList(Ball ball, List<Ball> listOfPreviousBallsPosition) {
-        double prevPositionTolerance = properties.getBallExpectedRadius() / 2;
-
-        for (Ball currentBall : listOfPreviousBallsPosition) {
-            if (LineService.getDistanceBetweenPoints(ball.getCenter(), currentBall.getCenter()) <= prevPositionTolerance){
-                return true;
+            if (!listOfApprovedBalls.isEmpty()){
+                currentList = listOfApprovedBalls;
             }
         }
 
-        return false;
+        return currentList;
+    }
+
+    public List<Ball> stabilize(List<Ball> currentBallList){
+        // Stabilize with previous detected balls
+        currentBallList = stabilizeWithPrevious(currentBallList);
+
+        if (currentBallList == null || currentBallList.isEmpty()){
+            return staticBalls;
+        }
+
+        if (staticBalls.isEmpty()) {
+            staticBalls = currentBallList;
+            return staticBalls;
+        }
+
+        for (Ball currentBall : currentBallList) {
+            int idx = indexOfBallInPreviousList(currentBall, staticBalls);
+            if (idx >= 0){
+                currentBall.setCenter(staticBalls.get(idx).getCenter());
+            } else {
+                staticBalls.add(currentBall);
+            }
+        }
+
+        if (staticBalls.size() > currentBallList.size()) {
+            for (Ball currentBall : staticBalls){
+                if (indexOfBallInPreviousList(currentBall, currentBallList) == -1){
+                    staticBalls.remove(currentBall);
+                }
+            }
+        }
+
+        return staticBalls;
+    }
+
+    private int indexOfBallInPreviousList(Ball ball, List<Ball> listOfPreviousBallsPosition) {
+        double prevPositionTolerance = properties.getBallExpectedRadius() / 2;
+
+        int index = -1;
+        for (Ball currentBall : listOfPreviousBallsPosition) {
+            index++;
+            if (LineService.getDistanceBetweenPoints(ball.getCenter(), currentBall.getCenter()) <= prevPositionTolerance){
+                return index;
+            }
+        }
+
+        return -1;
     }
 
     private int getIndexOfBall(List<Mat> ballImgList, Scalar lowerMask, Scalar higherMask) {
@@ -259,8 +284,8 @@ public class BallService {
         // image processing on B and G layers of RGB image
         Imgproc.equalizeHist(planes.get(0), firstPlaneEqualized);
         Imgproc.equalizeHist(planes.get(1), secondPlaneEqualized);
-        Imgproc.threshold(firstPlaneEqualized, firstPlaneThreshold,200,255,Imgproc.THRESH_BINARY);
-        Imgproc.threshold(secondPlaneEqualized, secondPlaneThreshold,200,255,Imgproc.THRESH_BINARY);
+        Imgproc.threshold(firstPlaneEqualized, firstPlaneThreshold, THRESH,MAX_VAL_THRESH, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(secondPlaneEqualized, secondPlaneThreshold, THRESH,MAX_VAL_THRESH, Imgproc.THRESH_BINARY);
 
         // releasing memory from unused Mat objects
         planes.get(0).release();

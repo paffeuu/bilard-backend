@@ -7,7 +7,8 @@ import org.opencv.core.Point;
  * Ball class
  */
 public class Ball implements Comparable<Ball> {
-    private Integer id;
+    private int id;
+    public static final int DEFAULT_ID = 1;
     private double radius;
     private double x;
     private double y;
@@ -60,7 +61,7 @@ public class Ball implements Comparable<Ball> {
      * @param y  position Y
      */
     public Ball(double x, double y, double radius) {
-        this.id = null;
+        this.id = DEFAULT_ID;
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -128,13 +129,18 @@ public class Ball implements Comparable<Ball> {
 
         Ball b = (Ball) o;
 
-        double xDelta = this.x - b.getX();
-        double yDelta = this.y - b.getY();
+        double xDelta = Math.abs(this.x - b.getX());
+        double yDelta = Math.abs(this.y - b.getY());
 
         return (xDelta <= 5.0 && yDelta <= 5.0);
     }
 
     public Point getCenter() {
         return new Point(x, y);
+    }
+
+    public void setCenter(Point point) {
+        this.x = point.x;
+        this.y = point.y;
     }
 }
