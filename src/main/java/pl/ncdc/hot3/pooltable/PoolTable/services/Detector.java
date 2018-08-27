@@ -1,8 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.opencv.core.*;
 import org.opencv.core.Point;
@@ -334,23 +333,48 @@ public class Detector {
      *
      * @param line aiming line
      * @param balls list of balls
-     * @param skipFirst do not return cue ball if it is a cue line
+     * @param isCueLine do not return cue ball if it is a cue line
      *
      * @return single ball
      */
-	public Ball getCollisionBall(Line line, List<Ball> balls, boolean skipFirst) {
-		double counter = 0;
+	public Ball getCollisionBall(Line line, List<Ball> balls, boolean isCueLine) {
+		// TODO Usunąć linijke poniżej jeżeli bile będą sortowane w createListOfBalls
+		Collections.sort(balls);
+
+		List<Ball> ballsInCollision = new ArrayList<>();
+		Map<Double, Integer> distances = new HashMap<>();
+		Ball cueBall = balls.get(0);
+		double minDistance = 100;
+
+		if (0 != cueBall.getId()) {
+			cueBall = null;
+		}
 
 		for (Ball ball : balls) {
 			double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 
 			if (distance <= properties.getBallExpectedRadius() * 2) {
-				++counter;
+				double distanceBetweenPoints;
+				ballsInCollision.add(ball);
 
-				if (!skipFirst || 2 == counter) {
-					return ball;
+				if (isCueLine && null != cueBall) {
+					distanceBetweenPoints = LineService.calculateDistanceBetweenPoints(ball.getCenter(), cueBall.getCenter());
+				} else {
+					distanceBetweenPoints = LineService.calculateDistanceBetweenPoints(ball.getCenter(), line.getBegin());
 				}
+
+				if (0 == ballsInCollision.indexOf(ball) || distanceBetweenPoints < minDistance) {
+					minDistance = distanceBetweenPoints;
+				}
+
+				distances.put(distanceBetweenPoints, ballsInCollision.indexOf(ball));
 			}
+		}
+
+		if (!ballsInCollision.isEmpty()) {
+			return ballsInCollision.get(
+					distances.get(minDistance)
+			);
 		}
 
 		return null;

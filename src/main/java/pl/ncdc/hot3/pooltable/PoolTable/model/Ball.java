@@ -7,7 +7,8 @@ import org.opencv.core.Point;
  * Ball class
  */
 public class Ball implements Comparable<Ball> {
-    private Integer id;
+    private int id;
+    private int DEFAULT_ID = 1;
     private double radius;
     private double x;
     private double y;
@@ -60,7 +61,7 @@ public class Ball implements Comparable<Ball> {
      * @param y  position Y
      */
     public Ball(double x, double y, double radius) {
-        this.id = null;
+        this.id = DEFAULT_ID;
         this.x = x;
         this.y = y;
         this.radius = radius;
