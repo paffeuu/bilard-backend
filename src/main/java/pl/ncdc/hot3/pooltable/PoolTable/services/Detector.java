@@ -46,7 +46,7 @@ public class Detector {
 			Properties properties,
             LineService lineService
 			) {
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		//System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		this.ballService = ballService;
 		this.cueService = cueService;
 		this.properties = properties;
@@ -124,6 +124,9 @@ public class Detector {
 		// detect circles
 		Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0, properties.getBallMinDistance(),
 				30, 15, properties.getBallMinRadius(), properties.getBallMaxRadius());
+		for (Mat mat: planes) {
+			mat.release();
+		}
 		planes.clear();
 
 		return destinationImage;

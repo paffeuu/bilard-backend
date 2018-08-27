@@ -42,8 +42,8 @@ public class OpenCVBufforFlushService {
                 e.printStackTrace();
             }
         }
-        if ( counter == 100000) {
-            counter = 0;
+        if ( counter >= 100000) {
+            counter = 1;
         }
 
     }

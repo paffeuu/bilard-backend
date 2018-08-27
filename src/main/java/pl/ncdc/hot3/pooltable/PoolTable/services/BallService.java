@@ -50,7 +50,7 @@ public class BallService {
         this.properties = properties;
         this.bandsService = bandsService;
 
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+       // System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         ranges = new MatOfFloat(0f,256f);
         channels = new MatOfInt(0);
         histSize = new MatOfInt(2);
@@ -63,7 +63,7 @@ public class BallService {
         whiteBall = null;
     }
 
-    Ball getWhiteBall() {
+    public Ball getWhiteBall() {
         return whiteBall;
     }
 
@@ -117,7 +117,7 @@ public class BallService {
         return crops;
     }
 
-    List<Ball> createListOfBalls(Mat circles, Mat sourceImg, List<Rect> roiList) {
+    public List<Ball> createListOfBalls(Mat circles, Mat sourceImg, List<Rect> roiList) {
 
         List<Ball> detectedBalls = new ArrayList<>();
 
@@ -166,13 +166,11 @@ public class BallService {
     }
 
     private List<Ball> stabilizeWithPrevious(List<Ball> currentList) {
-        LOGGER.info("START List of balls size: " + currentList.size());
         if (currentList != null && !currentList.isEmpty()) {
             prevBallsIndexCounter = (++prevBallsIndexCounter) % properties.getPrevBallsCorrectorCount();
             if (previousBalls.size() < properties.getPrevBallsCorrectorCount()){
                 previousBalls.add(currentList);
             } else {
-                LOGGER.info("in idx: " + prevBallsIndexCounter);
                 previousBalls.set(prevBallsIndexCounter, currentList);
             }
 
@@ -197,8 +195,6 @@ public class BallService {
             }
             currentList = listOfApprovedBalls;
         }
-
-        LOGGER.info("END List of balls size: " + currentList.size());
         return currentList;
     }
 

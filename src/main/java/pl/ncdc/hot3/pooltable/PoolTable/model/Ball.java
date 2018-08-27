@@ -128,8 +128,8 @@ public class Ball implements Comparable<Ball> {
 
         Ball b = (Ball) o;
 
-        double xDelta = this.x - b.getX();
-        double yDelta = this.y - b.getY();
+        double xDelta = Math.abs(this.x - b.getX());
+        double yDelta = Math.abs(this.y - b.getY());
 
         return (xDelta <= 5.0 && yDelta <= 5.0);
     }
