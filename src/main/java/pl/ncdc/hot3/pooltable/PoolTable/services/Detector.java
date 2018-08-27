@@ -346,29 +346,32 @@ public class Detector {
 		Ball cueBall = balls.get(0);
 		double minDistance = 100;
 		boolean aboveLine = false;
+		double perpendicularCoordinateA = 0;
+		double perpendicularCoordinateB = 0;
 
 		if (0 != cueBall.getId()) {
 			cueBall = null;
 		} else {
 			// Calculate line perpendicular to cue line
-			double perpendicularCoordinateA = LineService.calcPerpendicularCoordinate(line);
-			double perpendicularCoordinateB = -perpendicularCoordinateA * cueBall.getX() + cueBall.getY();
+			perpendicularCoordinateA = LineService.calcPerpendicularCoordinate(line);
+			perpendicularCoordinateB = -perpendicularCoordinateA * cueBall.getX() + cueBall.getY();
 			aboveLine = LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, line.getEnd());
-
-//			Line perpendicularLine = new Line(
-//					cueBall.getCenter(),
-//					new Point(
-//							cueBall.getX(),
-//							perpendicularCoordinateA * cueBall.getX() + perpendicularCoordinateB
-//					)
-//			);
 		}
 
-
 		for (Ball ball : balls) {
+			if (ball == cueBall && isCueLine) {
+				continue;
+			}
+
 			double distance = cueService.calculateDistanceBetweenPointAndLine(ball.getCenter(), line);
 
 			if (distance <= properties.getBallExpectedRadius() * 2) {
+				// discard balls behind the cue ball
+				if (LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, ball.getCenter()) &&
+						!aboveLine) {
+					continue;
+				}
+
 				double distanceBetweenPoints;
 				ballsInCollision.add(ball);
 

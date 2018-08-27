@@ -145,7 +145,7 @@ public class BallService {
         int solidId = 10;
         int stripedId = 30;
         for(Ball ball : detectedBalls) {
-            if(ball.getId() == null) {
+            if(ball.getId() == Ball.DEFAULT_ID) {
                 if ((ball.getWhitePixels() * 100) / 1764 >= 16) {
                     ball.setId(stripedId);
                     stripedId++;

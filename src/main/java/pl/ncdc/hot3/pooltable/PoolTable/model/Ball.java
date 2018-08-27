@@ -8,7 +8,7 @@ import org.opencv.core.Point;
  */
 public class Ball implements Comparable<Ball> {
     private int id;
-    private int DEFAULT_ID = 1;
+    public static int DEFAULT_ID = 1;
     private double radius;
     private double x;
     private double y;
