@@ -280,6 +280,16 @@ public class Detector {
 		return source;
 	}
 
+	/**
+	 * Get predictions after bump
+	 *
+	 * @param cueLine cue line
+	 *
+	 * @return list of predictions
+	 *
+	 * @throws CueServiceException  if can not predict trajectory after bump
+	 * @throws LineServiceException if can not predict trajectory after bump
+	 */
 	public List<Line> getPredictions(Line cueLine) throws CueServiceException, LineServiceException {
 		List <Line> predictions = new ArrayList<>();
 
@@ -298,6 +308,17 @@ public class Detector {
 		return predictions;
 	}
 
+    /**
+     * Create target line based on ball collision and aiming line
+     *
+     * @param line  aiming line
+     * @param balls list of balls
+     * @param isCue do not return cue ball if it is a cue line
+     *
+     * @return target line
+     *
+     * @throws LineServiceException if can not find ball collision line
+     */
     public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
         Ball collision = getCollisionBall(line, balls, isCue);
 
@@ -308,6 +329,15 @@ public class Detector {
         return null;
     }
 
+    /**
+     * Get ball which is in collision with line
+     *
+     * @param line aiming line
+     * @param balls list of balls
+     * @param skipFirst do not return cue ball if it is a cue line
+     *
+     * @return single ball
+     */
 	public Ball getCollisionBall(Line line, List<Ball> balls, boolean skipFirst) {
 		double counter = 0;
 
@@ -326,6 +356,16 @@ public class Detector {
 		return null;
 	}
 
+    /**
+     * Return line parallel to cue line started at center of cue ball
+     *
+     * @param line cue line
+     * @param ball cue ball (white ball)
+     *
+     * @return line started at center of cue ball
+     *
+     * @throws LineServiceException if can not extend cue line for one side
+     */
 	public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
 		double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 		double[] coordinates = cueService.calcAllCoordinate(line);
@@ -361,9 +401,4 @@ public class Detector {
 
 		return emptyTableImage;
 	}
-
-
-
 }
-
-

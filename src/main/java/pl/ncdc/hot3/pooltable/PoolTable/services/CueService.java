@@ -245,6 +245,14 @@ public class CueService {
         return ((min1 + min2)/2);
     }
 
+    /**
+     * Calculate distance between two points
+     *
+     * @param point1 point
+     * @param point2 point
+     *
+     * @return distance
+     */
     public static double getDistanceBetweenPoints(Point point1, Point point2) {
         return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
@@ -259,6 +267,13 @@ public class CueService {
         return temp;
     }
 
+    /**
+     * Calculate A, B, C from Ax + By + C = 0 model, based on two points from line
+     *
+     * @param line line
+     *
+     * @return cordinates
+     */
     public double[] calcAllCoordinate(Line line) {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
@@ -269,6 +284,14 @@ public class CueService {
         return new double[]{a, -1, b};
     }
 
+    /**
+     * Calculate distance between point and line
+     *
+     * @param point point
+     * @param line  line
+     *
+     * @return distance
+     */
     public double calculateDistanceBetweenPointAndLine(Point point, Line line) {
         double[] coordinates = calcAllCoordinate(line);
 
@@ -277,6 +300,17 @@ public class CueService {
                 Math.sqrt(Math.pow(coordinates[0], 2) + Math.pow(coordinates[1], 2));
     }
 
+    /**
+     * Magic method which calculate two points on aiming line based on distance from ball center. Ghost ball definition
+     * - http://www.easypooltutor.com/img/lessons/ghost_ball.png
+     *
+     * @param line aiming line
+     * @param ball collision ball
+     *
+     * @return collision line based on object ball and ghost ball
+     *
+     * @throws LineServiceException if can not get extended cue line for one side
+     */
     public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
         double[] coordinates = calcAllCoordinate(line);
         double A = coordinates[0];
