@@ -331,4 +331,28 @@ public class LineService {
     public static double getDistanceBetweenPoints(Point point1, Point point2) {
         return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
+
+    public static double[] calcCoordinatesAB(Line line) {
+        if (line.getBegin().x == line.getEnd().x) {
+            line.setEnd(new Point(line.getEnd().x + 3, line.getEnd().y));
+        }
+
+        double Y = (line.getBegin().y - line.getEnd().y);
+        double X = (line.getBegin().x - line.getEnd().x);
+
+        double A = Y / (X == 0 ? 0.1 : X);
+        double B = line.getBegin().y - (A * line.getBegin().x);
+
+        return new double[]{A, B};
+    }
+
+    public static double calcPerpendicularCoordinate(Line line) {
+        double[] coordinates = LineService.calcCoordinatesAB(line);
+
+        return (-1 / coordinates[0]);
+    }
+
+    public static boolean isPointAboveTheLine(double a, double b, Point point) {
+        return point.y > a * point.x + b;
+    }
 }
