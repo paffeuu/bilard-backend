@@ -11,6 +11,16 @@ public class BandsService {
 
     private Properties properties;
 
+    public enum PocketPosition {
+        NONE,
+        LEFT_TOP,
+        MID_TOP,
+        RIGHT_TOP,
+        RIGHT_BOT,
+        MID_BOT,
+        LEFT_BOT
+    }
+
     @Autowired
     public BandsService(
             Properties properties
@@ -27,24 +37,24 @@ public class BandsService {
         return false;
     }
 
-    public boolean isPointGoingToSocket(Point point) {
-        boolean isInSocket = false;
+    public PocketPosition getPocketForPoint(Point point) {
+        PocketPosition inPocketPosition = PocketPosition.NONE;
         double distToSocketTolerance = properties.getTablePocketRadius();
 
         if (LineService.getDistanceBetweenPoints(point, properties.getLeftTopPocketPoint()) <= distToSocketTolerance)
-            isInSocket = true;
+            inPocketPosition = PocketPosition.LEFT_TOP;
         else if (LineService.getDistanceBetweenPoints(point, properties.getRightTopPocketPoint()) <= distToSocketTolerance)
-            isInSocket = true;
+            inPocketPosition = PocketPosition.RIGHT_TOP;
         else if (LineService.getDistanceBetweenPoints(point, properties.getLeftBotPocketPoint()) <= distToSocketTolerance)
-            isInSocket = true;
+            inPocketPosition = PocketPosition.LEFT_BOT;
         else if (LineService.getDistanceBetweenPoints(point, properties.getRightBotPocketPoint()) <= distToSocketTolerance)
-            isInSocket = true;
+            inPocketPosition = PocketPosition.RIGHT_BOT;
         else if (LineService.getDistanceBetweenPoints(point, properties.getMidTopPocketPoint()) <= distToSocketTolerance)
-            isInSocket = true;
+            inPocketPosition = PocketPosition.MID_TOP;
         else if (LineService.getDistanceBetweenPoints(point, properties.getMidBotPocketPoint()) <= distToSocketTolerance)
-            isInSocket = true;
+            inPocketPosition = PocketPosition.MID_BOT;
 
-        return isInSocket;
+        return inPocketPosition;
     }
 
 }

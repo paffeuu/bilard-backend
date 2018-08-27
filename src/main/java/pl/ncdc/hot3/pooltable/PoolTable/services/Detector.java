@@ -2,6 +2,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.opencv.core.*;
@@ -18,11 +19,19 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.PathService;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 
 @Service
 public class Detector {
+
+    final int MIN_LENGTH_FOR_INNER_LINES = 50;
+    final int MAX_LINE_GAP_FOR_INNER_LINES = 10;
+    final int TRESHOLD_FOR_INNER_LINES = 70;
+
+    final int TRESHOLD_FOR_SOURCE_IMG = 140;
+    final int TRESHOLD_FOR_CANNY_FIRST = 100;
+    final int TRESHOLD_FOR_CANNY_SECOND = 40;
+
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
@@ -104,6 +113,9 @@ public class Detector {
 
 		// List of stabile with previous static balls
 		ballList = ballService.stabilize(ballList);
+
+        // Sort list of balls by id
+        Collections.sort(ballList);
 
 		return ballList;
 	}
@@ -242,13 +254,13 @@ public class Detector {
 		return longCueLine;
 	}
 
+
 	public List<Line> getInnerLines(Mat substractedImage) {
 		Line tempLine;
 
 		Mat linesData = new Mat();
 
-
-		Imgproc.HoughLinesP(substractedImage, linesData, 1, Math.PI/180, 70, 50, 10);
+		Imgproc.HoughLinesP(substractedImage, linesData, 1, Math.PI/180, TRESHOLD_FOR_INNER_LINES, MIN_LENGTH_FOR_INNER_LINES, MAX_LINE_GAP_FOR_INNER_LINES);
 
 		List <Line> linesList = new ArrayList<>();
 
@@ -263,6 +275,7 @@ public class Detector {
 		return linesList;
 	}
 
+
 	public Mat getEdges(Mat source) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();
 		Mat dst = new Mat();
@@ -271,9 +284,8 @@ public class Detector {
 			Imgproc.blur(source, source, new Size(3,3));
 			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2GRAY);
 
-			Imgproc.threshold(source, source, 140, 255, Imgproc.THRESH_BINARY);
-			Imgproc.Canny(source, dst, 100, 40, 3, false);
-
+			Imgproc.threshold(source, source, TRESHOLD_FOR_SOURCE_IMG, 255, Imgproc.THRESH_BINARY);
+			Imgproc.Canny(source, dst, TRESHOLD_FOR_CANNY_FIRST, TRESHOLD_FOR_CANNY_SECOND, 3, false);
 
 			Core.subtract(dst, emptyTableImage, dst);
 
@@ -296,10 +308,9 @@ public class Detector {
 			predictions.add(cueLine);
 			for (int i = 0; i < properties.getPredictionDepth(); i++){
 				Line pred = cueService.predictTrajectoryAfterBump(predictions.get(i));
-				if (bandsService.isPointGoingToSocket(pred.getBegin()) || bandsService.isPointGoingToSocket(pred.getEnd())) {
+                predictions.add(pred);
+                if (bandsService.getPocketForPoint(pred.getBegin()) || bandsService.getPocketForPoint(pred.getEnd())) {
 					break;
-				} else {
-					predictions.add(pred);
 				}
 			}
 		}

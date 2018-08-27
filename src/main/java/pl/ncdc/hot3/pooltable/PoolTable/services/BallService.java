@@ -11,7 +11,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,7 +37,7 @@ public class BallService {
 
     private Ball whiteBall;
 
-    private int prevBallsIndexCounter = 0;
+    private int prevBallsIndexCounter;
     private List<List<Ball>> previousBalls;
     private List<Ball> staticBalls;
 
@@ -57,7 +56,8 @@ public class BallService {
         blackLowerMask = new Scalar(0, 0, 0);
         blackHigherMask = new Scalar(180, 255, 35);
 
-        previousBalls = new ArrayList<List<Ball>>(properties.getPrevBallsCorrectorCount());
+        previousBalls = new ArrayList<List<Ball>>(properties.getPreviousBallsPositionsToCompare());
+        prevBallsIndexCounter = 0;
         staticBalls = new ArrayList<>();
 
         whiteBall = null;
@@ -156,41 +156,40 @@ public class BallService {
             }
         }
 
-        // Sort list of balls by id
-        Collections.sort(detectedBalls);
-
         return detectedBalls;
     }
 
     private List<Ball> stabilizeWithPrevious(List<Ball> currentList) {
         if (currentList != null && !currentList.isEmpty()) {
-            prevBallsIndexCounter = (++prevBallsIndexCounter) % properties.getPrevBallsCorrectorCount();
-            if (previousBalls.size() < properties.getPrevBallsCorrectorCount()){
+            if (previousBalls.size() < properties.getPreviousBallsPositionsToCompare()){
                 previousBalls.add(currentList);
             } else {
                 previousBalls.set(prevBallsIndexCounter, currentList);
             }
+            prevBallsIndexCounter = (++prevBallsIndexCounter) % properties.getPreviousBallsPositionsToCompare();
 
             List<Ball> listOfApprovedBalls = new ArrayList<>();
-            int[] ballsApprovedWithPrevious = new int[currentList.size()];
+            int[] ballsApprovePoints = new int[currentList.size()];
 
             int currentBallIndex = 0;
             for (Ball currentBall : currentList) {
-                for (int i = 0; i < properties.getPrevBallsCorrectorCount() - 1; i++) {
-                    int tempBallListIndex = (prevBallsIndexCounter + i) % properties.getPrevBallsCorrectorCount();
+                for (int i = 0; i < properties.getPreviousBallsPositionsToCompare() - 1; i++) {
+                    int tempBallListIndex = (prevBallsIndexCounter + i) % properties.getPreviousBallsPositionsToCompare();
 
                     if (previousBalls.get(tempBallListIndex) != null &&
                             indexOfBallInPreviousList(currentBall, previousBalls.get(tempBallListIndex)) != -1){
-                        ballsApprovedWithPrevious[currentBallIndex] += 1;
+                        ballsApprovePoints[currentBallIndex] += 1;
                     }
                 }
 
-                if (ballsApprovedWithPrevious[currentBallIndex] >= Math.floor(previousBalls.size() * 0.8)){
+                if (ballsApprovePoints[currentBallIndex] >= Math.floor(previousBalls.size() * 0.8)){
                     listOfApprovedBalls.add(currentBall);
                 }
                 currentBallIndex++;
             }
-            currentList = listOfApprovedBalls;
+            if (!listOfApprovedBalls.isEmpty()){
+                currentList = listOfApprovedBalls;
+            }
         }
 
         return currentList;

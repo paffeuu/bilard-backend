@@ -58,7 +58,7 @@ public class LineService {
         }
 
         if (eMin < bMin) {
-            line = LineService.switchPoints(line);
+            LineService.switchPoints(line);
         }
 
         return line;
@@ -82,12 +82,12 @@ public class LineService {
         }
 
         if (minDistance == distance1) {
-            extendedA = switchPoints(extendedA);
-            extendedB = switchPoints(extendedB);
+            switchPoints(extendedA);
+            switchPoints(extendedB);
         } else if(minDistance == distance2) {
-            extendedA = switchPoints(extendedA);
+            switchPoints(extendedA);
         } else if (minDistance == distance3) {
-            extendedB = switchPoints(extendedB);
+            switchPoints(extendedB);
         }
 
         Point newLineStart = new Point(
@@ -133,19 +133,17 @@ public class LineService {
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
-    public static Line switchPoints(Line a) {
+    public static void switchPoints(Line a) {
         Point tmp = a.getBegin();
         a.setBegin(a.getEnd());
         a.setEnd(tmp);
-
-        return a;
     }
 
     public Line getExtendedStickLineForOneSide(Line stickLine) throws LineServiceException {
+        safeMoveLineForVertical(stickLine);
+
         double horizontalMove = stickLine.getEnd().x - stickLine.getBegin().x;
         double verticalMove = stickLine.getEnd().y - stickLine.getBegin().y;
-
-        safeMoveLineForVertical(stickLine);
 
         Line extendedLine = new Line();
         Point crosscutPoint1 = null;
