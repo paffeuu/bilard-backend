@@ -50,15 +50,17 @@ public class LineService {
 
         double bMin = beginDists[0], eMin = endDists[0];
         for (int i = 1; i < 4; i++) {
-            if (beginDists[i] < bMin)
+            if (beginDists[i] < bMin) {
                 bMin = beginDists[i];
+            }
 
-            if (endDists[i] < eMin)
+            if (endDists[i] < eMin) {
                 eMin = endDists[i];
+            }
         }
 
         if (eMin < bMin) {
-            line = LineService.switchPoints(line);
+            LineService.switchPoints(line);
         }
 
         return line;
@@ -82,12 +84,12 @@ public class LineService {
         }
 
         if (minDistance == distance1) {
-            extendedA = switchPoints(extendedA);
-            extendedB = switchPoints(extendedB);
-        } else if(minDistance == distance2) {
-            extendedA = switchPoints(extendedA);
+            switchPoints(extendedA);
+            switchPoints(extendedB);
+        } else if (minDistance == distance2) {
+            switchPoints(extendedA);
         } else if (minDistance == distance3) {
-            extendedB = switchPoints(extendedB);
+            switchPoints(extendedB);
         }
 
         Point newLineStart = new Point(
@@ -105,27 +107,27 @@ public class LineService {
         return finalLine;
     }
 
-    private Line makeSureLineEndCorrect(Line finalLine){
+    private Line makeSureLineEndCorrect(Line finalLine) {
 
         int countOfCorrectLines = 0;
         int countOfSwitchedLines = 0;
-        for (int i = 0; i < prevLinesMax; i++){
-            if (prevExtendedCueLines[(prevLinesCounter + i) % 10] != null){
+        for (int i = 0; i < prevLinesMax; i++) {
+            if (prevExtendedCueLines[(prevLinesCounter + i) % 10] != null) {
                 Point beginPoint = prevExtendedCueLines[(prevLinesCounter + i) % 10].getBegin();
                 Point endPoint = prevExtendedCueLines[(prevLinesCounter + i) % 10].getEnd();
 
-                if (calculateDistanceBetweenPoints(finalLine.getEnd(), endPoint) <= previousEndPointDistTolerance){
+                if (calculateDistanceBetweenPoints(finalLine.getEnd(), endPoint) <= previousEndPointDistTolerance) {
                     countOfCorrectLines++;
-                } else if (calculateDistanceBetweenPoints(finalLine.getEnd(), beginPoint) <= previousEndPointDistTolerance){
+                } else if (calculateDistanceBetweenPoints(finalLine.getEnd(), beginPoint) <= previousEndPointDistTolerance) {
                     countOfSwitchedLines++;
                 }
             }
         }
-        if (countOfSwitchedLines > countOfCorrectLines){
+        if (countOfSwitchedLines > countOfCorrectLines) {
             switchPoints(finalLine);
         }
-        prevLinesCounter = (prevLinesCounter+1) % prevLinesMax;
-        prevExtendedCueLines[prevLinesCounter] =  finalLine;
+        prevLinesCounter = (prevLinesCounter + 1) % prevLinesMax;
+        prevExtendedCueLines[prevLinesCounter] = finalLine;
         return finalLine;
     }
 
@@ -133,12 +135,15 @@ public class LineService {
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
-    public static Line switchPoints(Line a) {
+    /**
+     * Switch points in line (begin, end)
+     *
+     * @param a line
+     */
+    public static void switchPoints(Line a) {
         Point tmp = a.getBegin();
         a.setBegin(a.getEnd());
         a.setEnd(tmp);
-
-        return a;
     }
 
     public Line getExtendedStickLineForOneSide(Line stickLine) throws LineServiceException {

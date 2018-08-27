@@ -35,11 +35,27 @@ public class Properties {
     private Point midTopPocketPoint;
     private Point midBotPocketPoint;
 
-    // Ball
+    // Ball parameters
     private int ballExpectedRadius;
     private int ballMaxRadius;
     private int ballMinRadius;
     private int ballMinDistance;
+
+    // Ball img processing parameters
+    private int houghCirclesParam1;
+    private int houghCirclesParam2;
+    private int whitePixelsPercentageBorder;
+
+    // Ball IDs
+    private int whiteBallId;
+    private int blackBallId;
+    private int firstSolidBallId;
+    private int firstStripedBallId;
+
+    // Ball drawing parameters
+    private int ballThickness;
+
+    // Ball correction counter
     private final int prevBallsCorrectorCount;
 
     // Canny
@@ -59,6 +75,7 @@ public class Properties {
 
     // Predictions
     private int predictionDepth;
+    private int bumpPointDelta;
 
     // Replays
     private boolean showPreviousPosition;
@@ -82,6 +99,14 @@ public class Properties {
         this.ballMinRadius = 16;
         this.ballMinDistance = 36;
         this.ballExpectedRadius = 19;
+        this.houghCirclesParam1 = 30;
+        this.houghCirclesParam2 = 15;
+        this.whiteBallId = 0;
+        this.blackBallId = 8;
+        this.firstSolidBallId = 10;
+        this.firstStripedBallId = 30;
+        this.ballThickness = 5;
+        this.whitePixelsPercentageBorder = 16;
         this.prevBallsCorrectorCount = 12;
 
         this.tableBandLeft = 130;
@@ -91,6 +116,7 @@ public class Properties {
         this.tablePocketRadius = 45;
 
         this.predictionDepth = 1;
+        this.bumpPointDelta = 2;
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
@@ -130,6 +156,29 @@ public class Properties {
         return linuxOpencvPath;
     }
 
+    public int getWhitePixelsPercentageBorder() {
+        return whitePixelsPercentageBorder;
+    }
+
+    public int getWhiteBallId() {
+        return whiteBallId;
+    }
+
+    public int getBlackBallId() {
+        return blackBallId;
+    }
+
+    public int getFirstSolidBallId() {
+        return firstSolidBallId;
+    }
+
+    public int getFirstStripedBallId() {
+        return firstStripedBallId;
+    }
+
+    public int getBallThickness() {
+        return ballThickness;
+    }
 
     public double getPreviousFramesMoveTolerance() {
         return previousFramesMoveTolerance;
@@ -177,6 +226,15 @@ public class Properties {
 
     public void setParallelTolerance(double parallelTolerance) {
         this.parallelTolerance = parallelTolerance;
+    }
+
+
+    public int getHoughCirclesParam1() {
+        return houghCirclesParam1;
+    }
+
+    public int getHoughCirclesParam2() {
+        return houghCirclesParam2;
     }
 
     /**
@@ -536,5 +594,22 @@ public class Properties {
 
     public Mat getDistCoeffs() {
         return this.distCoeffs;
+    }
+    /**
+     * Get bump point delta
+     *
+     * @return
+     */
+    public int getBumpPointDelta() {
+        return bumpPointDelta;
+    }
+
+    /**
+     * Set bump point delta
+     *
+     * @param bumpPointDelta
+     */
+    public void setBumpPointDelta(int bumpPointDelta) {
+        this.bumpPointDelta = bumpPointDelta;
     }
 }
