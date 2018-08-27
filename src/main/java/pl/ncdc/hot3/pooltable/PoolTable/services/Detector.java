@@ -355,7 +355,7 @@ public class Detector {
 			// Calculate line perpendicular to cue line
 			perpendicularCoordinateA = LineService.calcPerpendicularCoordinate(line);
 			perpendicularCoordinateB = -perpendicularCoordinateA * cueBall.getX() + cueBall.getY();
-			aboveLine = LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, line.getEnd());
+			aboveLine = LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, cueBall.getCenter());
 		}
 
 		for (Ball ball : balls) {
@@ -366,7 +366,7 @@ public class Detector {
 			double distance = cueService.calculateDistanceBetweenPointAndLine(ball.getCenter(), line);
 
 			if (distance <= properties.getBallExpectedRadius() * 2) {
-				// discard balls behind the cue ball
+				// Discard balls behind the cue ball
 				if (LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, ball.getCenter()) &&
 						!aboveLine) {
 					continue;
@@ -376,20 +376,25 @@ public class Detector {
 				ballsInCollision.add(ball);
 
 				if (isCueLine && null != cueBall) {
+					// Calculate distance between object ball and cue ball
 					distanceBetweenPoints = LineService.calculateDistanceBetweenPoints(ball.getCenter(), cueBall.getCenter());
 				} else {
+					// Calculate distance between object ball and bump point
 					distanceBetweenPoints = LineService.calculateDistanceBetweenPoints(ball.getCenter(), line.getBegin());
 				}
 
+				// Min distance
 				if (0 == ballsInCollision.indexOf(ball) || distanceBetweenPoints < minDistance) {
 					minDistance = distanceBetweenPoints;
 				}
 
+				// Assign distance to ball index
 				distances.put(distanceBetweenPoints, ballsInCollision.indexOf(ball));
 			}
 		}
 
 		if (!ballsInCollision.isEmpty()) {
+			// Return closest ball
 			return ballsInCollision.get(
 					distances.get(minDistance)
 			);
