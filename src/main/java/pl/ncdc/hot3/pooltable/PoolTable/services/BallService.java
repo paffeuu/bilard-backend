@@ -37,6 +37,9 @@ public class BallService {
     private Scalar blackLowerMask;
     private Scalar blackHigherMask;
 
+    private final int THRESH = 200;
+    private final int MAX_VAL_THRESH = 255;
+
     private Ball whiteBall;
 
     private int prevBallsIndexCounter = 0;
@@ -73,13 +76,13 @@ public class BallService {
                     .stream()
                     .max(Comparator.comparing(Ball::getWhitePixels))
                     .orElseThrow(BallsDetectorException::new);
-            whiteBall.setId(0);
+            whiteBall.setId(properties.getWhiteBallId());
         } catch (BallsDetectorException e) {
             System.out.println("White ball not found.");
         }
 
         int indexOfBlackBall = getIndexOfBall(ballImgList, blackLowerMask, blackHigherMask);
-        balls.get(indexOfBlackBall).setId(8);
+        balls.get(indexOfBlackBall).setId(properties.getBlackBallId());
     }
 
     private List<Ball> convertMatToListOfBalls(Mat circles) {
@@ -121,11 +124,9 @@ public class BallService {
 
         List<Ball> detectedBalls = new ArrayList<>();
 
-        if(circles.get(0,0)[0] < properties.getTableBandLeft()
-                || circles.get(0,0)[0] > properties.getTableBandRight()
-                || circles.get(0,0)[1] < properties.getTableBandTop()
-                || circles.get(0,0)[1] > properties.getTableBandBottom()){
-
+        //sometimes it found Point far outside the image, we don`t know why
+        Point checker = new Point(circles.get(0,0)[0], circles.get(0,0)[1]);
+        if(bandsService.isPointInsideBand(checker)){
                 return detectedBalls;
         }
 
@@ -141,12 +142,14 @@ public class BallService {
         // Set white ball id to 0 and black ball id to 8
         setWhiteAndBlackBall(detectedBalls, ballImgList);
 
+        int solidId = properties.getFirstSolidBallId();
+        int stripedId = properties.getFirstStripedBallId();
+        int rectangleSideLength = 2 * properties.getBallExpectedRadius();
+
         // Set id of every ball excluding white and black ball
-        int solidId = 10;
-        int stripedId = 30;
         for(Ball ball : detectedBalls) {
             if(ball.getId() == null) {
-                if ((ball.getWhitePixels() * 100) / 1764 >= 16) {
+                if ((ball.getWhitePixels() * 100) / Math.pow(rectangleSideLength, 2) >= properties.getWhitePixelsPercentageBorder()) {
                     ball.setId(stripedId);
                     stripedId++;
                 } else {
@@ -259,8 +262,8 @@ public class BallService {
         // image processing on B and G layers of RGB image
         Imgproc.equalizeHist(planes.get(0), firstPlaneEqualized);
         Imgproc.equalizeHist(planes.get(1), secondPlaneEqualized);
-        Imgproc.threshold(firstPlaneEqualized, firstPlaneThreshold,200,255,Imgproc.THRESH_BINARY);
-        Imgproc.threshold(secondPlaneEqualized, secondPlaneThreshold,200,255,Imgproc.THRESH_BINARY);
+        Imgproc.threshold(firstPlaneEqualized, firstPlaneThreshold, THRESH,MAX_VAL_THRESH, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(secondPlaneEqualized, secondPlaneThreshold, THRESH,MAX_VAL_THRESH, Imgproc.THRESH_BINARY);
 
         // releasing memory from unused Mat objects
         planes.get(0).release();

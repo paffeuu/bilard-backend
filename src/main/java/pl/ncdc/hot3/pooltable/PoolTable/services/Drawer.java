@@ -17,9 +17,15 @@ import java.util.List;
 
 @Service
 public class Drawer {
-	// tymczasowo
+
 	private final Scalar SOLID_DRAW_COLOR = new Scalar(0,0,255);
 	private final Scalar STRIPED_DRAW_COLOR = new Scalar(0,255,0);
+	private final Scalar WHITE_BALL_COLOR = new Scalar(0,0,0);
+	private final Scalar BLACK_BALL_COLOR = new Scalar(255,255,255);
+	private final Scalar PREDICTION_LINE_COLOR = new Scalar(155, 155, 155);
+	private final Scalar CUE_COLOR = new Scalar(155, 155, 155);
+	private final Scalar TARGET_LINE_COLOR = new Scalar(0, 0, 255);
+	private final Scalar GHOST_BALL_COLOR = new Scalar(0, 255, 255);
 
     private Properties properties;
 
@@ -30,32 +36,31 @@ public class Drawer {
         this.properties = properties;
     }
 
-	public void drawBalls(Mat img, List<Ball> balls, Scalar scalar) throws DrawerException {
-		if (img == null)
+	public void drawBalls(Mat img, List<Ball> balls, Scalar color) throws DrawerException {
+
+		if (img == null) {
 			throw new DrawerException("Cannot draw on an empty image source.");
-		else if (null == balls || balls.isEmpty())
-            throw new DrawerException("Cannot draw empty ball list.");
+		} else if (null == balls || balls.isEmpty()) {
+			throw new DrawerException("Cannot draw empty ball list.");
+		}
 
 
-        int r;
 		for (Ball ball : balls) {
-			r = (int) ball.getRadius();
 			Point center = new Point(ball.getX(), ball.getY());
 
-			if(scalar == null){
-				if(ball.getId() >= 10 && ball.getId() < 30) {
-					Imgproc.circle(img, center, properties.getBallExpectedRadius(), SOLID_DRAW_COLOR, 5);
-				} else if(ball.getId() >= 30 && ball.getId() < 50){
-					Imgproc.circle(img, center, properties.getBallExpectedRadius(), STRIPED_DRAW_COLOR, 5);
-				} else if(ball.getId() == 8) {
-					Imgproc.circle(img, center, properties.getBallExpectedRadius(), new Scalar(255, 255, 255), 5);
-				} else if(ball.getId() == 0) {
-					Imgproc.circle(img, center, properties.getBallExpectedRadius(), new Scalar(0, 0, 0), 5);
+			if(color == null){
+				if(ball.getId() >= properties.getFirstSolidBallId() && ball.getId() < properties.getFirstStripedBallId()) {
+					Imgproc.circle(img, center, properties.getBallExpectedRadius(), SOLID_DRAW_COLOR, properties.getBallThickness());
+				} else if(ball.getId() >= properties.getFirstStripedBallId()){
+					Imgproc.circle(img, center, properties.getBallExpectedRadius(), STRIPED_DRAW_COLOR, properties.getBallThickness());
+				} else if(ball.getId() == properties.getBlackBallId()) {
+					Imgproc.circle(img, center, properties.getBallExpectedRadius(), BLACK_BALL_COLOR, properties.getBallThickness());
+				} else if(ball.getId() == properties.getWhiteBallId()) {
+					Imgproc.circle(img, center, properties.getBallExpectedRadius(), WHITE_BALL_COLOR, properties.getBallThickness());
 				}
 			} else {
-				Imgproc.circle(img, center, properties.getBallExpectedRadius(), scalar, 5);
+				Imgproc.circle(img, center, properties.getBallExpectedRadius(), color, properties.getBallThickness());
 			}
-
 		}
 	}
 
@@ -72,21 +77,23 @@ public class Drawer {
             throw new DrawerException("Cannot draw line to null image.");
         }
 
-		if (cue != null)
-			drawLine(img, cue, new Scalar(155, 155, 155), 8);
+		if (cue != null) {
+			drawLine(img, cue, CUE_COLOR, 8);
+		}
 
-		if (listOfBalls != null && !listOfBalls.isEmpty())
-			drawBalls(img, listOfBalls,  null);
+		if (listOfBalls != null && !listOfBalls.isEmpty()) {
+			drawBalls(img, listOfBalls, null);
+		}
 
 		if (predictions != null && !predictions.isEmpty()) {
 			for (Line line : predictions) {
-				drawLine(img, line, new Scalar(155, 155, 155), 8);
+				drawLine(img, line, PREDICTION_LINE_COLOR, 8);
 			}
 		}
 
         if (null != targetLine) {
-        	drawLine(img, targetLine, new Scalar(0, 0, 255), 8);
-        	drawCircle(img, targetLine.getBegin(), properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
+        	drawLine(img, targetLine, TARGET_LINE_COLOR, 8);
+        	drawCircle(img, targetLine.getBegin(), properties.getBallExpectedRadius(), GHOST_BALL_COLOR, 4);
 		}
 	}
 
