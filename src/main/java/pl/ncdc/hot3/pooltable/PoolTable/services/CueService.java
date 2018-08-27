@@ -146,7 +146,7 @@ public class CueService {
         double endDist = getDistanceBetweenPoints(line.getEnd(), whiteBall);
 
         if (beginDist <=  endDist) {
-            newLineBetweenLong = LineService.switchPoints(newLineBetweenLong);
+            LineService.switchPoints(newLineBetweenLong);
         }
 
         try {
