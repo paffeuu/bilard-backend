@@ -122,13 +122,7 @@ public class BallService {
 
     List<Ball> createListOfBalls(Mat circles, Mat sourceImg, List<Rect> roiList) {
 
-        List<Ball> detectedBalls = new ArrayList<>();
-
-        //sometimes it found Point far outside the image, we don`t know why
-        Point checker = new Point(circles.get(0,0)[0], circles.get(0,0)[1]);
-        if(bandsService.isPointInsideBand(checker)){
-                return detectedBalls;
-        }
+        List<Ball> detectedBalls;
 
         // Make a list of balls from a MAT that includes x,y,r of a Ball
         detectedBalls = convertMatToListOfBalls(circles);
@@ -148,7 +142,7 @@ public class BallService {
 
         // Set id of every ball excluding white and black ball
         for(Ball ball : detectedBalls) {
-            if(ball.getId() == null) {
+            if(ball.getId() == Ball.DEFAULT_ID) {
                 if ((ball.getWhitePixels() * 100) / Math.pow(rectangleSideLength, 2) >= properties.getWhitePixelsPercentageBorder()) {
                     ball.setId(stripedId);
                     stripedId++;

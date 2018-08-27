@@ -99,8 +99,8 @@ public class Detector {
 		// Create list of rectangles around detected balls
 		List<Rect> roiList = getBallsROI(convertMatToArray(filteredBalls));
 
-
-		return ballService.createListOfBalls(filteredBalls, sourceImg.clone(), roiList);
+		List<Ball> balls = ballService.createListOfBalls(filteredBalls, sourceImg.clone(), roiList);
+		return balls;
 	}
 
 	private Mat detectBalls() {
@@ -125,6 +125,7 @@ public class Detector {
 		Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0,
 				properties.getBallMinDistance(), properties.getHoughCirclesParam1(),
 				properties.getHoughCirclesParam2(), properties.getBallMinRadius(), properties.getBallMaxRadius());
+
 		planes.clear();
 
 		return destinationImage;
