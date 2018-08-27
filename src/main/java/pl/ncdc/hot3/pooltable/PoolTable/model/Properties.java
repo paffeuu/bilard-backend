@@ -84,10 +84,10 @@ public class Properties {
         this.ballExpectedRadius = 19;
         this.prevBallsCorrectorCount = 12;
 
-        this.tableBandLeft = 130;
-        this.tableBandRight = 1915;
-        this.tableBandTop = 70;
-        this.tableBandBottom = 700;
+        this.tableBandLeft = 147;
+        this.tableBandRight = 1130;
+        this.tableBandTop = 131;
+        this.tableBandBottom = 628;
         this.tablePocketRadius = 45;
 
         this.predictionDepth = 1;
