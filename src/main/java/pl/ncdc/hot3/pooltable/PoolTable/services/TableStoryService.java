@@ -132,6 +132,11 @@ public class TableStoryService {
 
     }
 
+    /**
+     * Detect collision and set target line based on collision
+     *
+     * @return this object
+     */
     public TableStoryService detectCollision() {
         try {
             if (current() != null &&
