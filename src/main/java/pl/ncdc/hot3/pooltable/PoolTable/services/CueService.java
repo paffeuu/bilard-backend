@@ -228,7 +228,6 @@ public class CueService {
     public double calculateDistanceBetweenPointAndLine(Point point, Line line) {
         double[] coordinates = calcAllCoordinate(line);
 
-        // http://matematyka.pisz.pl/strona/1249.html
         return Math.abs(coordinates[0] * point.x + coordinates[1] * point.y + coordinates[2]) /
                 Math.sqrt(Math.pow(coordinates[0], 2) + Math.pow(coordinates[1], 2));
     }

@@ -291,14 +291,9 @@ public class Detector {
 
 		} catch (Exception e){
 			throw new LinesDetectorException("Could not read source stream.", e);
-		} finally {
-			source.release();
 		}
 
-		source = dst.clone();
-		dst.release();
-
-		return source;
+		return dst;
 	}
 
 	public List<Line> getPredictions(Line cueLine) throws CueServiceException, LineServiceException {
@@ -309,7 +304,7 @@ public class Detector {
 			for (int i = 0; i < properties.getPredictionDepth(); i++){
 				Line pred = cueService.predictTrajectoryAfterBump(predictions.get(i));
                 predictions.add(pred);
-                if (bandsService.getPocketForPoint(pred.getBegin()) || bandsService.getPocketForPoint(pred.getEnd())) {
+                if (bandsService.getPocketForPoint(pred.getBegin()) != BandsService.PocketPosition.NONE || bandsService.getPocketForPoint(pred.getEnd()) != BandsService.PocketPosition.NONE) {
 					break;
 				}
 			}
