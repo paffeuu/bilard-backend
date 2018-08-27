@@ -49,7 +49,6 @@ public class OpenCVBufforFlushService {
     }
 
     public static Mat getLastFrame() {
-
         return framesArray[(counter-1)%10].clone();
     }
 

@@ -1,8 +1,5 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
@@ -14,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
-import java.io.File;
+
 import java.lang.reflect.Field;
 
 @RestController
@@ -29,13 +26,6 @@ public class MainController {
 
     @Autowired
     private SimpMessagingTemplate template;
-
-    @Autowired
-    ImageUndistorterService undistorterService;
-
-    private int counter = 0;
-
-    private PoolTable previousTable;
 
 
     @CrossOrigin(origins = "http://localhost:4200")
