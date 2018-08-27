@@ -78,16 +78,16 @@ public class Properties {
 
 
     public Properties() {
-        this.ballMaxRadius = 22;
-        this.ballMinRadius = 16;
+        this.ballMaxRadius = 11;
+        this.ballMinRadius = 8;
         this.ballMinDistance = 36;
         this.ballExpectedRadius = 19;
         this.prevBallsCorrectorCount = 12;
 
         this.tableBandLeft = 130;
         this.tableBandRight = 1915;
-        this.tableBandTop = 365;
-        this.tableBandBottom = 1250;
+        this.tableBandTop = 70;
+        this.tableBandBottom = 700;
         this.tablePocketRadius = 45;
 
         this.predictionDepth = 1;
@@ -108,14 +108,14 @@ public class Properties {
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
 
-        this.cameraMatrix.put(2, 2, 1);
-        this.cameraMatrix.put(0, 0, 1755.73196841084);
-        this.cameraMatrix.put(0, 2, 1024);
-        this.cameraMatrix.put(1, 1, 1747.254824521836);
-        this.cameraMatrix.put(1, 2, 768);
+        cameraMatrix.put(2, 2, 1);
+        cameraMatrix.put(0, 0, 991.4262945972393);
+        cameraMatrix.put(0, 2, 640);
+        cameraMatrix.put(1, 1, 993.9357197471496);
+        cameraMatrix.put(1, 2, 360);
 
-        this.distCoeffs.put(0, 0, -0.4001622593334911);
-        this.distCoeffs.put(1, 0, 0.1676437868703358);
+        distCoeffs.put(0, 0, -0.4110309525718729);
+        distCoeffs.put(1, 0, 0.2250083648489881);
     }
 
     public static String getWindowsOpencvPath() {
