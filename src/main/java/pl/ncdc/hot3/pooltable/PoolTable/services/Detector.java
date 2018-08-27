@@ -46,7 +46,7 @@ public class Detector {
 			Properties properties,
             LineService lineService
 			) {
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		//System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		this.ballService = ballService;
 		this.cueService = cueService;
 		this.properties = properties;
@@ -99,8 +99,8 @@ public class Detector {
 		// Create list of rectangles around detected balls
 		List<Rect> roiList = getBallsROI(convertMatToArray(filteredBalls));
 
-		List<Ball> balls = ballService.createListOfBalls(filteredBalls, sourceImg.clone(), roiList);
-		return balls;
+
+		return ballService.createListOfBalls(filteredBalls, sourceImg.clone(), roiList);
 	}
 
 	private Mat detectBalls() {
@@ -126,6 +126,9 @@ public class Detector {
 				properties.getBallMinDistance(), properties.getHoughCirclesParam1(),
 				properties.getHoughCirclesParam2(), properties.getBallMinRadius(), properties.getBallMaxRadius());
 
+		for (Mat mat: planes) {
+			mat.release();
+		}
 		planes.clear();
 
 		return destinationImage;

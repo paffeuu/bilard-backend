@@ -1,5 +1,8 @@
 package pl.ncdc.hot3.pooltable.PoolTable.model;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.springframework.stereotype.Component;
 
@@ -78,6 +81,19 @@ public class Properties {
     private boolean showPreviousPosition;
     private int previousFramesFrequency;
 
+
+    //Camera prameters
+    private static String cameraUrl = "rtsp://hot:kamerabilardowa@192.168.253.214:554/Streaming/Channels/1?transportmode=unicast&profile=Profile_1";
+
+    private Mat cameraMatrix = Mat.zeros(3, 3, CvType.CV_64F);
+    private Mat distCoeffs = Mat.zeros(8, 1, CvType.CV_64F);
+
+    //Library import paths
+    private static String windowsOpencvPath = System.getProperty("user.dir") + "\\lib\\" + Core.NATIVE_LIBRARY_NAME + ".dll";
+    private static String windowsFfmpegPath = System.getProperty("user.dir") + "\\lib\\" + "opencv_ffmpeg342_64.dll";
+    private static String linuxOpencvPath = "/usr/local/share/OpenCV/java/" + "libopencv_java342" + ".so";
+
+
     public Properties() {
         this.ballMaxRadius = 22;
         this.ballMinRadius = 16;
@@ -117,6 +133,27 @@ public class Properties {
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
+
+        this.cameraMatrix.put(2, 2, 1);
+        this.cameraMatrix.put(0, 0, 1755.73196841084);
+        this.cameraMatrix.put(0, 2, 1024);
+        this.cameraMatrix.put(1, 1, 1747.254824521836);
+        this.cameraMatrix.put(1, 2, 768);
+
+        this.distCoeffs.put(0, 0, -0.4001622593334911);
+        this.distCoeffs.put(1, 0, 0.1676437868703358);
+    }
+
+    public static String getWindowsOpencvPath() {
+        return windowsOpencvPath;
+    }
+
+    public static String getWindowsFfmpegPath() {
+        return windowsFfmpegPath;
+    }
+
+    public static String getLinuxOpencvPath() {
+        return linuxOpencvPath;
     }
 
     public int getWhitePixelsPercentageBorder() {
@@ -547,6 +584,17 @@ public class Properties {
         return prevBallsCorrectorCount;
     }
 
+    public static String getCameraUrl() {
+        return cameraUrl;
+    }
+
+    public Mat getCameraMatrix() {
+        return this.cameraMatrix;
+    }
+
+    public Mat getDistCoeffs() {
+        return this.distCoeffs;
+    }
     /**
      * Get bump point delta
      *

@@ -25,6 +25,7 @@ public class CameraService {
         this.undistorterService = undistorterService;
     }
 
+
     public Mat getSnap() throws CameraServiceException {
         Mat out = null;
 

@@ -3,21 +3,21 @@ package pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
 @Service
 public class ImageUndistorterService {
-    private Mat cameraMatrix = Mat.zeros(3, 3, CvType.CV_64F);
-    private Mat distCoeffs = Mat.zeros(8, 1, CvType.CV_64F);
-    public ImageUndistorterService() {
-        cameraMatrix.put(2, 2, 1);
-        cameraMatrix.put(0, 0, 1755.73196841084);
-        cameraMatrix.put(0, 2, 1024);
-        cameraMatrix.put(1, 1, 1747.254824521836);
-        cameraMatrix.put(1, 2, 768);
+    private Properties properties;
+    private Mat cameraMatrix;
+    private Mat distCoeffs;
 
-        distCoeffs.put(0, 0, -0.4001622593334911);
-        distCoeffs.put(1, 0, 0.1676437868703358);
+    @Autowired
+    public ImageUndistorterService(Properties properties) {
+        this.properties = properties;
+        this.cameraMatrix = properties.getCameraMatrix();
+        this.distCoeffs = properties.getDistCoeffs();
     }
 
     public Mat undistort(Mat distorted) {
