@@ -244,9 +244,6 @@ public class TableStoryService {
                 drawer.drawPoint(outputImage, detector.getPointFurtherToWhiteBall(), new Scalar(0, 0, 0), 2);
             }
 
-            if (detector.getDebugAverageLine() != null){
-                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 6);
-            }
 
             if (!detector.getDebugDetectedLines().isEmpty()) {
                 drawer.drawLines(
@@ -255,6 +252,11 @@ public class TableStoryService {
                         new Scalar(0, 0, 255),
                         5
                 );
+            }
+
+
+            if (detector.getDebugAverageLine() != null){
+                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 6);
             }
         }
         return this;
