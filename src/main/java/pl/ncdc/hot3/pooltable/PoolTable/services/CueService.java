@@ -49,16 +49,6 @@ public class CueService {
         prevCueLines = new Line[cueDetectDelay];
     }
 
-    /**
-     * Returns prediction line after bump
-     *
-     * @param line aiming line
-     *
-     * @return prediction line
-     *
-     * @throws CueServiceException  if bump point is out of band
-     * @throws LineServiceException if can not extend cue line for one side
-     */
     private double calcAbsoluteDistance(double value1, double value2){
         return Math.abs(value1 - value2);
     }
