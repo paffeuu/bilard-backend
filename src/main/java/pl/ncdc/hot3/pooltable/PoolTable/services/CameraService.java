@@ -1,6 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class CameraService {
     ) {
         this.undistorterService = undistorterService;
     }
+
 
     public Mat getSnap() throws CameraServiceException {
         Mat out = null;

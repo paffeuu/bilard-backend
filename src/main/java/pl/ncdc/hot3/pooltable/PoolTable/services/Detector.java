@@ -1,7 +1,9 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.opencv.core.*;
 import org.opencv.core.Point;
@@ -15,13 +17,19 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.BandsService;
-import pl.ncdc.hot3.pooltable.PoolTable.services.Settings.PathService;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
 
 @Service
 public class Detector {
+
+    final int MIN_LENGTH_FOR_INNER_LINES = 50;
+    final int MAX_LINE_GAP_FOR_INNER_LINES = 10;
+    final int TRESHOLD_FOR_INNER_LINES = 70;
+
+    final int TRESHOLD_FOR_SOURCE_IMG = 140;
+    final int TRESHOLD_FOR_CANNY_FIRST = 100;
+    final int TRESHOLD_FOR_CANNY_SECOND = 40;
+
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
@@ -36,6 +44,9 @@ public class Detector {
 	private Properties properties;
 	private LineService lineService;
 
+	private List<Line> debugDetectedLines;
+	private Line debugAverageLine;
+
 	@Autowired
 	public Detector(
 			CueService cueService,
@@ -45,13 +56,16 @@ public class Detector {
 			Properties properties,
             LineService lineService
 			) {
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
 		this.ballService = ballService;
 		this.cueService = cueService;
 		this.properties = properties;
 		this.pathService = pathService;
 		this.bandsService = bandsService;
         this.lineService = lineService;
+
+		this.debugDetectedLines = new ArrayList<>();
+		this.debugAverageLine = null;
 
 		try {
 			sourceImg = Imgcodecs.imread(pathService.getFullPath("emptyTable.png"), CvType.CV_64F);
@@ -98,8 +112,16 @@ public class Detector {
 		// Create list of rectangles around detected balls
 		List<Rect> roiList = getBallsROI(convertMatToArray(filteredBalls));
 
+		// List of current detected balls
+		List<Ball> ballList = ballService.createListOfBalls(filteredBalls, sourceImg.clone(), roiList);
 
-		return ballService.createListOfBalls(filteredBalls, sourceImg.clone(), roiList);
+		// List of stabile with previous static balls
+		ballList = ballService.stabilize(ballList);
+
+        // Sort list of balls by id
+        Collections.sort(ballList);
+
+		return ballList;
 	}
 
 	private Mat detectBalls() {
@@ -121,8 +143,13 @@ public class Detector {
 		convertedTypeImage.release();
 
 		// detect circles
-		Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0, properties.getBallMinDistance(),
-				30, 15, properties.getBallMinRadius(), properties.getBallMaxRadius());
+		Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0,
+				properties.getBallMinDistance(), properties.getHoughCirclesParam1(),
+				properties.getHoughCirclesParam2(), properties.getBallMinRadius(), properties.getBallMaxRadius());
+
+		for (Mat mat: planes) {
+			mat.release();
+		}
 		planes.clear();
 
 		return destinationImage;
@@ -188,7 +215,7 @@ public class Detector {
 		for (int i = 0; i < circles.length; i += 3) {
 			x = circles[i];
 			y = circles[i + 1];
-			r = 21;
+			r = properties.getBallExpectedRadius();
 
 			topLeft.x = x - r;
 			topLeft.y = y - r;
@@ -216,18 +243,29 @@ public class Detector {
 
 	public Line findStickLine() throws MissingCueLineException, DetectorException {
 		Mat substractedImg = getEdges(getSourceImg().clone());
+
 		List <Line> linesList = getInnerLines(substractedImg);
+
 		Line shortCueLine = cueService.findStickLine(linesList);
-        Line longCueLine = null;
+
+		Line longCueLine = null;
 		Ball whiteBall = ballService.getWhiteBall();
 
-		if (shortCueLine != null && whiteBall != null) {
-            Point coordinates = new Point(whiteBall.getX(), whiteBall.getY());
+		if (shortCueLine == null) {
+			shortCueLine = cueService.getPreviousAverageLine();
+		}
+
+		if (whiteBall != null) {
+            Point coordinates = whiteBall.getCenter();
 
 			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
 			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
 
+		if (properties.isDebugActive()) {
+			this.debugDetectedLines = linesList;
+			this.debugAverageLine = shortCueLine;
+		}
 
 		return longCueLine;
 	}
@@ -237,8 +275,7 @@ public class Detector {
 
 		Mat linesData = new Mat();
 
-
-		Imgproc.HoughLinesP(substractedImage, linesData, 1, Math.PI/180, 70, 50, 10);
+		Imgproc.HoughLinesP(substractedImage, linesData, 1, Math.PI/180, TRESHOLD_FOR_INNER_LINES, MIN_LENGTH_FOR_INNER_LINES, MAX_LINE_GAP_FOR_INNER_LINES);
 
 		List <Line> linesList = new ArrayList<>();
 
@@ -253,6 +290,7 @@ public class Detector {
 		return linesList;
 	}
 
+
 	public Mat getEdges(Mat source) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();
 		Mat dst = new Mat();
@@ -261,22 +299,16 @@ public class Detector {
 			Imgproc.blur(source, source, new Size(3,3));
 			Imgproc.cvtColor(source, source, Imgproc.COLOR_BGR2GRAY);
 
-			Imgproc.threshold(source, source, 140, 255, Imgproc.THRESH_BINARY);
-			Imgproc.Canny(source, dst, 100, 40, 3, false);
-
+			Imgproc.threshold(source, source, TRESHOLD_FOR_SOURCE_IMG, 255, Imgproc.THRESH_BINARY);
+			Imgproc.Canny(source, dst, TRESHOLD_FOR_CANNY_FIRST, TRESHOLD_FOR_CANNY_SECOND, 3, false);
 
 			Core.subtract(dst, emptyTableImage, dst);
 
 		} catch (Exception e){
 			throw new LinesDetectorException("Could not read source stream.", e);
-		} finally {
-			source.release();
 		}
 
-		source = dst.clone();
-		dst.release();
-
-		return source;
+		return dst;
 	}
 
 	/**
@@ -296,10 +328,9 @@ public class Detector {
 			predictions.add(cueLine);
 			for (int i = 0; i < properties.getPredictionDepth(); i++){
 				Line pred = cueService.predictTrajectoryAfterBump(predictions.get(i));
-				if (bandsService.isPointGoingToSocket(pred.getBegin()) || bandsService.isPointGoingToSocket(pred.getEnd())) {
+                predictions.add(pred);
+                if (bandsService.getPocketForPoint(pred.getBegin()) != BandsService.PocketPosition.NONE || bandsService.getPocketForPoint(pred.getEnd()) != BandsService.PocketPosition.NONE) {
 					break;
-				} else {
-					predictions.add(pred);
 				}
 			}
 		}
@@ -448,4 +479,21 @@ public class Detector {
 
 		return emptyTableImage;
 	}
+
+	public List<Line> getDebugDetectedLines() {
+		return debugDetectedLines;
+	}
+
+	public Line getDebugAverageLine() {
+		return debugAverageLine;
+	}
+
+	public Point getPointCloserToWhiteBall() {
+		return cueService.debugCloserToWhite;
+	}
+
+	public Point getPointFurtherToWhiteBall() {
+		return cueService.debugFurtherToWhite;
+	}
+
 }

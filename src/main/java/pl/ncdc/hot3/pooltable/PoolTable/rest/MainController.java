@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
+
 
 import java.lang.reflect.Field;
 
@@ -25,24 +27,19 @@ public class MainController {
     @Autowired
     private SimpMessagingTemplate template;
 
-    private int counter = 0;
-
-    private PoolTable previousTable;
-
 
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
     public ResponseEntity<PoolTable> test() throws CameraServiceException {
-            PoolTable table = tableStoryService
-                    .next()
-                    .findBalls()
-                    .findCue()
-                    .makePredictions()
-                    .detectCollision()
-                    .showPrevious()
-                    .build();
+        PoolTable table = tableStoryService
+                .next()
+                .findBalls()
+                .findCue()
+                .makePredictions()
+                .detectCollision()
+                .showPrevious()
+                .build();
         return ResponseEntity.ok(table);
-
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
@@ -68,9 +65,9 @@ public class MainController {
         System.gc();
         PoolTable table = tableStoryService
                 .next()
-                .findBalls()
+               .findBalls()
                 .findCue()
-                .makePredictions()
+               .makePredictions()
                 .detectCollision()
                 .showPrevious()
                 .build();

@@ -1,11 +1,10 @@
 package pl.ncdc.hot3.pooltable.PoolTable.model;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.springframework.stereotype.Component;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Properties class
@@ -13,6 +12,8 @@ import java.util.List;
 
 @Component
 public class Properties {
+
+    private boolean isDebugActive;
 
     // Bands
     private double tableBandLeft;
@@ -32,12 +33,29 @@ public class Properties {
     private Point midTopPocketPoint;
     private Point midBotPocketPoint;
 
-    // Ball
+    // Ball parameters
     private int ballExpectedRadius;
     private int ballMaxRadius;
     private int ballMinRadius;
     private int ballMinDistance;
+
+    // Ball img processing parameters
+    private int houghCirclesParam1;
+    private int houghCirclesParam2;
+    private int whitePixelsPercentageBorder;
+
+    // Ball IDs
+    private int whiteBallId;
+    private int blackBallId;
+    private int firstSolidBallId;
+    private int firstStripedBallId;
+
+    // Ball drawing parameters
+    private int ballThickness;
+
+    // Ball correction counter
     private final int prevBallsCorrectorCount;
+    private final int previousBallsPositionsToCompare;
 
     // Canny
     private double cannyHighThreshold;
@@ -50,7 +68,9 @@ public class Properties {
     // Stick
     private double cueThickness;
     private double parallelTolerance;
+    private double minBCoordinateForLines;
     private double previousFramesMoveTolerance;
+
     private int cueDetectDelay;
     private int cueStickLineThickness;
 
@@ -62,17 +82,41 @@ public class Properties {
     private boolean showPreviousPosition;
     private int previousFramesFrequency;
 
-    public Properties() {
-        this.ballMaxRadius = 22;
-        this.ballMinRadius = 16;
-        this.ballMinDistance = 36;
-        this.ballExpectedRadius = 19;
-        this.prevBallsCorrectorCount = 12;
 
-        this.tableBandLeft = 130;
-        this.tableBandRight = 1915;
-        this.tableBandTop = 365;
-        this.tableBandBottom = 1250;
+    //Camera prameters
+    private static String cameraUrl = "rtsp://hot:kamerabilardowa@192.168.253.214:554/Streaming/Channels/1?transportmode=unicast&profile=Profile_1";
+
+    private Mat cameraMatrix = Mat.zeros(3, 3, CvType.CV_64F);
+    private Mat distCoeffs = Mat.zeros(8, 1, CvType.CV_64F);
+
+    //Library import paths
+    private static String windowsOpencvPath = System.getProperty("user.dir") + "\\lib\\" + Core.NATIVE_LIBRARY_NAME + ".dll";
+    private static String windowsFfmpegPath = System.getProperty("user.dir") + "\\lib\\" + "opencv_ffmpeg342_64.dll";
+    private static String linuxOpencvPath = "/usr/local/share/OpenCV/java/" + "libopencv_java342" + ".so";
+
+
+    public Properties() {
+        this.isDebugActive = true;
+
+        this.ballMaxRadius = 11;
+        this.ballMinRadius = 8;
+        this.ballMinDistance = 18;
+        this.ballExpectedRadius = 10;
+        this.houghCirclesParam1 = 30;
+        this.houghCirclesParam2 = 15;
+        this.whiteBallId = 0;
+        this.blackBallId = 8;
+        this.firstSolidBallId = 10;
+        this.firstStripedBallId = 30;
+        this.ballThickness = 5;
+        this.whitePixelsPercentageBorder = 16;
+        this.prevBallsCorrectorCount = 12;
+        this.previousBallsPositionsToCompare = 12;
+
+        this.tableBandLeft = 147;
+        this.tableBandRight = 1130;
+        this.tableBandTop = 131;
+        this.tableBandBottom = 628;
         this.tablePocketRadius = 45;
 
         this.predictionDepth = 1;
@@ -80,9 +124,11 @@ public class Properties {
 
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
-        this.previousFramesMoveTolerance = 10;
+        this.minBCoordinateForLines = 5;
+        this.previousFramesMoveTolerance = 60;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
+
 
         this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 10);
         this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
@@ -93,8 +139,52 @@ public class Properties {
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
+
+        cameraMatrix.put(2, 2, 1);
+        cameraMatrix.put(0, 0, 991.4262945972393);
+        cameraMatrix.put(0, 2, 640);
+        cameraMatrix.put(1, 1, 993.9357197471496);
+        cameraMatrix.put(1, 2, 360);
+
+        distCoeffs.put(0, 0, -0.4110309525718729);
+        distCoeffs.put(1, 0, 0.2250083648489881);
     }
 
+    public static String getWindowsOpencvPath() {
+        return windowsOpencvPath;
+    }
+
+    public static String getWindowsFfmpegPath() {
+        return windowsFfmpegPath;
+    }
+
+    public static String getLinuxOpencvPath() {
+        return linuxOpencvPath;
+    }
+
+    public int getWhitePixelsPercentageBorder() {
+        return whitePixelsPercentageBorder;
+    }
+
+    public int getWhiteBallId() {
+        return whiteBallId;
+    }
+
+    public int getBlackBallId() {
+        return blackBallId;
+    }
+
+    public int getFirstSolidBallId() {
+        return firstSolidBallId;
+    }
+
+    public int getFirstStripedBallId() {
+        return firstStripedBallId;
+    }
+
+    public int getBallThickness() {
+        return ballThickness;
+    }
 
     public double getPreviousFramesMoveTolerance() {
         return previousFramesMoveTolerance;
@@ -142,6 +232,15 @@ public class Properties {
 
     public void setParallelTolerance(double parallelTolerance) {
         this.parallelTolerance = parallelTolerance;
+    }
+
+
+    public int getHoughCirclesParam1() {
+        return houghCirclesParam1;
+    }
+
+    public int getHoughCirclesParam2() {
+        return houghCirclesParam2;
     }
 
     /**
@@ -487,10 +586,29 @@ public class Properties {
         this.ballExpectedRadius = ballExpectedRadius;
     }
 
-    public final int getPrevBallsCorrectorCount() {
-        return prevBallsCorrectorCount;
+    public final int getPreviousBallsPositionsToCompare() {
+        return previousBallsPositionsToCompare;
     }
 
+    public double getMinBCoordinateForLines() {
+        return minBCoordinateForLines;
+    }
+
+    public void setMinBCoordinateForLines(double minBCoordinateForLines) {
+        this.minBCoordinateForLines = minBCoordinateForLines;
+    }
+
+    public static String getCameraUrl() {
+        return cameraUrl;
+    }
+
+    public Mat getCameraMatrix() {
+        return this.cameraMatrix;
+    }
+
+    public Mat getDistCoeffs() {
+        return this.distCoeffs;
+    }
     /**
      * Get bump point delta
      *
@@ -507,5 +625,12 @@ public class Properties {
      */
     public void setBumpPointDelta(int bumpPointDelta) {
         this.bumpPointDelta = bumpPointDelta;
+    }
+    public boolean isDebugActive() {
+        return isDebugActive;
+    }
+
+    public void setDebugActive(boolean debugActive) {
+        isDebugActive = debugActive;
     }
 }
