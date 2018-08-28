@@ -151,7 +151,7 @@ public class Drawer {
 					pocketPoint = properties.getRightBotPocketPoint();
 					break;
 				default:
-					pocketPoint = new Point(0, 0);
+					pocketPoint = null;
 					break;
 			}
 			if (pocketPoint != null) {
