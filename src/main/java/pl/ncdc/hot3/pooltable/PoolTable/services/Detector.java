@@ -45,6 +45,9 @@ public class Detector {
 	private List<Line> debugDetectedLines;
 	private Line debugAverageLine;
 
+	public Line debugPerpendicular;
+	public Point debugLineEndPoint;
+
 	@Autowired
 	public Detector(
 			CueService cueService,
@@ -380,14 +383,25 @@ public class Detector {
 
 		if (0 != cueBall.getId()) {
 			cueBall = null;
-		} else {
+		} else if (isCueLine) {
 			// Calculate line perpendicular to cue line
 			perpendicularCoordinateA = LineService.calcPerpendicularCoordinate(line);
 			perpendicularCoordinateB = -perpendicularCoordinateA * cueBall.getX() + cueBall.getY();
-			aboveLine = LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, cueBall.getCenter());
-		}
+			aboveLine = LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, line.getEnd());
+
+			// Debug
+			this.debugPerpendicular = new Line(
+					cueBall.getCenter(),
+					new Point(
+							cueBall.getX() + 100,
+							(cueBall.getX() + 100) * perpendicularCoordinateA +  perpendicularCoordinateB
+					)
+			);
+			this.debugLineEndPoint = line.getEnd();
+	}
 
 		for (Ball ball : balls) {
+			// Ignore cue ball if it is cue line
 			if (ball == cueBall && isCueLine) {
 				continue;
 			}
@@ -396,8 +410,7 @@ public class Detector {
 
 			if (distance <= properties.getBallExpectedRadius() * 2) {
 				// Discard balls behind the cue ball
-				if (LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, ball.getCenter()) &&
-						!aboveLine) {
+				if (LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, ball.getCenter()) != aboveLine) {
 					continue;
 				}
 
