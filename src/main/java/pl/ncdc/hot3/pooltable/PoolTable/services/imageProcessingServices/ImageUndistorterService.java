@@ -10,8 +10,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
 @Service
 public class ImageUndistorterService {
-    private Mat cameraMatrix = Mat.zeros(3, 3, CvType.CV_64F);
-    private Mat distCoeffs = Mat.zeros(8, 1, CvType.CV_64F);
     private Mat transformPerspective;
     private Properties properties;
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageUndistorterService.class);
@@ -25,14 +23,7 @@ public class ImageUndistorterService {
     }
 
     private void prepareUndistortingMats() {
-        cameraMatrix.put(2, 2, 1);
-        cameraMatrix.put(0, 0, 991.4262945972393);
-        cameraMatrix.put(0, 2, 640);
-        cameraMatrix.put(1, 1, 993.9357197471496);
-        cameraMatrix.put(1, 2, 360);
 
-        distCoeffs.put(0, 0, -0.4110309525718729);
-        distCoeffs.put(1, 0, 0.2250083648489881);
 
         Point[] srcPoints = new Point[] {
                 properties.getImproperLeftTopCorner(),
@@ -57,7 +48,7 @@ public class ImageUndistorterService {
     public Mat undistort(Mat distorted) {
         try {
             Mat initiallyUndistorted = new Mat();
-            Imgproc.undistort(distorted, initiallyUndistorted, cameraMatrix, distCoeffs);
+            Imgproc.undistort(distorted, initiallyUndistorted, properties.getCameraMatrix(), properties.getDistCoeffs());
             distorted.release();
             Mat undistorted = new Mat();
             Imgproc.warpPerspective(initiallyUndistorted, undistorted, transformPerspective,
