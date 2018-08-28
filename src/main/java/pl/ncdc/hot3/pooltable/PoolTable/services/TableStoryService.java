@@ -42,6 +42,7 @@ public class TableStoryService {
 
     private PreviousPositionService previousPositionService;
     private Line previousCue;
+    private int noStickOnTableFramesCounter;
 
     @Autowired
     public TableStoryService(
@@ -61,6 +62,7 @@ public class TableStoryService {
 
         this.prevFrameBalls = new ArrayList<>();
         this.previousCue = null;
+        this.noStickOnTableFramesCounter = 0;
 
         currentTableIndex = -1;
 
@@ -102,7 +104,6 @@ public class TableStoryService {
         return this;
     }
 
-    private int noStickOnTableFramesCounter = 0;
     public TableStoryService findCue(){
         try {
             Line cue = detector.findStickLine();
@@ -267,14 +268,14 @@ public class TableStoryService {
                 drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 6);
             }
 
-            if (!detector.getDebugDetectedLines().isEmpty()) {
-                drawer.drawLines(
-                        outputImage,
-                        detector.getDebugDetectedLines(),
-                        new Scalar(0, 0, 255),
-                        5
-                );
-            }
+//            if (!detector.getDebugDetectedLines().isEmpty()) {
+//                drawer.drawLines(
+//                        outputImage,
+//                        detector.getDebugDetectedLines(),
+//                        new Scalar(0, 0, 255),
+//                        5
+//                );
+//            }
         }
         return this;
     }

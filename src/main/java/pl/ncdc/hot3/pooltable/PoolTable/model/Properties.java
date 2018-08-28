@@ -97,12 +97,12 @@ public class Properties {
     public Properties() {
         this.isDebugActive = true;
 
-        this.ballMaxRadius = 22;
-        this.ballMinRadius = 16;
-        this.ballMinDistance = 36;
-        this.ballExpectedRadius = 19;
-        this.houghCirclesParam1 = 30;
-        this.houghCirclesParam2 = 15;
+        this.ballMaxRadius = 11;
+        this.ballMinRadius = 8;
+        this.ballMinDistance = 18;
+        this.ballExpectedRadius = 10;
+        this.houghCirclesParam1 = 100;
+        this.houghCirclesParam2 = 10;
         this.whiteBallId = 0;
         this.blackBallId = 8;
         this.firstSolidBallId = 10;
@@ -116,7 +116,7 @@ public class Properties {
         this.tableBandRight = 1130;
         this.tableBandTop = 131;
         this.tableBandBottom = 628;
-        this.tablePocketRadius = 45;
+        this.tablePocketRadius = 30;
 
         this.predictionDepth = 1;
         this.bumpPointDelta = 2;
@@ -129,11 +129,11 @@ public class Properties {
         this.cueStickLineThickness = 8;
 
         this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 10);
-        this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
+        this.rightTopPocketPoint = new Point(tableBandRight + 8, tableBandTop);
         this.leftBotPocketPoint = new Point(tableBandLeft - 10, tableBandBottom + 10);
-        this.rightBotPocketPoint = new Point(tableBandRight + 10, tableBandBottom + 10);
-        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandTop - 25);
-        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandBottom + 25);
+        this.rightBotPocketPoint = new Point(tableBandRight + 12, tableBandBottom + 10);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 11, tableBandTop - 25);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 8, tableBandBottom + 25);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;

@@ -49,7 +49,16 @@ public class OpenCVBufforFlushService {
     }
 
     public static Mat getLastFrame() {
-        return framesArray[(counter-1)%10].clone();
+        int prevIndex = (counter - 1) %10;
+        if (prevIndex < 0) {
+            if (framesArray[9] != null){
+                prevIndex = 9;
+            }else {
+                prevIndex = 0;
+            }
+        }
+
+        return framesArray[prevIndex].clone();
     }
 
     public static void setIsNotNeeded(boolean b) {

@@ -28,12 +28,15 @@ public class Drawer {
 	private final Scalar GHOST_BALL_COLOR = new Scalar(0, 255, 255);
 
     private Properties properties;
+	private BandsService bandsService;
 
     @Autowired
     public Drawer(
-            Properties properties
+            Properties properties,
+			BandsService bandsService
     ) {
         this.properties = properties;
+        this.bandsService = bandsService;
     }
 
 	public void drawBalls(Mat img, List<Ball> balls, Scalar color) throws DrawerException {
@@ -97,11 +100,15 @@ public class Drawer {
 			for (Line line : predictions) {
 				drawLine(img, line, PREDICTION_LINE_COLOR, 8);
 			}
+			if (targetLine == null) {
+				drawPocketForLine(img, predictions.get(predictions.size() - 1));
+			}
 		}
 
         if (null != targetLine) {
         	drawLine(img, targetLine, TARGET_LINE_COLOR, 8);
         	drawCircle(img, targetLine.getBegin(), properties.getBallExpectedRadius(), GHOST_BALL_COLOR, 4);
+        	drawPocketForLine(img, targetLine);
 		}
 	}
 
@@ -109,7 +116,49 @@ public class Drawer {
 		Imgproc.circle(img, point, properties.getTablePocketRadius(), new Scalar(0, 0, 255), 5);
 	}
 
+	public void drawPoint(Mat img, Point point, int radius) {
+		Imgproc.circle(img, point, radius, new Scalar(0, 0, 255), 5);
+	}
+
 	public void drawPoint(Mat img, Point point, Scalar color, int thickness) {
 		Imgproc.circle(img, point, 14, color, thickness);
 	}
+	public void drawPoint(Mat img, Point point, Scalar color, int thickness, int radius) {
+		Imgproc.circle(img, point, radius, color, thickness);
+	}
+
+	private void drawPocketForLine(Mat img, Line line) {
+		BandsService.PocketPosition pocket = bandsService.getPocketForPoint(line.getEnd());
+		if (pocket != BandsService.PocketPosition.NONE) {
+			Point pocketPoint = null;
+			switch (pocket) {
+				case LEFT_TOP:
+					pocketPoint = properties.getLeftTopPocketPoint();
+					break;
+				case MID_TOP:
+					pocketPoint = properties.getMidTopPocketPoint();
+					break;
+				case RIGHT_TOP:
+					pocketPoint = properties.getRightTopPocketPoint();
+					break;
+				case LEFT_BOT:
+					pocketPoint = properties.getLeftBotPocketPoint();
+					break;
+				case MID_BOT:
+					pocketPoint = properties.getMidBotPocketPoint();
+					break;
+				case RIGHT_BOT:
+					pocketPoint = properties.getRightBotPocketPoint();
+					break;
+				default:
+					pocketPoint = new Point(0, 0);
+					break;
+			}
+			if (pocketPoint != null) {
+				drawPoint(img, pocketPoint, new Scalar(255, 227, 170), 7, properties.getTablePocketRadius());
+			}
+		}
+	}
+
+
 }
