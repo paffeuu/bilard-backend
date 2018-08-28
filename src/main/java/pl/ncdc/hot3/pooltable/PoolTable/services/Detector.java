@@ -257,7 +257,6 @@ public class Detector {
 
 		if (whiteBall != null) {
             Point coordinates = whiteBall.getCenter();
-
 			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
 			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
 		}
