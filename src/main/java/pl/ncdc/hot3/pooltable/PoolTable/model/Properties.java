@@ -76,6 +76,8 @@ public class Properties {
     // Predictions
     private int predictionDepth;
     private int bumpPointDelta;
+    private int targetLineStabilizeCount;
+    private int targetEndMoveTolerance;
 
     // Replays
     private boolean showPreviousPosition;
@@ -124,7 +126,7 @@ public class Properties {
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.minBCoordinateForLines = 5;
-        this.previousFramesMoveTolerance = 60;
+        this.previousFramesMoveTolerance = 100;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 
@@ -146,6 +148,17 @@ public class Properties {
 
         distCoeffs.put(0, 0, -0.4110309525718729);
         distCoeffs.put(1, 0, 0.2250083648489881);
+
+        targetLineStabilizeCount = 32;
+        targetEndMoveTolerance = 60;
+    }
+
+    public int getTargetEndMoveTolerance() {
+        return targetEndMoveTolerance;
+    }
+
+    public void setTargetEndMoveTolerance(int targetEndMoveTolerance) {
+        this.targetEndMoveTolerance = targetEndMoveTolerance;
     }
 
     public static String getWindowsOpencvPath() {
@@ -635,5 +648,13 @@ public class Properties {
 
     public int getPrevBallsCorrectorCount() {
         return prevBallsCorrectorCount;
+    }
+
+    public int getTargetLineStabilizeCount() {
+        return targetLineStabilizeCount;
+    }
+
+    public void setTargetLineStabilizeCount(int targetLineStabilizeCount) {
+        this.targetLineStabilizeCount = targetLineStabilizeCount;
     }
 }

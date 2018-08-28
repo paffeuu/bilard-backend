@@ -265,7 +265,7 @@ public class TableStoryService {
             }
 
             if (detector.getDebugAverageLine() != null){
-                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 6);
+                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
             }
 
 //            if (!detector.getDebugDetectedLines().isEmpty()) {

@@ -33,6 +33,9 @@ public class CueService {
     private Line[] prevCueLines;
     private int cueDetectDelay, detectedCueCounter;
 
+    private Point[] targetEnds;
+    private int targetEndCurrentIndex;
+
     public Point debugCloserToWhite;
     public Point debugFurtherToWhite;
 
@@ -47,6 +50,9 @@ public class CueService {
 
         cueDetectDelay = properties.getCueDetectDelay();
         prevCueLines = new Line[cueDetectDelay];
+
+        this.targetEnds = new Point[properties.getTargetLineStabilizeCount()];
+        this.targetEndCurrentIndex = 0;
     }
 
     private double calcAbsoluteDistance(double value1, double value2){
@@ -199,7 +205,7 @@ public class CueService {
                 }
             }
 
-            if (prevLinesCounter > 0) {
+            if (prevLinesCounter > 24) {
                 Point averageBegin = new Point(prevSumXs[0] / prevLinesCounter, prevSumYs[0] / prevLinesCounter);
                 Point averageEnd = new Point(prevSumXs[1] / prevLinesCounter, prevSumYs[1] / prevLinesCounter);
 
@@ -292,12 +298,42 @@ public class CueService {
             point.y = y2;
         }
 
-        return lineService.getExtendedStickLineForOneSide(new Line(
+        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
                 point,
                 new Point(
                         ball.getX(),
                         ball.getY()
                 )
         ));
+
+        stabilizeTargetLine(targetLine);
+
+        return targetLine;
+    }
+
+    public void stabilizeTargetLine(Line targetLine){
+        targetEnds[targetEndCurrentIndex++] = targetLine.getEnd();
+        targetEndCurrentIndex = targetEndCurrentIndex % properties.getTargetLineStabilizeCount();
+
+        double sumOfXs = 0;
+        double sumOfYs = 0;
+        int approvedCounter = 0;
+
+
+        for (int i = 0; i < properties.getTargetLineStabilizeCount() - 1; i++){
+            int tempIndex = (targetEndCurrentIndex + 1) % properties.getTargetLineStabilizeCount();
+
+            if (targetEnds[tempIndex] != null) {
+                if (LineService.getDistanceBetweenPoints(targetLine.getEnd(), targetEnds[tempIndex]) <= properties.getTargetEndMoveTolerance()) {
+                    approvedCounter++;
+                    sumOfXs += targetEnds[tempIndex].x;
+                    sumOfYs += targetEnds[tempIndex].y;
+                }
+            }
+        }
+
+        if (approvedCounter >= properties.getTargetLineStabilizeCount() / 2) {
+            targetLine.setEnd(new Point(sumOfXs / approvedCounter, sumOfYs / approvedCounter));
+        }
     }
 }
