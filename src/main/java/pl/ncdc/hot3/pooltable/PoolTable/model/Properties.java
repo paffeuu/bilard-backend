@@ -109,7 +109,7 @@ public class Properties {
         this.firstStripedBallId = 30;
         this.ballThickness = 5;
         this.whitePixelsPercentageBorder = 16;
-        this.prevBallsCorrectorCount = 12;
+        this.prevBallsCorrectorCount = 16;
         this.previousBallsPositionsToCompare = 12;
 
         this.tableBandLeft = 147;
@@ -630,5 +630,10 @@ public class Properties {
 
     public void setDebugActive(boolean debugActive) {
         isDebugActive = debugActive;
+    }
+
+
+    public int getPrevBallsCorrectorCount() {
+        return prevBallsCorrectorCount;
     }
 }
