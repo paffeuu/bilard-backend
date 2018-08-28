@@ -21,6 +21,12 @@ public class Properties {
     private double tableBandTop;
     private double tableBandBottom;
 
+    // Initially undistorted improper edges
+    private Point improperLeftTopCorner;
+    private Point improperRightTopCorner;
+    private Point improperRightBottomCorner;
+    private Point improperLeftBottomCorner;
+
     // Pocket
     private int tablePocketRadius;
     private double tablePocketMinRadius;
@@ -113,11 +119,16 @@ public class Properties {
         this.prevBallsCorrectorCount = 12;
         this.previousBallsPositionsToCompare = 12;
 
-        this.tableBandLeft = 147;
-        this.tableBandRight = 1130;
-        this.tableBandTop = 131;
-        this.tableBandBottom = 628;
+        this.tableBandLeft = 148;
+        this.tableBandRight = 1131;
+        this.tableBandTop = 135;
+        this.tableBandBottom = 630;
         this.tablePocketRadius = 45;
+
+        this.improperLeftTopCorner = new Point(151.0, 128.0);
+        this.improperRightTopCorner = new Point(1131.0, 141.0);
+        this.improperRightBottomCorner = new Point(1133.0, 628.0);
+        this.improperLeftBottomCorner = new Point(142.5, 631.0);
 
         this.predictionDepth = 1;
         this.bumpPointDelta = 2;
@@ -140,14 +151,14 @@ public class Properties {
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
 
-        cameraMatrix.put(2, 2, 1);
-        cameraMatrix.put(0, 0, 991.4262945972393);
-        cameraMatrix.put(0, 2, 640);
-        cameraMatrix.put(1, 1, 993.9357197471496);
-        cameraMatrix.put(1, 2, 360);
+        this.cameraMatrix.put(2, 2, 1);
+        this.cameraMatrix.put(0, 0, 991.4262945972393);
+        this.cameraMatrix.put(0, 2, 640);
+        this.cameraMatrix.put(1, 1, 993.9357197471496);
+        this.cameraMatrix.put(1, 2, 360);
 
-        distCoeffs.put(0, 0, -0.4110309525718729);
-        distCoeffs.put(1, 0, 0.2250083648489881);
+        this.distCoeffs.put(0, 0, -0.4110309525718729);
+        this.distCoeffs.put(1, 0, 0.2250083648489881);
     }
 
     public static String getWindowsOpencvPath() {
@@ -632,5 +643,37 @@ public class Properties {
 
     public void setDebugActive(boolean debugActive) {
         isDebugActive = debugActive;
+    }
+
+    public Point getImproperLeftTopCorner() {
+        return improperLeftTopCorner;
+    }
+
+    public void setImproperLeftTopCorner(Point improperLeftTopCorner) {
+        this.improperLeftTopCorner = improperLeftTopCorner;
+    }
+
+    public Point getImproperRightTopCorner() {
+        return improperRightTopCorner;
+    }
+
+    public void setImproperRightTopCorner(Point improperRightTopCorner) {
+        this.improperRightTopCorner = improperRightTopCorner;
+    }
+
+    public Point getImproperRightBottomCorner() {
+        return improperRightBottomCorner;
+    }
+
+    public void setImproperRightBottomCorner(Point improperRightBottomCorner) {
+        this.improperRightBottomCorner = improperRightBottomCorner;
+    }
+
+    public Point getImproperLeftBottomCorner() {
+        return improperLeftBottomCorner;
+    }
+
+    public void setImproperLeftBottomCorner(Point improperLeftBottomCorner) {
+        this.improperLeftBottomCorner = improperLeftBottomCorner;
     }
 }
