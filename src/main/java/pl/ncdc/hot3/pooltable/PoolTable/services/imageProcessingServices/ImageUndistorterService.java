@@ -1,23 +1,30 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices;
 
 import org.opencv.core.*;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
 @Service
 public class ImageUndistorterService {
     private Mat cameraMatrix = Mat.zeros(3, 3, CvType.CV_64F);
     private Mat distCoeffs = Mat.zeros(8, 1, CvType.CV_64F);
-    private Mat quadrangleSrc = Mat.zeros(4,2, CvType.CV_32FC2);
-    private Mat quadrangleDst = Mat.zeros(4,2,CvType.CV_32FC2);
     private Mat transformPerspective;
-    private Point[] dstPoints;
-    private Point[] srcPoints;
+    private Properties properties;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageUndistorterService.class);
 
     @Autowired
-    public ImageUndistorterService() {
+    public ImageUndistorterService(
+            Properties properties
+    ) {
+        this.properties = properties;
+        prepareUndistortingMats();
+    }
+
+    private void prepareUndistortingMats() {
         cameraMatrix.put(2, 2, 1);
         cameraMatrix.put(0, 0, 991.4262945972393);
         cameraMatrix.put(0, 2, 640);
@@ -27,18 +34,18 @@ public class ImageUndistorterService {
         distCoeffs.put(0, 0, -0.4110309525718729);
         distCoeffs.put(1, 0, 0.2250083648489881);
 
-        srcPoints = new Point[] {
-                new Point(151.0, 128.0),
-                new Point(1131.0, 141.0),
-                new Point(1133.0, 628.0),
-                new Point(142.5, 631.0)
+        Point[] srcPoints = new Point[] {
+                properties.getImproperLeftTopCorner(),
+                properties.getImproperRightTopCorner(),
+                properties.getImproperRightBottomCorner(),
+                properties.getImproperLeftBottomCorner()
         };
 
-        dstPoints = new Point[] {
-                new Point(148.0, 135.0),
-                new Point(1131.0, 135.0),
-                new Point(1131.0, 630.0),
-                new Point(148.0, 630.0)
+        Point[] dstPoints = new Point[] {
+                new Point(properties.getTableBandLeft(), properties.getTableBandTop()),
+                new Point(properties.getTableBandRight(), properties.getTableBandTop()),
+                new Point(properties.getTableBandRight(), properties.getTableBandBottom()),
+                new Point(properties.getTableBandLeft(), properties.getTableBandBottom())
         };
 
         MatOfPoint2f src = new MatOfPoint2f(srcPoints);
@@ -49,17 +56,15 @@ public class ImageUndistorterService {
 
     public Mat undistort(Mat distorted) {
         try {
+            Mat initiallyUndistorted = new Mat();
+            Imgproc.undistort(distorted, initiallyUndistorted, cameraMatrix, distCoeffs);
+            distorted.release();
             Mat undistorted = new Mat();
-            Imgproc.undistort(distorted, undistorted, cameraMatrix, distCoeffs);
-            distorted = undistorted.clone();
-            undistorted.release();
-            Imgproc.warpPerspective(distorted, undistorted, transformPerspective, new Size(1280,720));
-            for (int i = 0; i < dstPoints.length; i++) {
-                Imgproc.line(undistorted, dstPoints[i], dstPoints[(i+1)%dstPoints.length], new Scalar(255,255,100));
-                //Imgproc.line(undistorted, srcPoints[i], srcPoints[(i+1)%dstPoints.length], new Scalar(0,255,255), 1);
-            }
+            Imgproc.warpPerspective(initiallyUndistorted, undistorted, transformPerspective,
+                    new Size(properties.getImageSourceWidth(),properties.getImageSourceHeight()));
             return undistorted;
         } catch (Exception e) {
+            LOGGER.error("Image could not have been properly undistorted.");
             return null;
         }
     }
