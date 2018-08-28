@@ -410,7 +410,8 @@ public class Detector {
 
 			if (distance <= properties.getBallExpectedRadius() * 2) {
 				// Discard balls behind the cue ball
-				if (LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, ball.getCenter()) != aboveLine) {
+				if (LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, ball.getCenter()) != aboveLine &&
+						isCueLine) {
 					continue;
 				}
 
