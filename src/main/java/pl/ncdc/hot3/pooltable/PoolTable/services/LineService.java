@@ -227,20 +227,6 @@ public class LineService {
         return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
 
-    public static double[] calcCoordinatesAB(Line line) {
-        if (line.getBegin().x == line.getEnd().x) {
-            line.setEnd(new Point(line.getEnd().x + 3, line.getEnd().y));
-        }
-
-        double Y = (line.getBegin().y - line.getEnd().y);
-        double X = (line.getBegin().x - line.getEnd().x);
-
-        double A = Y / (X == 0 ? 0.1 : X);
-        double B = line.getBegin().y - (A * line.getBegin().x);
-
-        return new double[]{A, B};
-    }
-
     /**
      * Calculate A coordinate from Ax + By + C = 0 for perpendicular line
      *

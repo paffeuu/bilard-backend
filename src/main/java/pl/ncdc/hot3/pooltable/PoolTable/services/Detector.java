@@ -1,9 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.opencv.core.*;
 import org.opencv.core.Point;
