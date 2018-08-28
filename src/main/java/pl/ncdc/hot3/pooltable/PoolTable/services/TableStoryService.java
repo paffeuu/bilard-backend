@@ -41,6 +41,7 @@ public class TableStoryService {
     List<Ball> prevFrameBalls;
 
     private PreviousPositionService previousPositionService;
+    private Line previousCue;
 
     @Autowired
     public TableStoryService(
@@ -59,6 +60,8 @@ public class TableStoryService {
         this.bandsService = bandsService;
 
         this.prevFrameBalls = new ArrayList<>();
+        this.previousCue = null;
+
         currentTableIndex = -1;
 
         tableStory = new ArrayList<>(LIMIT_OF_TABLES);
@@ -99,9 +102,18 @@ public class TableStoryService {
         return this;
     }
 
+    private int noStickOnTableFramesCounter = 0;
     public TableStoryService findCue(){
         try {
             Line cue = detector.findStickLine();
+
+            if (cue != null) {
+                previousCue = cue;
+                noStickOnTableFramesCounter = 0;
+            } else {
+                if (noStickOnTableFramesCounter++ < 8)
+                cue = previousCue;
+            }
 
             if (cue instanceof Line && null != current().getBalls()) {
                 Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
@@ -234,6 +246,13 @@ public class TableStoryService {
 
     public TableStoryService drawForDebug(){
         if (properties.isDebugActive()) {
+            drawer.drawPoint(outputImage, properties.getLeftTopPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getMidTopPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getRightTopPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getLeftBotPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getMidBotPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getRightBotPocketPoint(), properties.getTablePocketRadius());
+
             drawer.drawLines(outputImage, bandsService.getBandLines(), new Scalar(255, 0, 0), 4);
 
             if (detector.getPointCloserToWhiteBall() != null) {
