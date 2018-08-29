@@ -95,7 +95,7 @@ public class Drawer {
 
 		if (predictions != null && !predictions.isEmpty()) {
 			for (Line line : predictions) {
-				drawLine(img, line, PREDICTION_LINE_COLOR, 8);
+			drawLine(img, line, PREDICTION_LINE_COLOR, 8);
 			}
 		}
 

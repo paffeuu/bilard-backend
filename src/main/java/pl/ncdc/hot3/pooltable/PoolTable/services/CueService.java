@@ -29,6 +29,7 @@ public class CueService {
     private Properties properties;
 
     private LineService lineService;
+    public Line naszaLinia;
 
     private Line[] prevCueLines;
     private Line previousAverageLine;
@@ -38,6 +39,8 @@ public class CueService {
     private int frameCounter = 0;
     public Point debugCloserToWhite;
     public Point debugFurtherToWhite;
+
+
 
     @Autowired
     public CueService(
@@ -202,14 +205,9 @@ public class CueService {
         double[] stabilizedEnd = {0,0};
         double distanceTolerance = properties.getPreviousFramesMoveTolerance();
 
-        if (this.frameCounter < 16) {
-            previousCues.add(cueLine);
-            this.frameCounter++;
-        } else {
-            this.frameCounter=0;
-            this.previousCues.clear();
-            this.previousCues.add(cueLine);
-            this.frameCounter++;
+        previousCues.add(cueLine);
+        if (previousCues.size() >= 20) {
+            previousCues.remove(0);
         }
 
         for (Line line : this.previousCues) {
@@ -221,46 +219,27 @@ public class CueService {
                 }
         }
 
-        double stabBegX = stabilizedBeginning[0];
-        double stabBegY = stabilizedBeginning[1];
-        double stabEndX = stabilizedEnd[0];
-        double stabEndY = stabilizedEnd[1];
 
-        stabilizedBeginning[0] = stabilizedBeginning[0] / this.previousCues.size();
-        stabilizedBeginning[1] = stabilizedBeginning[1] / this.previousCues.size();
-        stabilizedEnd[0] = stabilizedEnd[0] / this.previousCues.size();
-        stabilizedEnd[1] = stabilizedEnd[1] / this.previousCues.size();
 
-        double beginningDistance = LineService.calculateDistanceBetweenPoints(cueLine.getBegin(), new Point(stabilizedBeginning));
-        double endDistance = LineService.calculateDistanceBetweenPoints(cueLine.getEnd(), new Point(stabilizedEnd));
 
-        //if ( beginningDistance <=distanceTolerance && endDistance <= distanceTolerance) {
 
-            System.out.println("Toleruje");
-            System.out.println("rozmiar: " + this.previousCues.size());
-            //this.previousCues.add(cueLine);
-            stabBegX = stabBegX + cueLine.getBegin().x;
-            stabBegY = stabBegY + cueLine.getBegin().y;
-            stabEndX = stabEndX + cueLine.getEnd().x;
-            stabEndX = stabEndY + cueLine.getEnd().y;
 
-            stabilizedBeginning[0] = stabBegX / this.previousCues.size();
-            stabilizedBeginning[1] = stabBegY / this.previousCues.size();
-            stabilizedEnd[0] = stabEndX / this.previousCues.size();
-            stabilizedEnd[1] = stabEndY / this.previousCues.size();
-            this.detectionOutOfScope.clear();
-        //} else {
-         //   this.detectionOutOfScope.add(cueLine);
-       // }
 
-        if (this.detectionOutOfScope.size() >= 4) {
-            this.previousCues.clear();
-            this.previousCues.addAll(this.detectionOutOfScope);
-            this.detectionOutOfScope.clear();
-            return cueLine;
-        } else {
-            return new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
-        }
+
+        System.out.println("NOWA "+ cueLine.toString());
+
+
+            stabilizedBeginning[0]  /= this.previousCues.size();
+            stabilizedBeginning[1] /= this.previousCues.size();
+            stabilizedEnd[0] /= this.previousCues.size();
+            stabilizedEnd[1] /= this.previousCues.size();
+
+
+
+            Line lin= new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
+            System.out.println("SREDNIA" +lin.toString());
+            this.previousAverageLine = lin;
+            return lin;
         }
 
         private Line averageOfListOfLines(List<Line> list) {

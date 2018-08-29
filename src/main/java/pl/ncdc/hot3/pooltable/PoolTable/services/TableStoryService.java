@@ -100,8 +100,9 @@ public class TableStoryService {
     }
 
     public TableStoryService findCue(){
+        Line cue = new Line();
         try {
-            Line cue = detector.findStickLine();
+            cue = detector.findStickLine();
 
             if (cue instanceof Line && null != current().getBalls()) {
                 Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
