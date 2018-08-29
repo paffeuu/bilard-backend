@@ -95,6 +95,12 @@ public class Properties {
     private static String windowsFfmpegPath = System.getProperty("user.dir") + "\\lib\\" + "opencv_ffmpeg342_64.dll";
     private static String linuxOpencvPath = "/usr/local/share/OpenCV/java/" + "libopencv_java342" + ".so";
 
+    // Initially undistorted improper edges
+    private Point improperLeftTopCorner;
+    private Point improperRightTopCorner;
+    private Point improperRightBottomCorner;
+    private Point improperLeftBottomCorner;
+
 
     public Properties() {
         this.isDebugActive = true;
@@ -151,6 +157,11 @@ public class Properties {
 
         targetLineStabilizeCount = 32;
         targetEndMoveTolerance = 60;
+
+        this.improperLeftTopCorner = new Point(151.0, 128.0);
+        this.improperRightTopCorner = new Point(1131.0, 141.0);
+        this.improperRightBottomCorner = new Point(1133.0, 628.0);
+        this.improperLeftBottomCorner = new Point(142.5, 631.0);
     }
 
     public int getTargetEndMoveTolerance() {
@@ -656,5 +667,37 @@ public class Properties {
 
     public void setTargetLineStabilizeCount(int targetLineStabilizeCount) {
         this.targetLineStabilizeCount = targetLineStabilizeCount;
+    }
+
+    public Point getImproperLeftTopCorner() {
+        return improperLeftTopCorner;
+    }
+
+    public void setImproperLeftTopCorner(Point improperLeftTopCorner) {
+        this.improperLeftTopCorner = improperLeftTopCorner;
+    }
+
+    public Point getImproperRightTopCorner() {
+        return improperRightTopCorner;
+    }
+
+    public void setImproperRightTopCorner(Point improperRightTopCorner) {
+        this.improperRightTopCorner = improperRightTopCorner;
+    }
+
+    public Point getImproperRightBottomCorner() {
+        return improperRightBottomCorner;
+    }
+
+    public void setImproperRightBottomCorner(Point improperRightBottomCorner) {
+        this.improperRightBottomCorner = improperRightBottomCorner;
+    }
+
+    public Point getImproperLeftBottomCorner() {
+        return improperLeftBottomCorner;
+    }
+
+    public void setImproperLeftBottomCorner(Point improperLeftBottomCorner) {
+        this.improperLeftBottomCorner = improperLeftBottomCorner;
     }
 }

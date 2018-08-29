@@ -1,8 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
@@ -64,18 +62,32 @@ public class MainController {
     }
 
     @Scheduled(fixedRate = 125)
-    public void socketSendTable() throws Exception{
+    public void socketSendTable() throws Exception {
         System.gc();
+//        PoolTable table;
+//
+//        if (this.passiveMode) {
+//            table = tableStoryService
+//                    .next()
+//                    .findBalls()
+//                    .findCue()
+//                    .makePredictions()
+//                    .detectCollision()
+//                    .showPrevious()
+//                    .build();
+//        } else {
+//            table = tableStoryService
+//                    .next()
+//                    .findBalls()
+//                    .passiveMode()
+//                    .build();
+//        }
+
         PoolTable table = tableStoryService
                 .next()
                 .findBalls()
-                .findCue()
-                .makePredictions()
-                .detectCollision()
-                .showPrevious()
                 .build();
 
         this.template.convertAndSend("/topic/pooltable", table);
     }
-
 }

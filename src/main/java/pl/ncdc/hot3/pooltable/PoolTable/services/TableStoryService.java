@@ -5,6 +5,7 @@ import org.opencv.core.MatOfByte;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
@@ -41,6 +43,7 @@ public class TableStoryService {
     List<Ball> prevFrameBalls;
 
     private PreviousPositionService previousPositionService;
+    private ImageUndistorterService imageUndistorterService;
     private Line previousCue;
     private int noStickOnTableFramesCounter;
 
@@ -51,7 +54,8 @@ public class TableStoryService {
             Drawer drawer,
             Properties properties,
             PreviousPositionService previousPositionService,
-            BandsService bandsService
+            BandsService bandsService,
+            ImageUndistorterService imageUndistorterService
     ) {
         this.detector = detector;
         this.cameraService = cameraService;
@@ -59,6 +63,7 @@ public class TableStoryService {
         this.properties = properties;
         this.previousPositionService = previousPositionService;
         this.bandsService = bandsService;
+        this.imageUndistorterService = imageUndistorterService;
 
         this.prevFrameBalls = new ArrayList<>();
         this.previousCue = null;
@@ -85,6 +90,8 @@ public class TableStoryService {
 
     public TableStoryService next() {
         try {
+//            outputImage = Imgcodecs.imread("src\\main\\resources\\black.png");
+
             outputImage = cameraService.getSnap();
             detector.setSourceImg(outputImage.clone());
         } catch (CameraServiceException e) {
@@ -214,6 +221,8 @@ public class TableStoryService {
     }
 
     public PoolTable build() {
+        outputImage = Imgcodecs.imread("src\\main\\resources\\black.png");
+
         return  drawForDebug()
                 .makeView()
                 .current();
@@ -289,11 +298,13 @@ public class TableStoryService {
                     current().getPredictions(),
                     current().getTargetLine()
             );
+            Mat output = new Mat();
+            output = imageUndistorterService.projectorWarp(outputImage);
             MatOfByte matOfByte = new MatOfByte();
-            Imgcodecs.imencode(".jpg", outputImage, matOfByte);
+            Imgcodecs.imencode(".jpg", output, matOfByte);
             current().setTableImage(matOfByte.toArray());
             outputImage.release();
-
+            output.release();
         } catch (DrawerException e) {
             LOGGER.error("Cannot prepere the view image.", e);
         } finally {
