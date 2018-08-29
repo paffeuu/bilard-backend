@@ -351,12 +351,13 @@ public class Detector {
      * @throws LineServiceException if can not find ball collision line
      */
     public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
-        Ball collision = getCollisionBall(line, balls, isCue);
+		if (!balls.isEmpty()) {
+			Ball collision = getCollisionBall(line, balls, isCue);
 
-        if (null != collision) {
-            return cueService.findBallCollisionLine(line, collision);
-        }
-
+			if (null != collision) {
+				return cueService.findBallCollisionLine(line, collision);
+			}
+		}
         return null;
     }
 
@@ -510,6 +511,14 @@ public class Detector {
 
 	public List<Line> getTargetsList() {
 		return cueService.getTargetLines();
+	}
+
+	public Line[] getTargetTunnelLines() {
+		try {
+			return cueService.getTunnel();
+		} catch (TunnelMakerException e) {
+			return null;
+		}
 	}
 
 }

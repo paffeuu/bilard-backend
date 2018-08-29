@@ -254,4 +254,10 @@ public class LineService {
     public static boolean isPointAboveTheLine(double a, double b, Point point) {
         return point.y > a * point.x + b;
     }
+
+    public static boolean isPointAboveTheLine(Line line, Point point) {
+        double[] coordinatesAB = LineService.calcCoordinatesAB(line);
+
+        return point.y > coordinatesAB[0] * point.x + coordinatesAB[1];
+    }
 }

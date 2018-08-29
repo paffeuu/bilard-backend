@@ -116,7 +116,7 @@ public class TableStoryService {
                 cue = previousCue;
             }
 
-            if (cue instanceof Line && null != current().getBalls()) {
+            if (cue instanceof Line && current().getBalls() != null && !current().getBalls().isEmpty()) {
                 Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
 
                 if (collisionBall instanceof Ball && 0 == collisionBall.getId()) {
@@ -269,7 +269,18 @@ public class TableStoryService {
             }
 
             if (!detector.getTargetsList().isEmpty()) {
-                drawer.drawLines(outputImage, detector.getTargetsList(), new Scalar(170, 57, 57), 4);
+                //drawer.drawLines(outputImage, detector.getTargetsList(), new Scalar(170, 57, 57), 4);
+            }
+
+            Line[] tunnel;
+            if ((tunnel = detector.getTargetTunnelLines()) != null) {
+                if (tunnel[0] != null){
+                    drawer.drawLine(outputImage, tunnel[0], new Scalar(170, 57, 57), 6);
+                }
+
+                if (tunnel[1] != null){
+                    drawer.drawLine(outputImage, tunnel[1], new Scalar(170, 57, 57), 6);
+                }
             }
 
 //            if (!detector.getDebugDetectedLines().isEmpty()) {

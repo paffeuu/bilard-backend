@@ -31,7 +31,6 @@ public class CueService {
     private Point[] targetEnds;
     private int targetEndCurrentIndex;
     private List<Line> targetLines;
-    private Line[] targetField;
     private int indexOfTargetLine;
 
     public Point debugCloserToWhite;
@@ -56,7 +55,6 @@ public class CueService {
         this.previousAverageLine = null;
 
         this.targetLines = new ArrayList<>(properties.getCountOfTargetLines());
-        this.targetField = new Line[2];
         this.indexOfTargetLine = 0;
     }
 
@@ -388,12 +386,48 @@ public class CueService {
         return center;
     }
 
-    private Line[] getTunnel() {
+    public Line[] getTunnel() throws TunnelMakerException {
+        if (targetLines.isEmpty()) {
+            throw new TunnelMakerException("No target lines.");
+        }
+
         Point centre = getTargetFieldCenter();
+        Line centerLine = new Line(targetLines.get(0).getBegin(), centre);
 
-        for ()
-        LineService.getDistanceBetweenPoints()
+        try {
+            centerLine = lineService.getExtendedStickLineForOneSide(centerLine);
+            centre = centerLine.getEnd();
+        } catch (LineServiceException e) {
+            LOGGER.error("Cannot prepare tunnel. Center: " + centre + " and line: " + centerLine);
+            throw new TunnelMakerException("Cannot extend center line for tunnel. Nested: ", e);
+        }
 
+        Line firstSideLine = null;
+        Line secondSideLine = null;
+
+        double firstDist = 0;
+        double secondDist = 0;
+
+        for (Line line : targetLines) {
+            double dist = LineService.getDistanceBetweenPoints(line.getEnd(), centre);
+            if (LineService.isPointAboveTheLine(centerLine, line.getEnd())) {
+                if (dist >= firstDist) {
+                    firstDist = dist;
+                    firstSideLine = line;
+                }
+            } else {
+                if (dist >= secondDist) {
+                    secondDist = dist;
+                    secondSideLine = line;
+                }
+            }
+        }
+
+        if (firstSideLine != null && secondSideLine != null){
+            return new Line[]{ firstSideLine, secondSideLine };
+        }else {
+            throw new TunnelMakerException("Cannot make tunnel, lines: " + firstSideLine + ", " + secondSideLine);
+        }
     }
 
 }
