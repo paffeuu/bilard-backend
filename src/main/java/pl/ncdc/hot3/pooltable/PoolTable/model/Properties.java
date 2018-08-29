@@ -84,6 +84,7 @@ public class Properties {
     private int bumpPointDelta;
     private int targetLineStabilizeCount;
     private int targetEndMoveTolerance;
+    private int countOfTargetLines;
 
     // Replays
     private boolean showPreviousPosition;
@@ -162,6 +163,7 @@ public class Properties {
 
         targetLineStabilizeCount = 128;
         targetEndMoveTolerance = 30;
+        countOfTargetLines = 32;
     }
 
     public int getTargetEndMoveTolerance() {
@@ -699,5 +701,13 @@ public class Properties {
 
     public void setImproperLeftBottomCorner(Point improperLeftBottomCorner) {
         this.improperLeftBottomCorner = improperLeftBottomCorner;
+    }
+
+    public int getCountOfTargetLines() {
+        return countOfTargetLines;
+    }
+
+    public void setCountOfTargetLines(int countOfTargetLines) {
+        this.countOfTargetLines = countOfTargetLines;
     }
 }

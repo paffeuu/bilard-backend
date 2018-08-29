@@ -269,7 +269,7 @@ public class TableStoryService {
             }
 
             if (!detector.getTargetsList().isEmpty()) {
-                //drawer.drawLines(outputImage, detector.getTargetsList(), new Scalar(170, 57, 57), 4);
+                drawer.drawLines(outputImage, detector.getTargetsList(), new Scalar(170, 57, 57), 4);
             }
 
 //            if (!detector.getDebugDetectedLines().isEmpty()) {

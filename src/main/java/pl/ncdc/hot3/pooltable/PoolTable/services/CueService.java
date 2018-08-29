@@ -1,11 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +12,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static pl.ncdc.hot3.pooltable.PoolTable.services.LineService.calculateDistanceBetweenPoints;
 
@@ -27,8 +21,8 @@ public class CueService {
     final static Logger LOGGER = LoggerFactory.getLogger(CueService.class);
 
     private Properties properties;
-
     private LineService lineService;
+    private BandsService bandsService;
 
     private Line[] prevCueLines;
     private Line previousAverageLine;
@@ -37,6 +31,8 @@ public class CueService {
     private Point[] targetEnds;
     private int targetEndCurrentIndex;
     private List<Line> targetLines;
+    private Line[] targetField;
+    private int indexOfTargetLine;
 
     public Point debugCloserToWhite;
     public Point debugFurtherToWhite;
@@ -44,10 +40,12 @@ public class CueService {
     @Autowired
     public CueService(
             Properties properties,
-            LineService lineService
+            LineService lineService,
+            BandsService bandsService
     ){
         this.properties = properties;
         this.lineService = lineService;
+        this.bandsService = bandsService;
         this.detectedCueCounter = 0;
 
         cueDetectDelay = properties.getCueDetectDelay();
@@ -57,7 +55,9 @@ public class CueService {
         this.targetEndCurrentIndex = 0;
         this.previousAverageLine = null;
 
-        this.targetLines = new ArrayList<>();
+        this.targetLines = new ArrayList<>(properties.getCountOfTargetLines());
+        this.targetField = new Line[2];
+        this.indexOfTargetLine = 0;
     }
 
     private double calcAbsoluteDistance(double value1, double value2){
@@ -316,13 +316,15 @@ public class CueService {
 
         stabilizeTargetLine(targetLine);
 
-        if (!targetLines.isEmpty() &&
-                LineService.getDistanceBetweenPoints(targetLine.getBegin(), targetLines.get(targetLines.size() - 1).getBegin()) <= properties.getTablePocketRadius()){
+
+        if (!targetLines.isEmpty() ||
+                targetLines.size() < properties.getCountOfTargetLines()){
             targetLines.add(targetLine);
         } else {
             targetLines.clear();
-            targetLines.add(targetLine);
+            targetLines.set(indexOfTargetLine, targetLine);
         }
+        indexOfTargetLine = (indexOfTargetLine + 1) % properties.getCountOfTargetLines();
 
         return targetLine;
     }
@@ -369,4 +371,29 @@ public class CueService {
     public List<Line> getTargetLines() {
         return targetLines;
     }
+
+    private Point getTargetFieldCenter(){
+        Point center = null;
+
+        if (!targetLines.isEmpty()){
+            double sumXs = 0;
+            double sumYs = 0;
+            for (Line line : targetLines) {
+                sumXs += line.getEnd().x;
+                sumYs += line.getEnd().y;
+            }
+            center = new Point(sumXs / targetLines.size(), sumYs / targetLines.size());
+        }
+
+        return center;
+    }
+
+    private Line[] getTunnel() {
+        Point centre = getTargetFieldCenter();
+
+        for ()
+        LineService.getDistanceBetweenPoints()
+
+    }
+
 }

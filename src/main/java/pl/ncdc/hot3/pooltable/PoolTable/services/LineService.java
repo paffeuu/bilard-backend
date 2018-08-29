@@ -225,6 +225,7 @@ public class LineService {
     }
 
     public static double getDistanceBetweenPoints(Point point1, Point point2) {
+        // pierw((x1 - x2)^2 + (y1 - y2)^2))
         return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
 }

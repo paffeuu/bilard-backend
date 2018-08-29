@@ -8,7 +8,9 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class BandsService {
@@ -39,6 +41,26 @@ public class BandsService {
             }
         }
         return false;
+    }
+
+    public PocketPosition getClosestPocketForPoint(Point point) {
+        HashMap<PocketPosition, Double> distsToPockets = new HashMap<>();
+
+        distsToPockets.put(PocketPosition.LEFT_TOP, LineService.getDistanceBetweenPoints(point, properties.getLeftTopPocketPoint()));
+        distsToPockets.put(PocketPosition.RIGHT_TOP, LineService.getDistanceBetweenPoints(point, properties.getRightTopPocketPoint()));
+        distsToPockets.put(PocketPosition.LEFT_BOT, LineService.getDistanceBetweenPoints(point, properties.getLeftBotPocketPoint()));
+        distsToPockets.put(PocketPosition.RIGHT_BOT, LineService.getDistanceBetweenPoints(point, properties.getRightBotPocketPoint()));
+        distsToPockets.put(PocketPosition.MID_TOP, LineService.getDistanceBetweenPoints(point, properties.getMidTopPocketPoint()));
+        distsToPockets.put(PocketPosition.MID_BOT, LineService.getDistanceBetweenPoints(point, properties.getMidBotPocketPoint()));
+
+        Map.Entry<PocketPosition, Double> min = null;
+        for (Map.Entry<PocketPosition, Double> entry : distsToPockets.entrySet()) {
+            if (min == null || min.getValue() > entry.getValue()) {
+                min = entry;
+            }
+        }
+
+        return min.getKey();
     }
 
     public PocketPosition getPocketForPoint(Point point) {
@@ -75,6 +97,37 @@ public class BandsService {
         bandLines.add(new Line(leftBot, leftTop));
 
         return bandLines;
+    }
+
+    public Point getPointForPocketEnum(PocketPosition pocketPosition) {
+        Point pocketPoint;
+        switch (pocketPosition) {
+            case LEFT_TOP:
+                pocketPoint = properties.getLeftTopPocketPoint();
+                break;
+            case MID_TOP:
+                pocketPoint = properties.getMidTopPocketPoint();
+                break;
+            case RIGHT_TOP:
+                pocketPoint = properties.getRightTopPocketPoint();
+                break;
+            case LEFT_BOT:
+                pocketPoint = properties.getLeftBotPocketPoint();
+                break;
+            case MID_BOT:
+                pocketPoint = properties.getMidBotPocketPoint();
+                break;
+            case RIGHT_BOT:
+                pocketPoint = properties.getRightBotPocketPoint();
+                break;
+            case NONE:
+                pocketPoint = null;
+                break;
+            default:
+                pocketPoint = null;
+                break;
+        }
+        return pocketPoint;
     }
 
 }

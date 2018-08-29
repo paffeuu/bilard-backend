@@ -130,30 +130,7 @@ public class Drawer {
 	private void drawPocketForLine(Mat img, Line line) {
 		BandsService.PocketPosition pocket = bandsService.getPocketForPoint(line.getEnd());
 		if (pocket != BandsService.PocketPosition.NONE) {
-			Point pocketPoint = null;
-			switch (pocket) {
-				case LEFT_TOP:
-					pocketPoint = properties.getLeftTopPocketPoint();
-					break;
-				case MID_TOP:
-					pocketPoint = properties.getMidTopPocketPoint();
-					break;
-				case RIGHT_TOP:
-					pocketPoint = properties.getRightTopPocketPoint();
-					break;
-				case LEFT_BOT:
-					pocketPoint = properties.getLeftBotPocketPoint();
-					break;
-				case MID_BOT:
-					pocketPoint = properties.getMidBotPocketPoint();
-					break;
-				case RIGHT_BOT:
-					pocketPoint = properties.getRightBotPocketPoint();
-					break;
-				default:
-					pocketPoint = null;
-					break;
-			}
+			Point pocketPoint = bandsService.getPointForPocketEnum(pocket);
 			if (pocketPoint != null) {
 				drawPoint(img, pocketPoint, new Scalar(255, 227, 170), 7, properties.getTablePocketRadius());
 			}
