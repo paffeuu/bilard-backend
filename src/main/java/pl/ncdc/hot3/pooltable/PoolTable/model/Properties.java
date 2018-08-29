@@ -108,8 +108,8 @@ public class Properties {
         this.ballMinRadius = 8;
         this.ballMinDistance = 18;
         this.ballExpectedRadius = 10;
-        this.houghCirclesParam1 = 30;
-        this.houghCirclesParam2 = 15;
+        this.houghCirclesParam1 = 100;
+        this.houghCirclesParam2 = 9;
         this.whiteBallId = 0;
         this.blackBallId = 8;
         this.firstSolidBallId = 10;

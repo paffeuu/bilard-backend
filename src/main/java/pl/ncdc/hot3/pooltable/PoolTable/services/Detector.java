@@ -30,6 +30,7 @@ public class Detector {
     final int TRESHOLD_FOR_CANNY_FIRST = 100;
     final int TRESHOLD_FOR_CANNY_SECOND = 40;
 
+    private int counter = 0;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
@@ -128,13 +129,13 @@ public class Detector {
 		Mat blurredImage = new Mat();
 		Mat convertedTypeImage = new Mat();
 		Mat destinationImage = new Mat();
-		Size blurSize = new Size(5, 5);
+		Size blurSize = new Size(1, 1);
 
 		// blur convertedImage
 		Imgproc.blur(sourceImg, blurredImage, blurSize);
 
 		// convert to hsv
-		Imgproc.cvtColor(blurredImage, convertedTypeImage, Imgproc.COLOR_BGR2HSV);
+		Imgproc.cvtColor(blurredImage, convertedTypeImage, Imgproc.COLOR_BGR2HLS);
 		blurredImage.release();
 
 		// split into planes
@@ -142,8 +143,11 @@ public class Detector {
 		Core.split(convertedTypeImage, planes);
 		convertedTypeImage.release();
 
+		counter ++;
+		Imgcodecs.imwrite("C:\\Users\\Borat\\Pictures\\Projektor\\afterConvert" + counter + ".png", planes.get(1));
+
 		// detect circles
-		Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0,
+		Imgproc.HoughCircles(planes.get(1), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0,
 				properties.getBallMinDistance(), properties.getHoughCirclesParam1(),
 				properties.getHoughCirclesParam2(), properties.getBallMinRadius(), properties.getBallMaxRadius());
 
@@ -289,7 +293,6 @@ public class Detector {
 		}
 		return linesList;
 	}
-
 
 	public Mat getEdges(Mat source) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();
