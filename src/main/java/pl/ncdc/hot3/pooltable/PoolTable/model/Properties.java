@@ -136,7 +136,7 @@ public class Properties {
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.minBCoordinateForLines = 5;
-        this.previousFramesMoveTolerance = 60;
+        this.previousFramesMoveTolerance = 120;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 

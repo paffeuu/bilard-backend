@@ -39,6 +39,12 @@ public class LineService {
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
+    public  static boolean distanceBetweenLinesCheck(Line line1, Line line2, double tolerance) {
+        return (LineService.calculateDistanceBetweenPoints(line1.getBegin(), line2.getBegin()) < tolerance
+                && LineService.calculateDistanceBetweenPoints(line1.getEnd(), line2.getEnd()) < tolerance);
+    }
+
+
     /**
      * Switch points in line (begin, end)
      *
