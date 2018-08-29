@@ -70,13 +70,14 @@ public class Properties {
     private double parallelTolerance;
     private double minBCoordinateForLines;
     private double previousFramesMoveTolerance;
-
     private int cueDetectDelay;
     private int cueStickLineThickness;
 
     // Predictions
     private int predictionDepth;
     private int bumpPointDelta;
+    private int targetLineStabilizeCount;
+    private int targetEndMoveTolerance;
 
     // Replays
     private boolean showPreviousPosition;
@@ -110,14 +111,14 @@ public class Properties {
         this.firstStripedBallId = 30;
         this.ballThickness = 5;
         this.whitePixelsPercentageBorder = 16;
-        this.prevBallsCorrectorCount = 12;
+        this.prevBallsCorrectorCount = 16;
         this.previousBallsPositionsToCompare = 12;
 
         this.tableBandLeft = 147;
         this.tableBandRight = 1130;
         this.tableBandTop = 131;
         this.tableBandBottom = 628;
-        this.tablePocketRadius = 45;
+        this.tablePocketRadius = 30;
 
         this.predictionDepth = 1;
         this.bumpPointDelta = 2;
@@ -125,17 +126,16 @@ public class Properties {
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.minBCoordinateForLines = 5;
-        this.previousFramesMoveTolerance = 60;
+        this.previousFramesMoveTolerance = 100;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 
-
         this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 10);
-        this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
+        this.rightTopPocketPoint = new Point(tableBandRight + 8, tableBandTop);
         this.leftBotPocketPoint = new Point(tableBandLeft - 10, tableBandBottom + 10);
-        this.rightBotPocketPoint = new Point(tableBandRight + 10, tableBandBottom + 10);
-        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandTop - 25);
-        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandBottom + 25);
+        this.rightBotPocketPoint = new Point(tableBandRight + 12, tableBandBottom + 10);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 11, tableBandTop - 25);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 8, tableBandBottom + 25);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -148,6 +148,17 @@ public class Properties {
 
         distCoeffs.put(0, 0, -0.4110309525718729);
         distCoeffs.put(1, 0, 0.2250083648489881);
+
+        targetLineStabilizeCount = 32;
+        targetEndMoveTolerance = 60;
+    }
+
+    public int getTargetEndMoveTolerance() {
+        return targetEndMoveTolerance;
+    }
+
+    public void setTargetEndMoveTolerance(int targetEndMoveTolerance) {
+        this.targetEndMoveTolerance = targetEndMoveTolerance;
     }
 
     public static String getWindowsOpencvPath() {
@@ -632,5 +643,18 @@ public class Properties {
 
     public void setDebugActive(boolean debugActive) {
         isDebugActive = debugActive;
+    }
+
+
+    public int getPrevBallsCorrectorCount() {
+        return prevBallsCorrectorCount;
+    }
+
+    public int getTargetLineStabilizeCount() {
+        return targetLineStabilizeCount;
+    }
+
+    public void setTargetLineStabilizeCount(int targetLineStabilizeCount) {
+        this.targetLineStabilizeCount = targetLineStabilizeCount;
     }
 }

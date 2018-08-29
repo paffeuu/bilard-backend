@@ -49,7 +49,7 @@ public class OpenCVBufforFlushService {
     }
 
     public static Mat getLastFrame() {
-        return framesArray[(counter-1)%10].clone();
+        return framesArray[Math.abs(counter - 1) % 10].clone();
     }
 
     public static void setIsNotNeeded(boolean b) {

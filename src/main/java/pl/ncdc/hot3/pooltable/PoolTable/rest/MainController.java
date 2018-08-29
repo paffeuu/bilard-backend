@@ -65,9 +65,9 @@ public class MainController {
         System.gc();
         PoolTable table = tableStoryService
                 .next()
-               .findBalls()
+                .findBalls()
                 .findCue()
-               .makePredictions()
+                .makePredictions()
                 .detectCollision()
                 .showPrevious()
                 .build();
