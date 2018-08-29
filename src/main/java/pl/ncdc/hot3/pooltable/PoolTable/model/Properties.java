@@ -151,14 +151,14 @@ public class Properties {
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
 
-        this.cameraMatrix.put(2, 2, 1);
-        this.cameraMatrix.put(0, 0, 991.4262945972393);
-        this.cameraMatrix.put(0, 2, 640);
-        this.cameraMatrix.put(1, 1, 993.9357197471496);
-        this.cameraMatrix.put(1, 2, 360);
+        cameraMatrix.put(2, 2, 1);
+        cameraMatrix.put(0, 0, 991.4262945972393);
+        cameraMatrix.put(0, 2, 640);
+        cameraMatrix.put(1, 1, 993.9357197471496);
+        cameraMatrix.put(1, 2, 360);
 
-        this.distCoeffs.put(0, 0, -0.4110309525718729);
-        this.distCoeffs.put(1, 0, 0.2250083648489881);
+        distCoeffs.put(0, 0, -0.4110309525718729);
+        distCoeffs.put(1, 0, 0.2250083648489881);
     }
 
     public static String getWindowsOpencvPath() {
