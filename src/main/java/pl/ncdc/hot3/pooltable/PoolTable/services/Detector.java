@@ -12,9 +12,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
+import pl.ncdc.hot3.pooltable.PoolTable.model.ConfigurableProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import sun.security.krb5.Config;
 
 
 @Service
@@ -40,6 +42,7 @@ public class Detector {
 	private PathService pathService;
 	private BandsService bandsService;
 	private Properties properties;
+	private ConfigurableProperties configurableProperties;
 	private LineService lineService;
 
 	private List<Line> debugDetectedLines;
@@ -55,12 +58,14 @@ public class Detector {
 			PathService pathService,
 			BandsService bandsService,
 			Properties properties,
+            ConfigurableProperties configurableProperties,
             LineService lineService
 			) {
 
 		this.ballService = ballService;
 		this.cueService = cueService;
 		this.properties = properties;
+		this.configurableProperties = configurableProperties;
 		this.pathService = pathService;
 		this.bandsService = bandsService;
         this.lineService = lineService;
@@ -258,12 +263,13 @@ public class Detector {
 
 		if (shortCueLine != null && whiteBall != null) {
             Point coordinates = whiteBall.getCenter();
-
-			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
-			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+            if (shortCueLine != null) {
+				longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
+				longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+			}
 		}
 
-		if (properties.isDebugActive()) {
+		if (configurableProperties.isDebugActive()) {
 			this.debugDetectedLines = linesList;
 			this.debugAverageLine = shortCueLine;
 		}
