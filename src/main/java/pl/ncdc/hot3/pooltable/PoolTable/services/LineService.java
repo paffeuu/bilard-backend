@@ -53,8 +53,8 @@ public class LineService {
     public Line getExtendedStickLineForOneSide(Line stickLine) throws LineServiceException {
         safeMoveLineForVertical(stickLine);
 
-        double horizontalMove = stickLine.getEnd().x - stickLine.getBegin().x;
-        double verticalMove = stickLine.getEnd().y - stickLine.getBegin().y;
+        double horizontalMove = stickLine.getEnd().x - stickLine.getBegin().x; // - < 0
+        double verticalMove = stickLine.getEnd().y - stickLine.getBegin().y;   // == 0
 
         Line extendedLine = new Line();
         Point crosscutPoint1 = null;
@@ -77,7 +77,7 @@ public class LineService {
             crosscutPoint1 = maxTop;
             crosscutPoint2 = maxRight;
 
-        } else if (horizontalMove < 0 && verticalMove > 0) {
+        } else if (horizontalMove <= 0 && verticalMove >= 0) {
 
             Point maxBot = new Point();
             maxBot.y = properties.getTableBandBottom();
@@ -90,7 +90,7 @@ public class LineService {
             crosscutPoint1 = maxLeft;
             crosscutPoint2 = maxBot;
 
-        } else if (horizontalMove < 0 && verticalMove < 0) {
+        } else if (horizontalMove <= 0 && verticalMove <= 0) {
 
             Point maxTop = new Point();
             maxTop.y = properties.getTableBandTop();
@@ -188,6 +188,7 @@ public class LineService {
     }
 
     public static void safeMoveLineForVertical(Line origin) {
+
         if (origin.getBegin().x == origin.getEnd().x) {
             origin.getBegin().x += 3;
         }

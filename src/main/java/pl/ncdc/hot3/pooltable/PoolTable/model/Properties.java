@@ -145,8 +145,8 @@ public class Properties {
         this.rightTopPocketPoint = new Point(tableBandRight + 8, tableBandTop);
         this.leftBotPocketPoint = new Point(tableBandLeft - 10, tableBandBottom + 10);
         this.rightBotPocketPoint = new Point(tableBandRight + 12, tableBandBottom + 10);
-        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 11, tableBandTop - 25);
-        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 8, tableBandBottom + 25);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 2 , tableBandTop - 25);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 4, tableBandBottom + 25);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -160,8 +160,8 @@ public class Properties {
         distCoeffs.put(0, 0, -0.4110309525718729);
         distCoeffs.put(1, 0, 0.2250083648489881);
 
-        targetLineStabilizeCount = 32;
-        targetEndMoveTolerance = 60;
+        targetLineStabilizeCount = 128;
+        targetEndMoveTolerance = 30;
     }
 
     public int getTargetEndMoveTolerance() {

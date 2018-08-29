@@ -268,6 +268,10 @@ public class TableStoryService {
                 drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
             }
 
+            if (!detector.getTargetsList().isEmpty()) {
+                //drawer.drawLines(outputImage, detector.getTargetsList(), new Scalar(170, 57, 57), 4);
+            }
+
 //            if (!detector.getDebugDetectedLines().isEmpty()) {
 //                drawer.drawLines(
 //                        outputImage,

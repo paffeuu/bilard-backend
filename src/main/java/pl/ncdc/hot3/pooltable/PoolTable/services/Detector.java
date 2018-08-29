@@ -255,7 +255,7 @@ public class Detector {
 			shortCueLine = cueService.getPreviousAverageLine();
 		}
 
-		if (whiteBall != null) {
+		if (shortCueLine != null && whiteBall != null) {
             Point coordinates = whiteBall.getCenter();
 
 			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
@@ -446,6 +446,10 @@ public class Detector {
 
 	public Point getPointFurtherToWhiteBall() {
 		return cueService.debugFurtherToWhite;
+	}
+
+	public List<Line> getTargetsList() {
+		return cueService.getTargetLines();
 	}
 
 }

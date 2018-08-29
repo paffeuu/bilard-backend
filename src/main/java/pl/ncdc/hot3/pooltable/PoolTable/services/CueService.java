@@ -36,6 +36,7 @@ public class CueService {
 
     private Point[] targetEnds;
     private int targetEndCurrentIndex;
+    private List<Line> targetLines;
 
     public Point debugCloserToWhite;
     public Point debugFurtherToWhite;
@@ -54,19 +55,11 @@ public class CueService {
 
         this.targetEnds = new Point[properties.getTargetLineStabilizeCount()];
         this.targetEndCurrentIndex = 0;
-        previousAverageLine = null;
+        this.previousAverageLine = null;
+
+        this.targetLines = new ArrayList<>();
     }
 
-    /**
-     * Returns prediction line after bump
-     *
-     * @param line aiming line
-     *
-     * @return prediction line
-     *
-     * @throws CueServiceException  if bump point is out of band
-     * @throws LineServiceException if can not extend cue line for one side
-     */
     private double calcAbsoluteDistance(double value1, double value2){
         return Math.abs(value1 - value2);
     }
@@ -323,6 +316,14 @@ public class CueService {
 
         stabilizeTargetLine(targetLine);
 
+        if (!targetLines.isEmpty() &&
+                LineService.getDistanceBetweenPoints(targetLine.getBegin(), targetLines.get(targetLines.size() - 1).getBegin()) <= properties.getTablePocketRadius()){
+            targetLines.add(targetLine);
+        } else {
+            targetLines.clear();
+            targetLines.add(targetLine);
+        }
+
         return targetLine;
     }
 
@@ -330,9 +331,12 @@ public class CueService {
         targetEnds[targetEndCurrentIndex++] = targetLine.getEnd();
         targetEndCurrentIndex = targetEndCurrentIndex % properties.getTargetLineStabilizeCount();
 
-        double sumOfXs = 0;
-        double sumOfYs = 0;
+        double sumOfXsApproved = 0;
+        double sumOfYsApproved = 0;
         int approvedCounter = 0;
+
+        double allSumOfXs = 0;
+        double allSumOfYs = 0;
 
 
         for (int i = 0; i < properties.getTargetLineStabilizeCount() - 1; i++){
@@ -341,18 +345,28 @@ public class CueService {
             if (targetEnds[tempIndex] != null) {
                 if (LineService.getDistanceBetweenPoints(targetLine.getEnd(), targetEnds[tempIndex]) <= properties.getTargetEndMoveTolerance()) {
                     approvedCounter++;
-                    sumOfXs += targetEnds[tempIndex].x;
-                    sumOfYs += targetEnds[tempIndex].y;
+                    sumOfXsApproved += targetEnds[tempIndex].x;
+                    sumOfYsApproved += targetEnds[tempIndex].y;
                 }
+
+                allSumOfXs += targetEnds[tempIndex].x;
+                allSumOfYs += targetEnds[tempIndex].y;
+
             }
         }
 
         if (approvedCounter >= properties.getTargetLineStabilizeCount() / 2) {
-            targetLine.setEnd(new Point(sumOfXs / approvedCounter, sumOfYs / approvedCounter));
+            targetLine.setEnd(new Point(sumOfXsApproved / approvedCounter, sumOfYsApproved / approvedCounter));
+        } else {
+            targetLine.setEnd(new Point(allSumOfXs / (properties.getTargetLineStabilizeCount() - 1), allSumOfYs / (properties.getTargetLineStabilizeCount() - 1)));
         }
     }
 
     public Line getPreviousAverageLine() {
         return previousAverageLine;
+    }
+
+    public List<Line> getTargetLines() {
+        return targetLines;
     }
 }
