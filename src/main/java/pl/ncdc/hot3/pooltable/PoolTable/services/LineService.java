@@ -50,10 +50,11 @@ public class LineService {
      *
      * @param a line
      */
-    public static void switchPoints(Line a) {
+    public static Line switchPoints(Line a) {
         Point tmp = a.getBegin();
         a.setBegin(a.getEnd());
         a.setEnd(tmp);
+        return a;
     }
 
     public Line getExtendedStickLineForOneSide(Line stickLine) throws LineServiceException {

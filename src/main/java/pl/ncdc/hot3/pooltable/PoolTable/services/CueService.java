@@ -182,7 +182,7 @@ public class CueService {
         double endDist = getDistanceBetweenPoints(line.getEnd(), whiteBall);
 
         if (beginDist <=  endDist) {
-            LineService.switchPoints(newLineBetweenLong);
+            newLineBetweenLong = LineService.switchPoints(newLineBetweenLong);
         }
         debugCloserToWhite = newLineBetweenLong.getEnd();
         debugFurtherToWhite = newLineBetweenLong.getBegin();
