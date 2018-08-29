@@ -433,9 +433,9 @@ public class Detector {
 				pocket,
 				ball.getCenter()
 		);
-		Point ghostBall = cueService.getGhostBall(targetLine, ball);
+		LineService.switchPoints(targetLine);
 
-		return ghostBall;
+		return cueService.getGhostBall(targetLine, ball);
 	}
 
 	public List<Line> getDebugDetectedLines() {

@@ -302,15 +302,22 @@ public class TableStoryService {
     }
 
     public TableStoryService passiveMode() throws LineServiceException {
-        List<Ball> balls = current().getBalls();
+        boolean hardcoreMode = false;
 
-        if (0 != balls.size()) {
-            Ball objectBall = balls.get(0);
+        List<Ball> balls = current().getBalls();
+        Ball cueBall = balls.get(0);
+
+        if (!balls.isEmpty() && 0 == cueBall.getId()) {
+            Ball objectBall = balls.get(1);
             Point pocket = properties.getLeftBotPocketPoint();
             Line targetLine = new Line(objectBall.getCenter(), pocket);
             Point ghostBall = detector.getGhostBall(objectBall, pocket);
+            Line aimingLine = new Line(ghostBall, cueBall.getCenter());
 
-            drawer.drawLine(outputImage, targetLine, new Scalar(155, 155, 155), 6);
+            if (!hardcoreMode) {
+                drawer.drawLine(outputImage, targetLine, new Scalar(0, 255, 255), 6);
+                drawer.drawLine(outputImage, aimingLine, new Scalar(0, 255, 255), 6);
+            }
             drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
         }
 
