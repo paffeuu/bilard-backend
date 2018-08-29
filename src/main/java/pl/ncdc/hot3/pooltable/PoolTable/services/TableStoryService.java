@@ -276,6 +276,10 @@ public class TableStoryService {
 //                        5
 //                );
 //            }
+
+            if (detector.getDebugAverageLine() != null){
+                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 6);
+            }
         }
         return this;
     }

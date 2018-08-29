@@ -21,6 +21,12 @@ public class Properties {
     private double tableBandTop;
     private double tableBandBottom;
 
+    // Initially undistorted improper edges
+    private Point improperLeftTopCorner;
+    private Point improperRightTopCorner;
+    private Point improperRightBottomCorner;
+    private Point improperLeftBottomCorner;
+
     // Pocket
     private int tablePocketRadius;
     private double tablePocketMinRadius;
@@ -119,6 +125,11 @@ public class Properties {
         this.tableBandTop = 131;
         this.tableBandBottom = 628;
         this.tablePocketRadius = 30;
+
+        this.improperLeftTopCorner = new Point(151.0, 128.0);
+        this.improperRightTopCorner = new Point(1131.0, 141.0);
+        this.improperRightBottomCorner = new Point(1133.0, 628.0);
+        this.improperLeftBottomCorner = new Point(142.5, 631.0);
 
         this.predictionDepth = 1;
         this.bumpPointDelta = 2;
@@ -656,5 +667,37 @@ public class Properties {
 
     public void setTargetLineStabilizeCount(int targetLineStabilizeCount) {
         this.targetLineStabilizeCount = targetLineStabilizeCount;
+    }
+
+    public Point getImproperLeftTopCorner() {
+        return improperLeftTopCorner;
+    }
+
+    public void setImproperLeftTopCorner(Point improperLeftTopCorner) {
+        this.improperLeftTopCorner = improperLeftTopCorner;
+    }
+
+    public Point getImproperRightTopCorner() {
+        return improperRightTopCorner;
+    }
+
+    public void setImproperRightTopCorner(Point improperRightTopCorner) {
+        this.improperRightTopCorner = improperRightTopCorner;
+    }
+
+    public Point getImproperRightBottomCorner() {
+        return improperRightBottomCorner;
+    }
+
+    public void setImproperRightBottomCorner(Point improperRightBottomCorner) {
+        this.improperRightBottomCorner = improperRightBottomCorner;
+    }
+
+    public Point getImproperLeftBottomCorner() {
+        return improperLeftBottomCorner;
+    }
+
+    public void setImproperLeftBottomCorner(Point improperLeftBottomCorner) {
+        this.improperLeftBottomCorner = improperLeftBottomCorner;
     }
 }

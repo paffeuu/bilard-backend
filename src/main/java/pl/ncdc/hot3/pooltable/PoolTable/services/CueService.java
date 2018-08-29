@@ -31,6 +31,7 @@ public class CueService {
     private LineService lineService;
 
     private Line[] prevCueLines;
+    private Line previousAverageLine;
     private int cueDetectDelay, detectedCueCounter;
 
     private Point[] targetEnds;
@@ -53,8 +54,19 @@ public class CueService {
 
         this.targetEnds = new Point[properties.getTargetLineStabilizeCount()];
         this.targetEndCurrentIndex = 0;
+        previousAverageLine = null;
     }
 
+    /**
+     * Returns prediction line after bump
+     *
+     * @param line aiming line
+     *
+     * @return prediction line
+     *
+     * @throws CueServiceException  if bump point is out of band
+     * @throws LineServiceException if can not extend cue line for one side
+     */
     private double calcAbsoluteDistance(double value1, double value2){
         return Math.abs(value1 - value2);
     }
@@ -133,6 +145,9 @@ public class CueService {
                         double b1 = ABCCoordinatesLine1[2] / ABCCoordinatesLine1[1] * -1;
                         double b2 = ABCCoordinatesLine2[2] / ABCCoordinatesLine2[1] * -1;
 
+                        if ( Math.abs(a1) >= 20 || Math.abs(a2) >= 20) {
+                            pMin = 1000;
+                        }
 
                         if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin) {
                             pMin = Math.abs(a1 - a2);
@@ -215,6 +230,8 @@ public class CueService {
 
                 stabileCueLine.setBegin(newBegin);
                 stabileCueLine.setEnd(newEnd);
+
+                previousAverageLine = stabileCueLine;
             }
         }
 
@@ -229,10 +246,8 @@ public class CueService {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
 
-
         double a = Y / (X == 0 ? 0.1 : X);
         double b = line.getBegin().y - line.getBegin().x * a;
-
         return new double[]{a, -1, b};
     }
 
@@ -335,5 +350,9 @@ public class CueService {
         if (approvedCounter >= properties.getTargetLineStabilizeCount() / 2) {
             targetLine.setEnd(new Point(sumOfXs / approvedCounter, sumOfYs / approvedCounter));
         }
+    }
+
+    public Line getPreviousAverageLine() {
+        return previousAverageLine;
     }
 }
