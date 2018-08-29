@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class Properties {
 
-    private boolean isDebugActive;
-
     // Bands
     private double tableBandLeft;
     private double tableBandRight;
@@ -85,7 +83,6 @@ public class Properties {
     private int bumpPointDelta;
 
     // Replays
-    private boolean showPreviousPosition;
     private int previousFramesFrequency;
 
 
@@ -102,7 +99,6 @@ public class Properties {
 
 
     public Properties() {
-        this.isDebugActive = true;
 
         this.ballMaxRadius = 11;
         this.ballMinRadius = 8;
@@ -148,7 +144,6 @@ public class Properties {
         this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandTop - 25);
         this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandBottom + 25);
 
-        this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
 
         cameraMatrix.put(2, 2, 1);
@@ -211,14 +206,6 @@ public class Properties {
 
     public void setCueStickLineThickness(int cueStickLineThickness) {
         this.cueStickLineThickness = cueStickLineThickness;
-    }
-
-    public boolean isShowPreviousPosition() {
-        return showPreviousPosition;
-    }
-
-    public void setShowPreviousPosition(boolean showPreviousPosition) {
-        this.showPreviousPosition = showPreviousPosition;
     }
 
     public int getPreviousFramesFrequency() {
@@ -636,13 +623,6 @@ public class Properties {
      */
     public void setBumpPointDelta(int bumpPointDelta) {
         this.bumpPointDelta = bumpPointDelta;
-    }
-    public boolean isDebugActive() {
-        return isDebugActive;
-    }
-
-    public void setDebugActive(boolean debugActive) {
-        isDebugActive = debugActive;
     }
 
     public Point getImproperLeftTopCorner() {
