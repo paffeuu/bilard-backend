@@ -1,9 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.opencv.core.*;
 import org.opencv.core.Point;
@@ -46,6 +44,9 @@ public class Detector {
 
 	private List<Line> debugDetectedLines;
 	private Line debugAverageLine;
+
+	public Line debugPerpendicular;
+	public Point debugLineEndPoint;
 
 	@Autowired
 	public Detector(
@@ -364,23 +365,82 @@ public class Detector {
      *
      * @param line aiming line
      * @param balls list of balls
-     * @param skipFirst do not return cue ball if it is a cue line
+     * @param isCueLine do not return cue ball if it is a cue line
      *
      * @return single ball
      */
-	public Ball getCollisionBall(Line line, List<Ball> balls, boolean skipFirst) {
-		double counter = 0;
+	public Ball getCollisionBall(Line line, List<Ball> balls, boolean isCueLine) {
+		// TODO Usunąć linijke poniżej jeżeli bile będą sortowane w createListOfBalls
+		Collections.sort(balls);
+
+		List<Ball> ballsInCollision = new ArrayList<>();
+		Map<Double, Integer> distances = new HashMap<>();
+		Ball cueBall = balls.get(0);
+		double minDistance = 100;
+		boolean aboveLine = false;
+		double perpendicularCoordinateA = 0;
+		double perpendicularCoordinateB = 0;
+
+		if (0 != cueBall.getId()) {
+			cueBall = null;
+		} else if (isCueLine) {
+			// Calculate line perpendicular to cue line
+			perpendicularCoordinateA = LineService.calcPerpendicularCoordinate(line);
+			perpendicularCoordinateB = -perpendicularCoordinateA * cueBall.getX() + cueBall.getY();
+			aboveLine = LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, line.getEnd());
+
+			// Debug
+			this.debugPerpendicular = new Line(
+					cueBall.getCenter(),
+					new Point(
+							cueBall.getX() + 100,
+							(cueBall.getX() + 100) * perpendicularCoordinateA +  perpendicularCoordinateB
+					)
+			);
+			this.debugLineEndPoint = line.getEnd();
+	}
 
 		for (Ball ball : balls) {
-			double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+			// Ignore cue ball if it is cue line
+			if (ball == cueBall && isCueLine) {
+				continue;
+			}
+
+			double distance = cueService.calculateDistanceBetweenPointAndLine(ball.getCenter(), line);
 
 			if (distance <= properties.getBallExpectedRadius() * 2) {
-				++counter;
-
-				if (!skipFirst || 2 == counter) {
-					return ball;
+				// Discard balls behind the cue ball
+				if (LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, ball.getCenter()) != aboveLine &&
+						isCueLine) {
+					continue;
 				}
+
+				double distanceBetweenPoints;
+				ballsInCollision.add(ball);
+
+				if (isCueLine && null != cueBall) {
+					// Calculate distance between object ball and cue ball
+					distanceBetweenPoints = LineService.calculateDistanceBetweenPoints(ball.getCenter(), cueBall.getCenter());
+				} else {
+					// Calculate distance between object ball and bump point
+					distanceBetweenPoints = LineService.calculateDistanceBetweenPoints(ball.getCenter(), line.getBegin());
+				}
+
+				// Min distance
+				if (0 == ballsInCollision.indexOf(ball) || distanceBetweenPoints < minDistance) {
+					minDistance = distanceBetweenPoints;
+				}
+
+				// Assign distance to ball index
+				distances.put(distanceBetweenPoints, ballsInCollision.indexOf(ball));
 			}
+		}
+
+		if (!ballsInCollision.isEmpty()) {
+			// Return closest ball
+			return ballsInCollision.get(
+					distances.get(minDistance)
+			);
 		}
 
 		return null;

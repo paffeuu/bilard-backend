@@ -281,6 +281,15 @@ public class TableStoryService {
 //                );
 //            }
 
+            // Perpendicular debug
+            if (null != detector.debugPerpendicular) {
+                drawer.drawLine(outputImage, detector.debugPerpendicular, new Scalar(155, 155, 155), 6);
+            }
+
+            if (null != detector.debugLineEndPoint) {
+                drawer.drawCircle(outputImage, detector.debugLineEndPoint, 4, new Scalar(155, 155, 155), 6);
+            }
+
             if (detector.getDebugAverageLine() != null){
                 drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 6);
             }
