@@ -27,6 +27,8 @@ public class MainController {
     @Autowired
     private SimpMessagingTemplate template;
 
+    public boolean passiveMode;
+
 
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
@@ -61,29 +63,27 @@ public class MainController {
     }
 
     @Scheduled(fixedRate = 125)
-    public void socketSendTable() throws Exception{
+    public void socketSendTable() throws Exception {
         System.gc();
-//        PoolTable table = tableStoryService
-//                .next()
-//                .findBalls()
-//                .findCue()
-//                .makePredictions()
-//                .detectCollision()
-//                .showPrevious()
-//                .build();
-        PoolTable table = this.passiveMode();
+        PoolTable table;
+
+        if (this.passiveMode) {
+            table = tableStoryService
+                    .next()
+                    .findBalls()
+                    .findCue()
+                    .makePredictions()
+                    .detectCollision()
+                    .showPrevious()
+                    .build();
+        } else {
+            table = tableStoryService
+                    .next()
+                    .findBalls()
+                    .passiveMode()
+                    .build();
+        }
 
         this.template.convertAndSend("/topic/pooltable", table);
-    }
-
-//    @RequestMapping(value = "/passive-mode", method = RequestMethod.GET)
-    public PoolTable passiveMode() throws LineServiceException {
-        PoolTable table = tableStoryService
-                .next()
-                .findBalls()
-                .passiveMode()
-                .build();
-
-        return table;
     }
 }
