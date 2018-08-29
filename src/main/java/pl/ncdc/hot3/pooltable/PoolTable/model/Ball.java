@@ -13,6 +13,8 @@ public class Ball implements Comparable<Ball> {
     private double x;
     private double y;
 
+    private int isInStaticCounter;
+
     @Override
     public int compareTo(Ball b) {
         if(this.id < b.id) {
@@ -65,6 +67,7 @@ public class Ball implements Comparable<Ball> {
         this.x = x;
         this.y = y;
         this.radius = radius;
+        this.isInStaticCounter = 0;
     }
 
     /**
@@ -142,5 +145,13 @@ public class Ball implements Comparable<Ball> {
     public void setCenter(Point point) {
         this.x = point.x;
         this.y = point.y;
+    }
+
+    public final int getStaticCounter(){
+        return isInStaticCounter;
+    }
+
+    public void increaseStaticCounter(){
+        this.isInStaticCounter++;
     }
 }

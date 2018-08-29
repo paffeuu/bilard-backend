@@ -233,4 +233,30 @@ public class LineService {
     public static double getDistanceBetweenPoints(Point point1, Point point2) {
         return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
     }
+
+    /**
+     * Calculate A coordinate from Ax + By + C = 0 for perpendicular line
+     *
+     * @param line line
+     *
+     * @return A coordinate
+     */
+    public static double calcPerpendicularCoordinate(Line line) {
+        double[] coordinates = LineService.calcCoordinatesAB(line);
+
+        return (-1 / coordinates[0]);
+    }
+
+    /**
+     * Check if point is above line
+     *
+     * @param a     coordinate a
+     * @param b     coordinate b
+     * @param point point
+     *
+     * @return true if point is above the line
+     */
+    public static boolean isPointAboveTheLine(double a, double b, Point point) {
+        return point.y > a * point.x + b;
+    }
 }

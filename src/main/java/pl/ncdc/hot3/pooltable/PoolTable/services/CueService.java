@@ -29,11 +29,14 @@ public class CueService {
     private Properties properties;
     private int counter = 0;
     private LineService lineService;
-    public Line naszaLinia;
 
     private Line[] prevCueLines;
     private Line previousAverageLine;
     private int cueDetectDelay, detectedCueCounter;
+
+    private Point[] targetEnds;
+    private int targetEndCurrentIndex;
+
     private ArrayList<Line> previousCues = new ArrayList<Line>(32);
     private ArrayList<Line> detectionOutOfScope = new ArrayList<Line>();
     private int frameCounter = 0;
@@ -53,6 +56,9 @@ public class CueService {
 
         cueDetectDelay = properties.getCueDetectDelay();
         prevCueLines = new Line[cueDetectDelay];
+
+        this.targetEnds = new Point[properties.getTargetLineStabilizeCount()];
+        this.targetEndCurrentIndex = 0;
         previousAverageLine = null;
     }
 
@@ -359,13 +365,43 @@ public class CueService {
             point.y = y2;
         }
 
-        return lineService.getExtendedStickLineForOneSide(new Line(
+        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
                 point,
                 new Point(
                         ball.getX(),
                         ball.getY()
                 )
         ));
+
+        stabilizeTargetLine(targetLine);
+
+        return targetLine;
+    }
+
+    public void stabilizeTargetLine(Line targetLine){
+        targetEnds[targetEndCurrentIndex++] = targetLine.getEnd();
+        targetEndCurrentIndex = targetEndCurrentIndex % properties.getTargetLineStabilizeCount();
+
+        double sumOfXs = 0;
+        double sumOfYs = 0;
+        int approvedCounter = 0;
+
+
+        for (int i = 0; i < properties.getTargetLineStabilizeCount() - 1; i++){
+            int tempIndex = (targetEndCurrentIndex + 1) % properties.getTargetLineStabilizeCount();
+
+            if (targetEnds[tempIndex] != null) {
+                if (LineService.getDistanceBetweenPoints(targetLine.getEnd(), targetEnds[tempIndex]) <= properties.getTargetEndMoveTolerance()) {
+                    approvedCounter++;
+                    sumOfXs += targetEnds[tempIndex].x;
+                    sumOfYs += targetEnds[tempIndex].y;
+                }
+            }
+        }
+
+        if (approvedCounter >= properties.getTargetLineStabilizeCount() / 2) {
+            targetLine.setEnd(new Point(sumOfXs / approvedCounter, sumOfYs / approvedCounter));
+        }
     }
 
     public Line getPreviousAverageLine() {

@@ -39,6 +39,8 @@ public class TableStoryService {
     List<Ball> prevFrameBalls;
 
     private PreviousPositionService previousPositionService;
+    private Line previousCue;
+    private int noStickOnTableFramesCounter;
 
     @Autowired
     public TableStoryService(
@@ -59,6 +61,9 @@ public class TableStoryService {
         this.bandsService = bandsService;
 
         this.prevFrameBalls = new ArrayList<>();
+        this.previousCue = null;
+        this.noStickOnTableFramesCounter = 0;
+
         currentTableIndex = -1;
 
         tableStory = new ArrayList<>(LIMIT_OF_TABLES);
@@ -103,6 +108,14 @@ public class TableStoryService {
         Line cue = new Line();
         try {
             cue = detector.findStickLine();
+
+            if (cue != null) {
+                previousCue = cue;
+                noStickOnTableFramesCounter = 0;
+            } else {
+                if (noStickOnTableFramesCounter++ < 8)
+                cue = previousCue;
+            }
 
             if (cue instanceof Line && null != current().getBalls()) {
                 Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
@@ -258,6 +271,25 @@ public class TableStoryService {
 
             if (detector.getDebugAverageLine() != null){
                 drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 20);
+                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
+            }
+
+//            if (!detector.getDebugDetectedLines().isEmpty()) {
+//                drawer.drawLines(
+//                        outputImage,
+//                        detector.getDebugDetectedLines(),
+//                        new Scalar(0, 0, 255),
+//                        5
+//                );
+//            }
+
+            // Perpendicular debug
+            if (null != detector.debugPerpendicular) {
+                drawer.drawLine(outputImage, detector.debugPerpendicular, new Scalar(155, 155, 155), 6);
+            }
+
+            if (null != detector.debugLineEndPoint) {
+                drawer.drawCircle(outputImage, detector.debugLineEndPoint, 4, new Scalar(155, 155, 155), 6);
             }
         }
         return this;

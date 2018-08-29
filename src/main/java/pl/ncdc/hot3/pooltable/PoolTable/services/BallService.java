@@ -11,10 +11,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -42,7 +39,7 @@ public class BallService {
 
     private int prevBallsIndexCounter;
     private List<List<Ball>> previousBalls;
-    private List<Ball> staticBalls;
+    private List <Ball> staticBalls;
 
     @Autowired
     public BallService(
@@ -208,7 +205,13 @@ public class BallService {
         for (Ball currentBall : currentBallList) {
             int idx = indexOfBallInPreviousList(currentBall, staticBalls);
             if (idx >= 0){
-                currentBall.setCenter(staticBalls.get(idx).getCenter());
+                Point newCenter = staticBalls.get(idx).getCenter();
+                if (staticBalls.get(idx).getStaticCounter() < properties.getPrevBallsCorrectorCount()) {
+                    newCenter = new Point((staticBalls.get(idx).getCenter().x + currentBall.getCenter().x) / 2, (staticBalls.get(idx).getCenter().y + currentBall.getCenter().y) / 2);
+                    staticBalls.get(idx).setCenter(newCenter);
+                }
+                currentBall.setCenter(newCenter);
+                staticBalls.get(idx).increaseStaticCounter();
             } else {
                 staticBalls.add(currentBall);
             }
@@ -226,7 +229,7 @@ public class BallService {
     }
 
     private int indexOfBallInPreviousList(Ball ball, List<Ball> listOfPreviousBallsPosition) {
-        double prevPositionTolerance = properties.getBallExpectedRadius() / 2;
+        double prevPositionTolerance = properties.getBallExpectedRadius();
 
         int index = -1;
         for (Ball currentBall : listOfPreviousBallsPosition) {
