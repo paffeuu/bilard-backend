@@ -101,6 +101,11 @@ public class Properties {
     private Point improperRightBottomCorner;
     private Point improperLeftBottomCorner;
 
+    private Point projectorLeftTopCorner;
+    private Point projectorRightTopCorner;
+    private Point projectorRightBottomCorner;
+    private Point projectorLeftBottomCorner;
+
 
     public Properties() {
         this.isDebugActive = true;
@@ -108,7 +113,7 @@ public class Properties {
         this.ballMaxRadius = 11;
         this.ballMinRadius = 8;
         this.ballMinDistance = 18;
-        this.ballExpectedRadius = 10;
+        this.ballExpectedRadius = 20;
         this.houghCirclesParam1 = 100;
         this.houghCirclesParam2 = 10;
         this.whiteBallId = 0;
@@ -162,6 +167,11 @@ public class Properties {
         this.improperRightTopCorner = new Point(1131.0, 141.0);
         this.improperRightBottomCorner = new Point(1133.0, 628.0);
         this.improperLeftBottomCorner = new Point(142.5, 631.0);
+
+        this.projectorLeftTopCorner = new Point(30, 30);
+        this.projectorRightTopCorner = new Point(1204.0, 77.0);
+        this.projectorRightBottomCorner = new Point(1198.0, 642.0);
+        this.projectorLeftBottomCorner = new Point(52, 656);
     }
 
     public int getTargetEndMoveTolerance() {
@@ -699,5 +709,37 @@ public class Properties {
 
     public void setImproperLeftBottomCorner(Point improperLeftBottomCorner) {
         this.improperLeftBottomCorner = improperLeftBottomCorner;
+    }
+
+    public Point getProjectorLeftTopCorner() {
+        return projectorLeftTopCorner;
+    }
+
+    public void setProjectorLeftTopCorner(Point projectorLeftTopCorner) {
+        this.projectorLeftTopCorner = projectorLeftTopCorner;
+    }
+
+    public Point getProjectorRightTopCorner() {
+        return projectorRightTopCorner;
+    }
+
+    public void setProjectorRightTopCorner(Point projectorRightTopCorner) {
+        this.projectorRightTopCorner = projectorRightTopCorner;
+    }
+
+    public Point getProjectorRightBottomCorner() {
+        return projectorRightBottomCorner;
+    }
+
+    public void setProjectorRightBottomCorner(Point projectorRightBottomCorner) {
+        this.projectorRightBottomCorner = projectorRightBottomCorner;
+    }
+
+    public Point getProjectorLeftBottomCorner() {
+        return projectorLeftBottomCorner;
+    }
+
+    public void setProjectorLeftBottomCorner(Point projectorLeftBottomCorner) {
+        this.projectorLeftBottomCorner = projectorLeftBottomCorner;
     }
 }

@@ -60,14 +60,14 @@ public class ImageUndistorterService {
     private void prepareProjectorUndistortingMats() {
 
 
-        Point[] srcPoints = new Point[] {
-                properties.getImproperLeftTopCorner(),
-                properties.getImproperRightTopCorner(),
-                properties.getImproperRightBottomCorner(),
-                properties.getImproperLeftBottomCorner()
+        Point[] dstPoints = new Point[] {
+                properties.getProjectorLeftTopCorner(),
+                properties.getProjectorRightTopCorner(),
+                properties.getProjectorRightBottomCorner(),
+                properties.getProjectorLeftBottomCorner()
         };
 
-        Point[] dstPoints = new Point[] {
+        Point[] srcPoints = new Point[] {
                 new Point(properties.getTableBandLeft(), properties.getTableBandTop()),
                 new Point(properties.getTableBandRight(), properties.getTableBandTop()),
                 new Point(properties.getTableBandRight(), properties.getTableBandBottom()),
