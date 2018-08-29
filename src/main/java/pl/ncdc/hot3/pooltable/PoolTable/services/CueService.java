@@ -148,21 +148,18 @@ public class CueService {
 
                         double b1 = -ABCCoordinatesLine1[2];
                         double b2 = -ABCCoordinatesLine2[2];
-                        if (ABCCoordinatesLine1[1] == 0 || ABCCoordinatesLine2[1] == 0) {
 
-                        } else {
                         if ( Math.abs(a1) >= 20 || Math.abs(a2) >= 20) {
                             pMin = 1000;
                         } else {
                             pMin = properties.getParallelTolerance();
                         }
-                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin) {
+                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1-b2) <= 15) {
                             pMin = Math.abs(a1 - a2);
                             indexOfLine_A = i;
                             indexOfLine_B = j;
                         }
 
-                    }
                 }
             }
         }
@@ -294,7 +291,7 @@ public class CueService {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
 
-        double a = Y / (X == 0 ? 0.1 : X);
+        double a = Y / (X == 0 ? 0.0001 : X);
         double b = line.getBegin().y - line.getBegin().x * a;
 
 
