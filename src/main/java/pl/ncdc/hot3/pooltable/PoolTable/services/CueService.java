@@ -1,11 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +10,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static pl.ncdc.hot3.pooltable.PoolTable.services.LineService.calculateDistanceBetweenPoints;
 
@@ -263,6 +256,22 @@ public class CueService {
      * @throws LineServiceException if can not get extended cue line for one side
      */
     public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
+        Point ghostBall = this.getGhostBall(line, ball);
+
+        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
+                ghostBall,
+                new Point(
+                        ball.getX(),
+                        ball.getY()
+                )
+        ));
+
+        stabilizeTargetLine(targetLine);
+
+        return targetLine;
+    }
+
+    public Point getGhostBall(Line line, Ball ball) {
         double[] coordinates = calcAllCoordinate(line);
         double A = coordinates[0];
         double B = coordinates[1];
@@ -298,17 +307,7 @@ public class CueService {
             point.y = y2;
         }
 
-        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
-                point,
-                new Point(
-                        ball.getX(),
-                        ball.getY()
-                )
-        ));
-
-        stabilizeTargetLine(targetLine);
-
-        return targetLine;
+        return point;
     }
 
     public void stabilizeTargetLine(Line targetLine){

@@ -1,8 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
@@ -12,9 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 
-import java.io.File;
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 
 @RestController
@@ -66,16 +63,27 @@ public class MainController {
     @Scheduled(fixedRate = 125)
     public void socketSendTable() throws Exception{
         System.gc();
-        PoolTable table = tableStoryService
-                .next()
-                .findBalls()
-                .findCue()
-                .makePredictions()
-                .detectCollision()
-                .showPrevious()
-                .build();
+//        PoolTable table = tableStoryService
+//                .next()
+//                .findBalls()
+//                .findCue()
+//                .makePredictions()
+//                .detectCollision()
+//                .showPrevious()
+//                .build();
+        PoolTable table = this.passiveMode();
 
         this.template.convertAndSend("/topic/pooltable", table);
     }
 
+//    @RequestMapping(value = "/passive-mode", method = RequestMethod.GET)
+    public PoolTable passiveMode() throws LineServiceException {
+        PoolTable table = tableStoryService
+                .next()
+                .findBalls()
+                .passiveMode()
+                .build();
+
+        return table;
+    }
 }

@@ -428,6 +428,16 @@ public class Detector {
 		return emptyTableImage;
 	}
 
+	public Point getGhostBall(Ball ball, Point pocket) throws LineServiceException {
+		Line targetLine = new Line(
+				pocket,
+				ball.getCenter()
+		);
+		Point ghostBall = cueService.getGhostBall(targetLine, ball);
+
+		return ghostBall;
+	}
+
 	public List<Line> getDebugDetectedLines() {
 		return debugDetectedLines;
 	}
