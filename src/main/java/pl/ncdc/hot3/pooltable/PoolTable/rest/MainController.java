@@ -91,10 +91,20 @@ public class MainController {
 
     public void socketSendProjectorView() throws Exception {
         TableStoryService tss = this.tableStoryService.clone();
+
         tss.setProjectorMode(true);
-        table = tss
-                .projectorMode()
-                .build();
+        tss.projectorMode();
+
+        // Dynamic mode
+        if (0 == configurableProperties.getGameMode()) {
+            tss
+                    .findCue()
+                    .makePredictions()
+                    .detectCollision()
+                    .showPrevious();
+        }
+
+        table = tss.build();
 
         this.template.convertAndSend("/topic/projector", table);
     }

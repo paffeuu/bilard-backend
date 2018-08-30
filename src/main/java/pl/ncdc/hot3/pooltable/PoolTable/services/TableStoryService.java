@@ -354,10 +354,25 @@ public class TableStoryService implements Cloneable {
         if (0 != configurableProperties.getGameMode()) {
             List<Ball> balls = current().getBalls();
 
-            if (null != balls && !balls.isEmpty()) {
+            if (null != balls &&
+                    !balls.isEmpty() &&
+                    null != properties.getSelectedBall()) {
+
                 Ball cueBall = balls.get(0);
 
-                if (0 == cueBall.getId() && null != properties.getSelectedBall()) {
+                // Check if selected ball disappear
+                boolean selectedBallDisappear = true;
+
+                for (Ball ball : balls) {
+                    if (ball.getX() == properties.getSelectedBall().getX() &&
+                            ball.getY() == properties.getSelectedBall().getY()) {
+
+                        selectedBallDisappear = false;
+                    }
+                }
+
+                // If we have cue ball and selected ball
+                if (0 == cueBall.getId() && !selectedBallDisappear) {
                     Ball objectBall = properties.getSelectedBall();
                     Point pocket = properties.getPocketPoint(properties.getSelectedPocket());
 
@@ -366,9 +381,13 @@ public class TableStoryService implements Cloneable {
                     Line targetLine = new Line(objectBall.getCenter(), pocket);
 
                     if (1 == configurableProperties.getGameMode()) {
+                        // Target line
                         drawer.drawLine(outputImage, targetLine, new Scalar(0, 255, 255), 6);
+                        // Aiming line
                         drawer.drawLine(outputImage, aimingLine, new Scalar(0, 255, 255), 6);
                     }
+
+                    // Ghost ball
                     drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
                 }
             }
