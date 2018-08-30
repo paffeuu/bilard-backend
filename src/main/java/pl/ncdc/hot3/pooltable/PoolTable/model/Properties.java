@@ -148,7 +148,7 @@ public class Properties {
 
         this.leftTopPocketPoint = new Point(tableBandLeft, tableBandTop);
         this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
-        this.leftBotPocketPoint = new Point(tableBandLeft, tableBandBottom + 10);
+        this.leftBotPocketPoint = new Point(tableBandLeft, tableBandBottom);
         this.rightBotPocketPoint = new Point(tableBandRight, tableBandBottom);
         this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandTop);
         this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandBottom);
@@ -165,10 +165,10 @@ public class Properties {
         distCoeffs.put(0, 0, -0.4110309525718729);
         distCoeffs.put(1, 0, 0.2250083648489881);
 
-        targetLineStabilizeCount = 128;
+        targetLineStabilizeCount = 16;
         targetEndMoveTolerance = 30;
         countOfTargetLines = 16;
-        targetNullMaxCount = 6;
+        targetNullMaxCount = 8;
     }
 
     public int getTargetEndMoveTolerance() {
