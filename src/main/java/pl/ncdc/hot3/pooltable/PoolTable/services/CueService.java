@@ -139,10 +139,6 @@ public class CueService {
                         double b1 = ABCCoordinatesLine1[2] / ABCCoordinatesLine1[1] * -1;
                         double b2 = ABCCoordinatesLine2[2] / ABCCoordinatesLine2[1] * -1;
 
-                        System.out.println("a roznica wynosi:  " + Math.abs(a1 - a2));
-                        System.out.println("A1: " + a1);
-                        System.out.println("A2: " +a2);
-                        System.out.println("b roznica wynosi:  " + Math.abs(b1 - b2));
                         if ( Math.abs(a1) >= 20 || Math.abs(a2) >= 20) {
                             pMin = 1000;
                         }

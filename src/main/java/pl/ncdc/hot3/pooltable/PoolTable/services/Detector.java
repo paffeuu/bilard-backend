@@ -38,6 +38,8 @@ public class Detector {
 	private Mat sourceImg;
 	private Mat outputImg;
 
+	public static int count = 1;
+
 	private CueService cueService;
 	private BallService ballService;
 	private PathService pathService;
@@ -125,17 +127,19 @@ public class Detector {
 		return ballList;
 	}
 
-	private Mat detectBalls() {
+	public Mat detectBalls() {
+
 		Mat blurredImage = new Mat();
 		Mat convertedTypeImage = new Mat();
 		Mat destinationImage = new Mat();
+		Mat cannyImg = new Mat();
 		Size blurSize = new Size(1, 1);
 
 		// blur convertedImage
 		Imgproc.blur(sourceImg, blurredImage, blurSize);
 
 		// convert to hsv
-		Imgproc.cvtColor(blurredImage, convertedTypeImage, Imgproc.COLOR_BGR2HLS);
+		Imgproc.cvtColor(blurredImage, convertedTypeImage, Imgproc.COLOR_BGR2HSV);
 		blurredImage.release();
 
 		// split into planes
@@ -143,11 +147,8 @@ public class Detector {
 		Core.split(convertedTypeImage, planes);
 		convertedTypeImage.release();
 
-		counter ++;
-		Imgcodecs.imwrite("C:\\Users\\Borat\\Pictures\\Projektor\\afterConvert" + counter + ".png", planes.get(1));
-
 		// detect circles
-		Imgproc.HoughCircles(planes.get(1), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0,
+		Imgproc.HoughCircles(planes.get(2), destinationImage, Imgproc.CV_HOUGH_GRADIENT, 1.0,
 				properties.getBallMinDistance(), properties.getHoughCirclesParam1(),
 				properties.getHoughCirclesParam2(), properties.getBallMinRadius(), properties.getBallMaxRadius());
 
@@ -159,7 +160,7 @@ public class Detector {
 		return destinationImage;
 	}
 
-	private Mat filterCircles(Mat allCircles) {
+	public Mat filterCircles(Mat allCircles) {
 
 		// output mat
 		Mat filteredCircles = new Mat(1, 1, CvType.CV_64FC3);
@@ -209,7 +210,7 @@ public class Detector {
 		return filteredCircles;
 	}
 
-	private List<Rect> getBallsROI(double[] circles) {
+	public List<Rect> getBallsROI(double[] circles) {
 		double x, y, r;
 		Point topLeft = new Point();
 		Point bottomRight = new Point();
@@ -219,7 +220,7 @@ public class Detector {
 		for (int i = 0; i < circles.length; i += 3) {
 			x = circles[i];
 			y = circles[i + 1];
-			r = properties.getBallExpectedRadius();
+			r = properties.getBallExpectedRadius() + 2;
 
 			topLeft.x = x - r;
 			topLeft.y = y - r;
@@ -232,7 +233,7 @@ public class Detector {
 		return roiList;
 	}
 
-	private double[] convertMatToArray(Mat mat) {
+	public double[] convertMatToArray(Mat mat) {
 		double[] data = new double[0];
 		try {
 			int size = (int) mat.total() * mat.channels();

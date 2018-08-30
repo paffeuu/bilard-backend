@@ -11,10 +11,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.BallsDetectorException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -32,26 +29,22 @@ public class BallService {
     private Mat mask;
 
     // masks to differentiate and set unique id of every ball
-    private Scalar blackLowerMask = new Scalar(120, 2, 190);
-    private Scalar blackHigherMask = new Scalar(152, 30, 240);
-    private Scalar purpleLowerMask = new Scalar(142, 49, 162);
-    private Scalar purpleHigherMask = new Scalar(174, 118, 235);
-    private Scalar orangeLowerMask = new Scalar(3,120,239);
-    private Scalar orangeHigherMask = new Scalar(11,161,240);
-    private Scalar blueLowerMask = new Scalar(143, 66, 239);
-    private Scalar blueHigherMask = new Scalar(160, 120, 240);
-    private Scalar yellowLowerMask = new Scalar(32, 120, 239);
-    private Scalar yellowHigherMask = new Scalar(40, 169, 240);
-    private Scalar red1LowerMask = new Scalar(0, 117, 239);
-    private Scalar red1HigherMask = new Scalar(5, 120, 240);
-    private Scalar red2LowerMask = new Scalar(230, 96, 239);
-    private Scalar red2HigherMask = new Scalar(240, 142, 240);
-    private Scalar brown1LowerMask = new Scalar(0, 40, 239);
-    private Scalar brown1HigherMask = new Scalar(5, 95, 240);
-    private Scalar brown2LowerMask = new Scalar(230, 40, 239);
-    private Scalar brown2HigherMask = new Scalar(240, 95, 240);
-    private Scalar greenLowerMask = new Scalar(102,29,239);
-    private Scalar greenHigherMask = new Scalar(136,53,240);
+    private Scalar blackLowerMask = new Scalar(0, 0, 0);
+    private Scalar blackHigherMask = new Scalar(50, 21, 17);
+    private Scalar purpleLowerMask = new Scalar(90, 5, 0);
+    private Scalar purpleHigherMask = new Scalar(205, 30, 85);
+    private Scalar orangeLowerMask = new Scalar(0,25,200);
+    private Scalar orangeHigherMask = new Scalar(90,80,255);
+    private Scalar blueLowerMask = new Scalar(140, 0, 0);
+    private Scalar blueHigherMask = new Scalar(255, 99, 5);
+    private Scalar yellowLowerMask = new Scalar(0, 180, 170);
+    private Scalar yellowHigherMask = new Scalar(99, 255, 255);
+    private Scalar redLowerMask = new Scalar(0, 0, 190);
+    private Scalar redHigherMask = new Scalar(65, 25, 255);
+    private Scalar brownLowerMask = new Scalar(0, 0, 0);
+    private Scalar brownHigherMask = new Scalar(80, 15, 188);
+    private Scalar greenLowerMask = new Scalar(20,30,0);
+    private Scalar greenHigherMask = new Scalar(110,100,5);
 
     private final int THRESH = 200;
     private final int MAX_VAL_THRESH = 255;
@@ -76,6 +69,7 @@ public class BallService {
         mask = new Mat();
 
         previousBalls = new ArrayList<List<Ball>>(properties.getPreviousBallsPositionsToCompare());
+
         prevBallsIndexCounter = 0;
         staticBalls = new ArrayList<>();
 
@@ -86,7 +80,7 @@ public class BallService {
         return whiteBall;
     }
 
-    private void setWhiteAndBlackBall(List<Ball> balls, List<Mat> ballImgList) {
+    public void setWhiteAndBlackBall(List<Ball> balls, List<Mat> ballImgList) {
         try {
             whiteBall = balls
                     .stream()
@@ -97,11 +91,10 @@ public class BallService {
             System.out.println("White ball not found.");
         }
 
-        int indexOfBlackBall = getIndexOfBall(ballImgList, blackLowerMask, blackHigherMask);
-        balls.get(indexOfBlackBall).setId(properties.getBlackBallId());
+        setIndexOfBall(balls, ballImgList, blackLowerMask, blackHigherMask, properties.getBlackBallId());
     }
 
-    private List<Ball> convertMatToListOfBalls(Mat circles) {
+    public List<Ball> convertMatToListOfBalls(Mat circles) {
         int x;
         int y;
         int r;
@@ -122,7 +115,7 @@ public class BallService {
         return balls;
     }
 
-    private List<Mat> cropImage(List<Rect> roi, Mat image) {
+    public List<Mat> cropImage(List<Rect> roi, Mat image) {
         List<Mat> crops = new ArrayList<>();
         Mat crop;
 
@@ -152,82 +145,57 @@ public class BallService {
         // Set white ball id to 0 and black ball id to 8
         setWhiteAndBlackBall(detectedBalls, ballImgList);
 
+        int rectangleSideLength = 2 * (2 + properties.getBallExpectedRadius());
+
+
         int solidId = properties.getFirstSolidBallId();
         int stripedId = properties.getFirstStripedBallId();
-        int rectangleSideLength = 2 * properties.getBallExpectedRadius();
-
-        List<Ball> solidBalls = new ArrayList<>();
-        List<Ball> stripedBalls = new ArrayList<>();
-        List<Mat> solidBallsImg = new ArrayList<>();
-        List<Mat> stripedBallsImg = new ArrayList<>();
-
-        List<Ball> finalBallList = new ArrayList<>();
 
         // Set id of every ball excluding white and black ball
         for(int i = 0 ; i < detectedBalls.size() ; i ++) {
             if(detectedBalls.get(i).getId() == Ball.DEFAULT_ID) {
                 if ((detectedBalls.get(i).getWhitePixels() * 100) / Math.pow(rectangleSideLength, 2) >= properties.getWhitePixelsPercentageBorder()) {
-                    stripedBalls.add(detectedBalls.get(i));
-                    stripedBallsImg.add(ballImgList.get(i));
+                    detectedBalls.get(i).setId(stripedId);
+                    stripedId++;
                 } else {
-                    solidBalls.add(detectedBalls.get(i));
-                    solidBallsImg.add(ballImgList.get(i));
+                    detectedBalls.get(i).setId(solidId);
+                    solidId++;
                 }
-            } else {
-                finalBallList.add(detectedBalls.get(i));
             }
         }
 
-        detectedBalls.clear();
-
-        setIndexOfBall(solidBalls, solidBallsImg, yellowLowerMask, yellowHigherMask, 10);
-        setIndexOfBall(solidBalls, solidBallsImg, blueLowerMask, blueHigherMask, 11);
-
-        setIndexOfBall(solidBalls, solidBallsImg, purpleLowerMask, purpleHigherMask, 13);
-        setIndexOfBall(solidBalls, solidBallsImg, orangeLowerMask, orangeHigherMask, 14);
-        setIndexOfBall(solidBalls, solidBallsImg, greenLowerMask, greenHigherMask, 15);
-
-        setIndexOfBall(solidBalls, solidBallsImg, yellowLowerMask, yellowHigherMask, 30);
-        setIndexOfBall(solidBalls, solidBallsImg, blueLowerMask, blueHigherMask, 31);
-
-        setIndexOfBall(solidBalls, solidBallsImg, purpleLowerMask, purpleHigherMask, 33);
-        setIndexOfBall(solidBalls, solidBallsImg, orangeLowerMask, orangeHigherMask, 34);
-        setIndexOfBall(solidBalls, solidBallsImg, greenLowerMask, greenHigherMask, 35);
-
-        finalBallList.addAll(solidBalls);
-        finalBallList.addAll(stripedBalls);
-
-        return finalBallList;
+        return detectedBalls;
     }
 
 
-    private void setIndexOfBall(List<Ball> balls, List<Mat> ballImgList, Scalar lowerMask, Scalar higherMask, int id) {
+    public void setIndexOfBall(List<Ball> balls, List<Mat> ballImgList, Scalar lowerMask, Scalar higherMask, int id) {
         int index = getIndexOfBall(balls, ballImgList, lowerMask, higherMask);
-        balls.get(index).setId(id);
+        if(index != 355) {
+            balls.get(index).setId(id);
+        }
     }
 
-    private int getIndexOfBall(List<Ball> balls, List<Mat> ballImgList, Scalar lowerMask, Scalar higherMask) {
+    public int getIndexOfBall(List<Ball> balls, List<Mat> ballImgList, Scalar lowerMask, Scalar higherMask) {
         double numberOfWhitePixels = 0;
-        int indexOfBall = 0;
-        Mat temporaryMat = new Mat();
+        int indexOfBall = 355;
         Mat inRangeMat = new Mat();
         Mat histMat = new Mat();
 
-        for(int i = 0 ; i < ballImgList.size() ; i ++) {
-            Imgproc.cvtColor(ballImgList.get(i), temporaryMat, Imgproc.COLOR_BGR2HLS);
-            Core.inRange(temporaryMat, lowerMask, higherMask, inRangeMat);
-            Imgproc.calcHist(Collections.singletonList(inRangeMat), channels, mask, histMat, histSize, ranges);
+        for (int i = 0; i < ballImgList.size(); i++) {
+            if(balls.get(i).getId() == Ball.DEFAULT_ID) {
+                Core.inRange(ballImgList.get(i), lowerMask, higherMask, inRangeMat);
+                Imgproc.calcHist(Collections.singletonList(inRangeMat), channels, mask, histMat, histSize, ranges);
 
-            if(histMat.get(1,0)[0] > numberOfWhitePixels) {
-                numberOfWhitePixels = histMat.get(1,0)[0];
-                indexOfBall = i;
+                if (histMat.get(1, 0)[0] > numberOfWhitePixels) {
+                    numberOfWhitePixels = histMat.get(1, 0)[0];
+                    indexOfBall = i; }
             }
         }
 
         return indexOfBall;
     }
 
-    private List<Ball> stabilizeWithPrevious(List<Ball> currentList) {
+    public List<Ball> stabilizeWithPrevious(List<Ball> currentList) {
         if (currentList != null && !currentList.isEmpty()) {
             if (previousBalls.size() < properties.getPreviousBallsPositionsToCompare()){
                 previousBalls.add(currentList);
@@ -285,10 +253,12 @@ public class BallService {
             }
         }
 
+        Iterator<Ball> iterator = staticBalls.iterator();
+
         if (staticBalls.size() > currentBallList.size()) {
             for (Ball currentBall : staticBalls){
                 if (indexOfBallInPreviousList(currentBall, currentBallList) == -1){
-                    staticBalls.remove(currentBall);
+                    iterator.remove();
                 }
             }
         }
@@ -310,39 +280,7 @@ public class BallService {
         return -1;
     }
 
-    private int getIndexOfBall(List<Mat> ballImgList, Scalar lowerMask, Scalar higherMask) {
-        Mat convertedImg = new Mat();
-        Mat temporaryBallImg = new Mat();
-        Mat temporaryHist = new Mat();
-        double numberOfWhitePixels = 0;
-        int indexOfBall = 0;
-
-        for(int i = 0 ; i < ballImgList.size() ; i ++) {
-            // convert every ball image into HSV
-            Imgproc.cvtColor(ballImgList.get(i), convertedImg, Imgproc.COLOR_BGR2HSV);
-
-            // change every pixel between mask bands into white pixels, and the others into black pixels
-            Core.inRange(convertedImg, lowerMask, higherMask, temporaryBallImg);
-
-            // calculate number of white pixels
-            Imgproc.calcHist(Collections.singletonList(temporaryBallImg), channels, mask, temporaryHist, histSize ,ranges);
-
-            // update number of white pixels and index of ball that interests us
-            if(temporaryHist.get(1,0)[0] > numberOfWhitePixels) {
-                indexOfBall = i;
-                numberOfWhitePixels = temporaryHist.get(1,0)[0];
-            }
-        }
-
-        // clear the memory
-        convertedImg.release();
-        temporaryBallImg.release();
-        temporaryHist.release();
-
-        return indexOfBall;
-    }
-
-    private void differentiateStripesAndSolids(Mat circles, List<Ball> detectedBalls, List<Rect> roiList) {
+    public void differentiateStripesAndSolids(Mat circles, List<Ball> detectedBalls, List<Rect> roiList) {
         // split source image into layers
         List<Mat> planes = new ArrayList<>(3);
         Core.split(circles, planes);
@@ -385,8 +323,8 @@ public class BallService {
                 detectedBalls.get(k).setWhitePixels(histG.get(1,0)[0]);
             }else if(histG.get(1,0)[0] > 3 * histB.get(1,0)[0]) {
                 detectedBalls.get(k).setWhitePixels(histB.get(1,0)[0]);
-            }else {
-                detectedBalls.get(k).setWhitePixels((histB.get(1, 0)[0] + histG.get(1, 0)[0])/2);
+            } else {
+                detectedBalls.get(k).setWhitePixels((histB.get(1,0)[0] + histG.get(1,0)[0]) / 2);
             }
         }
 
