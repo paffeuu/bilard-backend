@@ -84,7 +84,6 @@ public class Detector {
 		} catch (DetectorException e) {
 			LOGGER.warn("Cannot make edges for empty source image.");
 		}
-
 	}
 
 	public Mat getSourceImg() {
@@ -162,7 +161,6 @@ public class Detector {
 	}
 
 	private Mat filterCircles(Mat allCircles) {
-
 		// output mat
 		Mat filteredCircles = new Mat(1, 1, CvType.CV_64FC3);
 
@@ -258,10 +256,10 @@ public class Detector {
 		Ball whiteBall = ballService.getWhiteBall();
 
 		if (shortCueLine == null) {
-			shortCueLine = cueService.getPreviousAverageLine();
+			//shortCueLine = cueService.getPreviousAverageLine();
 		}
 
-		if (whiteBall != null) {
+		if (shortCueLine != null && whiteBall != null) {
             Point coordinates = whiteBall.getCenter();
             if (shortCueLine != null) {
 				longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
@@ -357,16 +355,19 @@ public class Detector {
      * @throws LineServiceException if can not find ball collision line
      */
     public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
-        Ball collision = getCollisionBall(line, balls, isCue);
+		Line targetLine = null;
 
-        if (null != collision) {
-            return cueService.findBallCollisionLine(line, collision);
-        }
+    	if (!balls.isEmpty()) {
+			Ball collision = getCollisionBall(line, balls, isCue);
 
-        return null;
+			if (null != collision) {
+				targetLine = cueService.findBallCollisionLine(line, collision);
+			}
+		}
+        return targetLine;
     }
 
-    /**
+	/**
      * Get ball which is in collision with line
      *
      * @param line aiming line
