@@ -204,59 +204,44 @@ public class CueService {
         if (cueLine == null) {
             return null;
         }
-        System.out.println("-------------------");
-        System.out.println("-------------------");
-        double[] stabilizedBeginning = {0, 0};
+        double[] stabilizedBeginning = { 0, 0};
         double[] stabilizedEnd = {0,0};
         double distanceTolerance = properties.getPreviousFramesMoveTolerance();
-        if (counter >=6) {
-            this.previousCues.clear();
-            this.detectionOutOfScope.clear();
-            counter = 0;
-        }
-        if ( this.previousCues.isEmpty()) {
-            System.out.println("previous cues empty");
-            this.previousCues.add(cueLine);
 
-        } else if (!LineService.distanceBetweenLinesCheck(cueLine, this.previousAverageLine, distanceTolerance)) {
-
-            System.out.println("nie wpadlo w tolerancje");
-            if (this.detectionOutOfScope.isEmpty()) {
-                System.out.println("outofscope empty");
-                this.detectionOutOfScope.add(cueLine);
-                counter = 0;
-            } else if (LineService.distanceBetweenLinesCheck(this.averageOfListOfLines(this.detectionOutOfScope),
-                    cueLine, distanceTolerance)) {
-                System.out.println("wpadlo do outofscope");
-                this.detectionOutOfScope.add(cueLine);
-                if ( this.detectionOutOfScope.size() >= 3) {
-                    System.out.println("podmiana");
-                    this.previousCues.clear();
-                    this.previousCues.addAll(this.detectionOutOfScope);
-                    System.out.println("rozmiar cues: " + this.previousCues.size());
-                    this.detectionOutOfScope.clear();
-                }
-                counter = 0;
-            }
-            System.out.println("nie wpadlo do outofscope");
-            this.counter++;
-            return this.previousAverageLine;
-        }
-        counter = 0;
-        this.detectionOutOfScope.clear();
-        System.out.println("out of scope clearing");
-        System.out.println("rozmiar cues " + this.previousCues.size());
         previousCues.add(cueLine);
-        if (previousCues.size() > 20) {
-            System.out.println("karuezela");
+        if (previousCues.size() >= 20) {
             previousCues.remove(0);
         }
 
-        this.previousAverageLine = this.averageOfListOfLines(this.previousCues);
-        System.out.println("zwraca srednia");
-        System.out.println("-------------------");
-        System.out.println("-------------------");
-        return this.previousAverageLine;
+        for (Line line : this.previousCues) {
+            if ( line != null) {
+                stabilizedBeginning[0] += line.getBegin().x;
+                stabilizedBeginning[1] += line.getBegin().y;
+                stabilizedEnd[0] += line.getEnd().x;
+                stabilizedEnd[1] += line.getEnd().y;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+        stabilizedBeginning[0]  /= this.previousCues.size();
+        stabilizedBeginning[1] /= this.previousCues.size();
+        stabilizedEnd[0] /= this.previousCues.size();
+        stabilizedEnd[1] /= this.previousCues.size();
+
+
+
+        Line lin= new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
+        this.previousAverageLine = lin;
+        return lin;
+
     }
 
         private Line averageOfListOfLines(List<Line> list) {
