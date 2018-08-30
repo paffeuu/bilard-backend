@@ -29,11 +29,6 @@ public class CueService {
     private Line previousAverageLine;
     private int cueDetectDelay, detectedCueCounter;
 
-    private Point[] targetEnds;
-    private int targetEndCurrentIndex;
-    private List<Line> targetLines;
-    private int indexOfTargetLine;
-
     private ArrayList<Line> previousCues = new ArrayList<Line>(32);
     private ArrayList<Line> detectionOutOfScope = new ArrayList<Line>();
     private int frameCounter = 0;
@@ -53,13 +48,8 @@ public class CueService {
 
         cueDetectDelay = properties.getCueDetectDelay();
         prevCueLines = new Line[cueDetectDelay];
-
-        this.targetEnds = new Point[properties.getTargetLineStabilizeCount()];
-        this.targetEndCurrentIndex = 0;
         this.previousAverageLine = null;
 
-        this.targetLines = new ArrayList<>(properties.getCountOfTargetLines());
-        this.indexOfTargetLine = 0;
     }
 
     private double calcAbsoluteDistance(double value1, double value2){
@@ -123,12 +113,13 @@ public class CueService {
         double pMin = properties.getParallelTolerance();
         double bestPararell = 0;
         double distMin = properties.getMinBCoordinateForLines();
+        double distMax = properties.getMaxBCoordinateForLines();
         double[] ABCCoordinatesLine1 = new double[3];
         double[] ABCCoordinatesLine2 = new double[3];
 
         int indexOfLine_A = 0, indexOfLine_B = 0;
 
-        for (int i = 0; i < innerLines.size() - 1; i++){
+        for (int i = 0; i < innerLines.size() - 1; i++) {
             ABCCoordinatesLine1 = calcAllCoordinate(innerLines.get(i));
             for (int j = 0; j < innerLines.size(); j++){
                 if (i != j) {
@@ -138,21 +129,20 @@ public class CueService {
 
                         double b1 = -ABCCoordinatesLine1[2];
                         double b2 = -ABCCoordinatesLine2[2];
-                        if (ABCCoordinatesLine1[1] == 0 || ABCCoordinatesLine2[1] == 0) {
 
-                        } else {
                         if ( Math.abs(a1) >= 20 || Math.abs(a2) >= 20) {
                             pMin = 1000;
                         } else {
                             pMin = properties.getParallelTolerance();
                         }
-                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin) {
-                            pMin = Math.abs(a1 - a2);
-                            indexOfLine_A = i;
-                            indexOfLine_B = j;
-                        }
 
-                    }
+                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1-b2) <= distMax) {
+                            if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1 - b2) <= distMax) {
+                                pMin = Math.abs(a1 - a2);
+                                indexOfLine_A = i;
+                                indexOfLine_B = j;
+                            }
+                        }
                 }
             }
         }
@@ -167,6 +157,7 @@ public class CueService {
             Point newEnd = new Point(X2, Y2);
             newLineBetweenShort = new Line(newBegin, newEnd);
         }
+
 
         return newLineBetweenShort;
     }
@@ -331,122 +322,17 @@ public class CueService {
                 )
         ));
 
-        stabilizeTargetLine(targetLine);
-
-
-        if (!targetLines.isEmpty() ||
-                targetLines.size() < properties.getCountOfTargetLines()){
-            targetLines.add(targetLine);
-        } else {
-            targetLines.clear();
-            targetLines.set(indexOfTargetLine, targetLine);
-        }
-        indexOfTargetLine = (indexOfTargetLine + 1) % properties.getCountOfTargetLines();
 
         return targetLine;
-    }
-
-    public void stabilizeTargetLine(Line targetLine){
-        targetEnds[targetEndCurrentIndex++] = targetLine.getEnd();
-        targetEndCurrentIndex = targetEndCurrentIndex % properties.getTargetLineStabilizeCount();
-
-        double sumOfXsApproved = 0;
-        double sumOfYsApproved = 0;
-        int approvedCounter = 0;
-
-        double allSumOfXs = 0;
-        double allSumOfYs = 0;
-
-
-        for (int i = 0; i < properties.getTargetLineStabilizeCount() - 1; i++){
-            int tempIndex = (targetEndCurrentIndex + 1) % properties.getTargetLineStabilizeCount();
-
-            if (targetEnds[tempIndex] != null) {
-                if (LineService.getDistanceBetweenPoints(targetLine.getEnd(), targetEnds[tempIndex]) <= properties.getTargetEndMoveTolerance()) {
-                    approvedCounter++;
-                    sumOfXsApproved += targetEnds[tempIndex].x;
-                    sumOfYsApproved += targetEnds[tempIndex].y;
-                }
-
-                allSumOfXs += targetEnds[tempIndex].x;
-                allSumOfYs += targetEnds[tempIndex].y;
-
-            }
-        }
-
-        if (approvedCounter >= properties.getTargetLineStabilizeCount() / 2) {
-            targetLine.setEnd(new Point(sumOfXsApproved / approvedCounter, sumOfYsApproved / approvedCounter));
-        } else {
-            targetLine.setEnd(new Point(allSumOfXs / (properties.getTargetLineStabilizeCount() - 1), allSumOfYs / (properties.getTargetLineStabilizeCount() - 1)));
-        }
     }
 
     public Line getPreviousAverageLine() {
         return previousAverageLine;
     }
 
-    public List<Line> getTargetLines() {
-        return targetLines;
-    }
 
-    private Point getTargetFieldCenter(){
-        Point center = null;
+    public void resetTargetLines() {
 
-        if (!targetLines.isEmpty()){
-            double sumXs = 0;
-            double sumYs = 0;
-            for (Line line : targetLines) {
-                sumXs += line.getEnd().x;
-                sumYs += line.getEnd().y;
-            }
-            center = new Point(sumXs / targetLines.size(), sumYs / targetLines.size());
-        }
-
-        return center;
-    }
-
-    public Line[] getTunnel() throws TunnelMakerException {
-        if (targetLines.isEmpty()) {
-            throw new TunnelMakerException("No target lines.");
-        }
-
-        Point centre = getTargetFieldCenter();
-        Line centerLine = new Line(targetLines.get(0).getBegin(), centre);
-
-        try {
-            centerLine = lineService.getExtendedStickLineForOneSide(centerLine);
-            centre = centerLine.getEnd();
-        } catch (LineServiceException e) {
-            LOGGER.error("Cannot prepare tunnel. Center: " + centre + " and line: " + centerLine);
-            throw new TunnelMakerException("Cannot extend center line for tunnel. Nested: ", e);
-        }
-
-        Line firstSideLine = null;
-        Line secondSideLine = null;
-
-        double firstDist = 0;
-        double secondDist = 0;
-
-        for (Line line : targetLines) {
-            double dist = LineService.getDistanceBetweenPoints(line.getEnd(), centre);
-            if (LineService.isPointAboveTheLine(centerLine, line.getEnd())) {
-                if (dist >= firstDist) {
-                    firstDist = dist;
-                    firstSideLine = line;
-                }
-            } else {
-                if (dist >= secondDist) {
-                    secondDist = dist;
-                    secondSideLine = line;
-                }
-            }
-        }
-
-        if (firstSideLine != null && secondSideLine != null){
-            return new Line[]{ firstSideLine, secondSideLine };
-        }else {
-            throw new TunnelMakerException("Cannot make tunnel, lines: " + firstSideLine + ", " + secondSideLine);
-        }
     }
 
 }

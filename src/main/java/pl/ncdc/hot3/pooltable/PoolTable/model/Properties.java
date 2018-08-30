@@ -73,6 +73,7 @@ public class Properties {
     private double cueThickness;
     private double parallelTolerance;
     private double minBCoordinateForLines;
+    private double maxBCoordinateForLines;
     private double previousFramesMoveTolerance;
     private int cueDetectDelay;
     private int cueStickLineThickness;
@@ -83,6 +84,7 @@ public class Properties {
     private int targetLineStabilizeCount;
     private int targetEndMoveTolerance;
     private int countOfTargetLines;
+    private int targetNullMaxCount;
 
     // Replays
     private int previousFramesFrequency;
@@ -134,6 +136,7 @@ public class Properties {
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.minBCoordinateForLines = 5;
+        this.maxBCoordinateForLines = 15;
         this.previousFramesMoveTolerance = 100;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
@@ -158,7 +161,8 @@ public class Properties {
 
         targetLineStabilizeCount = 128;
         targetEndMoveTolerance = 30;
-        countOfTargetLines = 32;
+        countOfTargetLines = 16;
+        targetNullMaxCount = 6;
     }
 
     public int getTargetEndMoveTolerance() {
@@ -609,6 +613,14 @@ public class Properties {
         this.minBCoordinateForLines = minBCoordinateForLines;
     }
 
+    public double getMaxBCoordinateForLines() {
+        return maxBCoordinateForLines;
+    }
+
+    public void setMaxBCoordinateForLines(double maxBCoordinateForLines) {
+        this.maxBCoordinateForLines = maxBCoordinateForLines;
+    }
+
     public static String getCameraUrl() {
         return cameraUrl;
     }
@@ -689,5 +701,13 @@ public class Properties {
 
     public void setCountOfTargetLines(int countOfTargetLines) {
         this.countOfTargetLines = countOfTargetLines;
+    }
+
+    public int getTargetNullMaxCount() {
+        return targetNullMaxCount;
+    }
+
+    public void setTargetNullMaxCount(int targetNullMaxCount) {
+        this.targetNullMaxCount = targetNullMaxCount;
     }
 }

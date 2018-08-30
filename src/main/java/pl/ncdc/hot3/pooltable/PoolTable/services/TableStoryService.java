@@ -36,6 +36,8 @@ public class TableStoryService {
     private Properties properties;
     private ConfigurableProperties configurableProperties;
     private BandsService bandsService;
+    private TargetLineService targetLineService;
+
     List<Ball> prevFrameBalls;
 
     private PreviousPositionService previousPositionService;
@@ -50,7 +52,8 @@ public class TableStoryService {
             Properties properties,
             ConfigurableProperties configurableProperties,
             PreviousPositionService previousPositionService,
-            BandsService bandsService
+            BandsService bandsService,
+            TargetLineService targetLineService
     ) {
         this.detector = detector;
         this.cameraService = cameraService;
@@ -59,6 +62,7 @@ public class TableStoryService {
         this.configurableProperties = configurableProperties;
         this.previousPositionService = previousPositionService;
         this.bandsService = bandsService;
+        this.targetLineService = targetLineService;
 
         this.prevFrameBalls = new ArrayList<>();
         this.previousCue = null;
@@ -105,7 +109,7 @@ public class TableStoryService {
     }
 
     public TableStoryService findCue(){
-        Line cue = new Line();
+        Line cue;
         try {
             cue = detector.findStickLine();
 
@@ -174,6 +178,7 @@ public class TableStoryService {
                             isCue
                     );
 
+
                     if (null != targetLine) {
                         current().setTargetLine(targetLine);
                         Line newLine = new Line(
@@ -198,6 +203,9 @@ public class TableStoryService {
             LOGGER.info("Can not find target line");
         }
 
+        targetLineService.saveLastTargetLine(current().getTargetLine());
+        current().setTargetLine(targetLineService.getAverageLine());
+
         return this;
     }
 
@@ -207,7 +215,7 @@ public class TableStoryService {
             current().setBalls(balls);
             prevFrameBalls = balls;
         } catch (Exception e) {
-            LOGGER.error("Unknow exception for no balls on table, returned previous.");
+            //LOGGER.error("Unknow exception for no balls on table, returned previous.");
             current().setBalls(prevFrameBalls);
         }
 
@@ -269,29 +277,14 @@ public class TableStoryService {
                 drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
             }
 
-            if (!detector.getTargetsList().isEmpty()) {
-                //drawer.drawLines(outputImage, detector.getTargetsList(), new Scalar(170, 57, 57), 4);
+            if (!detector.getDebugDetectedLines().isEmpty()) {
+                drawer.drawLines(
+                        outputImage,
+                        detector.getDebugDetectedLines(),
+                        new Scalar(0, 0, 255),
+                        5
+                );
             }
-
-            Line[] tunnel;
-            if ((tunnel = detector.getTargetTunnelLines()) != null) {
-                if (tunnel[0] != null){
-                    drawer.drawLine(outputImage, tunnel[0], new Scalar(170, 57, 57), 6);
-                }
-
-                if (tunnel[1] != null){
-                    drawer.drawLine(outputImage, tunnel[1], new Scalar(170, 57, 57), 6);
-                }
-            }
-
-//            if (!detector.getDebugDetectedLines().isEmpty()) {
-//                drawer.drawLines(
-//                        outputImage,
-//                        detector.getDebugDetectedLines(),
-//                        new Scalar(0, 0, 255),
-//                        5
-//                );
-//            }
 
             // Perpendicular debug
             if (null != detector.debugPerpendicular) {
@@ -316,7 +309,7 @@ public class TableStoryService {
                     current().getCue(),
                     current().getBalls(),
                     current().getPredictions(),
-                    current().getTargetLine()
+                    targetLineService.getAverageLine()
             );
             MatOfByte matOfByte = new MatOfByte();
             Imgcodecs.imencode(".jpg", outputImage, matOfByte);

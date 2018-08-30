@@ -43,6 +43,32 @@ public class BandsService {
         return false;
     }
 
+    public Map<String, Double> getDistsToBands(Point point) {
+        Map<String, Double> distances = new HashMap<>();
+
+        distances.put("LEFT", Math.abs(point.x - properties.getTableBandLeft()));
+        distances.put("RIGHT", Math.abs(point.x - properties.getTableBandRight()));
+        distances.put("TOP", Math.abs(point.y - properties.getTableBandTop()));
+        distances.put("BOTTOM", Math.abs(point.y - properties.getTableBandBottom()));
+
+        return distances;
+    }
+
+    public String getClosestBandName(Map<String, Double> dists) {
+        Map.Entry<String, Double> min = null;
+        for (Map.Entry<String, Double> entry : dists.entrySet()) {
+            if (min == null || min.getValue() > entry.getValue()) {
+                min = entry;
+            }
+        }
+
+        if (min != null) {
+            return min.getKey();
+        }
+
+        return null;
+    }
+
     public PocketPosition getClosestPocketForPoint(Point point) {
         HashMap<PocketPosition, Double> distsToPockets = new HashMap<>();
 

@@ -1,6 +1,10 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
+import jdk.management.resource.internal.inst.InitInstrumentation;
+import org.apache.commons.logging.LogFactory;
 import org.opencv.core.Point;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.ExtendLineException;
@@ -12,6 +16,9 @@ import java.util.*;
 
 @Service
 public class LineService {
+
+    final static Logger LOGGER = LoggerFactory.getLogger(LineService.class);
+
     private Properties properties;
     private BandsService bandsService;
 
@@ -22,17 +29,6 @@ public class LineService {
     ) {
         this.properties = properties;
         this.bandsService = bandsService;
-    }
-
-    public Map<String, Double> getDistsToBands(Point point) {
-        Map<String, Double> distances = new HashMap<>();
-
-        distances.put("LEFT", Math.abs(point.x - properties.getTableBandLeft()));
-        distances.put("RIGHT", Math.abs(point.x - properties.getTableBandRight()));
-        distances.put("TOP", Math.abs(point.y - properties.getTableBandTop()));
-        distances.put("BOTTOM", Math.abs(point.y - properties.getTableBandBottom()));
-
-        return distances;
     }
 
     public static double calculateDistanceBetweenPoints(Point a, Point b) {
@@ -188,9 +184,10 @@ public class LineService {
     }
 
     public static void safeMoveLineForVertical(Line origin) {
-
-        if (origin.getBegin().x == origin.getEnd().x) {
-            origin.getBegin().x += 3;
+        if (origin != null) {
+            if (origin.getBegin().x == origin.getEnd().x) {
+                origin.getBegin().x += 3;
+            }
         }
     }
 
@@ -259,5 +256,24 @@ public class LineService {
         double[] coordinatesAB = LineService.calcCoordinatesAB(line);
 
         return point.y > coordinatesAB[0] * point.x + coordinatesAB[1];
+    }
+
+    public Line getCenterLineExtendedToBand(Line line1, Line line2) {
+        Line extended = null;
+
+        if (line1 != null && line2 != null) {
+            Point newEnd = new Point((line1.getEnd().x + line2.getEnd().x) / 2, (line1.getEnd().y + line2.getEnd().y) / 2);
+
+            try {
+                extended = getExtendedStickLineForOneSide(new Line(line1.getBegin(), newEnd));
+            } catch (LineServiceException e) {
+                LOGGER.error("Cannot extend center of line, null back.", e);
+            }
+
+        } else {
+            LOGGER.error("Could not make center of 2 lines (line1 or line 2 is null), null back.");
+        }
+
+        return extended;
     }
 }
