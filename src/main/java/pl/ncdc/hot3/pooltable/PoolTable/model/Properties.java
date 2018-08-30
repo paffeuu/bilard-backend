@@ -102,6 +102,18 @@ public class Properties {
     private static String windowsFfmpegPath = System.getProperty("user.dir") + "\\lib\\" + "opencv_ffmpeg342_64.dll";
     private static String linuxOpencvPath = "/usr/local/share/OpenCV/java/" + "libopencv_java342" + ".so";
 
+    // Passive mode
+    private Ball selectedBall;
+    public enum Pocket {
+        TOP_LEFT,
+        TOP_MID,
+        TOP_RIGHT,
+        BOTTOM_RIGHT,
+        BOTTOM_MID,
+        BOTTOM_LEFT,
+    }
+    private Pocket selectedPocket;
+
 
     public Properties() {
         this.isDebugActive = true;
@@ -339,7 +351,7 @@ public class Properties {
     }
 
     /**
-     * Get table pocket min radius
+     * Get table Pocket min radius
      *
      * @return
      */
@@ -348,7 +360,7 @@ public class Properties {
     }
 
     /**
-     * Set table pocket min radius
+     * Set table Pocket min radius
      *
      * @param tablePocketMinRadius
      */
@@ -357,7 +369,7 @@ public class Properties {
     }
 
     /**
-     * Get table pocket max radius
+     * Get table Pocket max radius
      *
      * @return
      */
@@ -366,7 +378,7 @@ public class Properties {
     }
 
     /**
-     * Set table pocket max radius
+     * Set table Pocket max radius
      *
      * @param tablePocketMaxRadius
      */
@@ -375,7 +387,7 @@ public class Properties {
     }
 
     /**
-     * Get table pocket min distance
+     * Get table Pocket min distance
      *
      * @return
      */
@@ -384,7 +396,7 @@ public class Properties {
     }
 
     /**
-     * Set table pocket min distance
+     * Set table Pocket min distance
      *
      * @param tablePocketMinDistance
      */
@@ -693,5 +705,60 @@ public class Properties {
 
     public void setTargetLineStabilizeCount(int targetLineStabilizeCount) {
         this.targetLineStabilizeCount = targetLineStabilizeCount;
+    }
+
+    /**
+     * Get selected ball
+     *
+     * @return
+     */
+    public Ball getSelectedBall() {
+        return selectedBall;
+    }
+
+    /**
+     * Select ball
+     *
+     * @param selectedBall
+     */
+    public void setSelectedBall(Ball selectedBall) {
+        this.selectedBall = selectedBall;
+    }
+
+    /**
+     * Get selected pocket
+     *
+     * @return
+     */
+    public Pocket getSelectedPocket() {
+        return selectedPocket;
+    }
+
+    /**
+     * Select Pocket
+     *
+     * @param selectedPocket
+     */
+    public void setSelectedPocket(Pocket selectedPocket) {
+        this.selectedPocket = selectedPocket;
+    }
+
+    public Pocket transformToEnum(int pocketNumber) {
+        switch (pocketNumber) {
+            case 0:
+                return Pocket.TOP_LEFT;
+            case 1:
+                return Pocket.TOP_MID;
+            case 2:
+                return Pocket.TOP_RIGHT;
+            case 3:
+                return Pocket.BOTTOM_RIGHT;
+            case 4:
+                return Pocket.BOTTOM_MID;
+            case 5:
+                return Pocket.BOTTOM_LEFT;
+            default:
+                return Pocket.TOP_LEFT;
+        }
     }
 }

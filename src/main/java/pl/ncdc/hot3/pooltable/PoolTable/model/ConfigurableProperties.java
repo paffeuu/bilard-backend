@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 public class ConfigurableProperties {
     private boolean debugActive;
     private boolean showPreviousPosition;
-    private int gameMode; // 0 - normal mode, 1 - prediction based on ball and pocket position, 2 - ghost ball
+    private int gameMode; // 0 - normal mode, 1 - prediction based on ball and Pocket position, 2 - ghost ball
 
     public ConfigurableProperties() {
         this.debugActive = true;

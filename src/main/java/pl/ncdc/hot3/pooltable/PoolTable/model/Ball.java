@@ -71,6 +71,11 @@ public class Ball implements Comparable<Ball> {
     }
 
     /**
+     * Default Ball constructor
+     */
+    public Ball() {}
+
+    /**
      * Get Ball id
      *
      * @return Ball id
