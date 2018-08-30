@@ -16,7 +16,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.ConfigurableProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import sun.security.krb5.Config;
 
 
 @Service
@@ -129,6 +128,16 @@ public class Detector {
 
         // Sort list of balls by id
         Collections.sort(ballList);
+
+        for(Ball ball : ballList) {
+			System.out.println("ID: " + ball.getId() + "\t, WHITE: "
+					+ (ball.getWhitePixels() * 100) / Math.pow(2*(properties.getBallExpectedRadius()+2),2)
+			+ "\t, R: " + (ball.getR() * 100) / Math.pow(2*(properties.getBallExpectedRadius()+2),2)
+					+ "\t, G: " + (ball.getG() * 100) / Math.pow(2*(properties.getBallExpectedRadius()+2),2)
+					+ "\t, B: " + (ball.getB() * 100) / Math.pow(2*(properties.getBallExpectedRadius()+2),2));
+		}
+
+		System.out.println();
 
 		return ballList;
 	}

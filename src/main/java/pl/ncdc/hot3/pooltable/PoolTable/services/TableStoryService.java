@@ -215,8 +215,8 @@ public class TableStoryService {
     }
 
     public PoolTable build() {
-        return  drawForDebug()
-                .makeView()
+        return  //drawForDebug()
+                makeView()
                 .current();
     }
 

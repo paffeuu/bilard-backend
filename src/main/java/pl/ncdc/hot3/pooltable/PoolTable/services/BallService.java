@@ -31,6 +31,8 @@ public class BallService {
     // masks to differentiate and set unique id of every ball
     private Scalar blackLowerMask;
     private Scalar blackHigherMask;
+    private Scalar whiteLowerMask = new Scalar(254,254,254);
+    private Scalar whiteHigherMask = new Scalar(255,255,255);
 
     private final int THRESH = 200;
     private final int MAX_VAL_THRESH = 255;
@@ -281,43 +283,53 @@ public class BallService {
         Mat secondPlaneEqualized = new Mat();
         Mat firstPlaneThreshold = new Mat();
         Mat secondPlaneThreshold = new Mat();
+        Mat thirdPlaneThreshold = new Mat();
+        Mat thirdPlaneEqualized = new Mat();
 
         // image processing on B and G layers of RGB image
         Imgproc.equalizeHist(planes.get(0), firstPlaneEqualized);
         Imgproc.equalizeHist(planes.get(1), secondPlaneEqualized);
+        Imgproc.equalizeHist(planes.get(2), thirdPlaneEqualized);
         Imgproc.threshold(firstPlaneEqualized, firstPlaneThreshold, THRESH,MAX_VAL_THRESH, Imgproc.THRESH_BINARY);
         Imgproc.threshold(secondPlaneEqualized, secondPlaneThreshold, THRESH,MAX_VAL_THRESH, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(thirdPlaneEqualized, thirdPlaneThreshold, THRESH,MAX_VAL_THRESH, Imgproc.THRESH_BINARY);
 
         // releasing memory from unused Mat objects
         planes.get(0).release();
         planes.get(1).release();
+        planes.get(2).release();
         firstPlaneEqualized.release();
         secondPlaneEqualized.release();
+        thirdPlaneEqualized.release();
 
         // creating list of Mat objects, where every single ball image is different mat on B and G layer
         List<Mat> listOfB = cropImage(roiList, firstPlaneThreshold);
         List<Mat> listOfG = cropImage(roiList, secondPlaneThreshold);
+        List<Mat> listOfR = cropImage(roiList, thirdPlaneThreshold);
 
         // releasing memory from unused Mat objects
         firstPlaneThreshold.release();
         secondPlaneThreshold.release();
+        thirdPlaneThreshold.release();
 
         Mat histB = new Mat();
         Mat histG = new Mat();
+        Mat histR = new Mat();
 
         /* loop that checks every image on the list, calculates the number of white pixels on it and sets
            whitePixels field on Ball class */
         for(int k = 0 ; k < listOfB.size() ; k ++) {
             Imgproc.calcHist(Collections.singletonList(listOfB.get(k)), channels, mask, histB, histSize ,ranges);
             Imgproc.calcHist(Collections.singletonList(listOfG.get(k)), channels, mask, histG, histSize ,ranges);
+            Imgproc.calcHist(Collections.singletonList(listOfR.get(k)), channels, mask, histR, histSize ,ranges);
 
-            if(histB.get(1,0)[0] > 2 * histG.get(1,0)[0]) {
-                detectedBalls.get(k).setWhitePixels(histG.get(1,0)[0]);
-            }else if(histG.get(1,0)[0] > 2 * histB.get(1,0)[0]) {
-                detectedBalls.get(k).setWhitePixels(histB.get(1,0)[0]);
-            } else {
-                detectedBalls.get(k).setWhitePixels((histB.get(1,0)[0] + histG.get(1,0)[0]) / 2);
-            }
+            detectedBalls.get(k).setB(histB.get(1,0)[0]);
+            detectedBalls.get(k).setG(histG.get(1,0)[0]);
+            detectedBalls.get(k).setR(histR.get(1,0)[0]);
+
+
+            detectedBalls.get(k).setWhitePixels((histB.get(1,0)[0] + histG.get(1,0)[0]) / 2);
+
         }
 
         // clear the memory
