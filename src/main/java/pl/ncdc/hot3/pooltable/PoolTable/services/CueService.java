@@ -113,7 +113,7 @@ public class CueService {
 
         double pMin = properties.getParallelTolerance();
         double distMin = properties.getMinBCoordinateForLines();
-        double distMax = Integer.MAX_VALUE;
+        double distMax = properties.getMaxBCoordinateForLines();
         double[] ABCCoordinatesLine1 = new double[3];
         double[] ABCCoordinatesLine2 = new double[3];
 
@@ -137,13 +137,20 @@ public class CueService {
 
                             double parallel = Math.abs((A1 * B2) - (A2 - B1));
 
-                            if (parallel <= pMin && parallel > 0) {
-                                double dist = Math.abs(C1 - C2);
+                            if (parallel <= pMin) {
+                                double dist = 0;
 
-                                //if (Math.abs())
-                                if ( dist < distMax) {
-                                    LOGGER.info("Paralell: " + parallel);
-                                    LOGGER.info("dist: " + dist);
+                                if (B1 == 0 || B2 == 0){
+                                    if (A1 != 0 || A2 != 0) {
+                                        dist = Math.abs((C2 / A2) - (C1 / A1));
+                                    } else {
+                                        dist = Math.abs(innerLines.get(j).getEnd().y - innerLines.get(i).getEnd().y);
+                                    }
+                                }else {
+                                    dist = Math.abs((A2 / B2) - (A1 / B1));
+                                }
+
+                                if (dist > distMin && dist < distMax) {
                                     distMax = dist;
                                     pMin = parallel;
                                     indexOfLine_A = i;
