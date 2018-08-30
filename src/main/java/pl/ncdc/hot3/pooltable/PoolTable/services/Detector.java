@@ -16,7 +16,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.ConfigurableProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import sun.security.krb5.Config;
 
 
 @Service
@@ -30,12 +29,15 @@ public class Detector {
     final int TRESHOLD_FOR_CANNY_FIRST = 100;
     final int TRESHOLD_FOR_CANNY_SECOND = 40;
 
+    private int counter = 0;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
 	private Mat emptyTableImage;
 	private Mat sourceImg;
 	private Mat outputImg;
+
+	public static int count = 1;
 
 	private CueService cueService;
 	private BallService ballService;
@@ -133,7 +135,7 @@ public class Detector {
 		Mat blurredImage = new Mat();
 		Mat convertedTypeImage = new Mat();
 		Mat destinationImage = new Mat();
-		Size blurSize = new Size(5, 5);
+		Size blurSize = new Size(3, 3);
 
 		// blur convertedImage
 		Imgproc.blur(sourceImg, blurredImage, blurSize);
@@ -161,6 +163,7 @@ public class Detector {
 	}
 
 	private Mat filterCircles(Mat allCircles) {
+
 		// output mat
 		Mat filteredCircles = new Mat(1, 1, CvType.CV_64FC3);
 
@@ -219,7 +222,7 @@ public class Detector {
 		for (int i = 0; i < circles.length; i += 3) {
 			x = circles[i];
 			y = circles[i + 1];
-			r = properties.getBallExpectedRadius();
+			r = properties.getBallExpectedRadius() + 2;
 
 			topLeft.x = x - r;
 			topLeft.y = y - r;
@@ -294,7 +297,6 @@ public class Detector {
 		}
 		return linesList;
 	}
-
 
 	public Mat getEdges(Mat source) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();

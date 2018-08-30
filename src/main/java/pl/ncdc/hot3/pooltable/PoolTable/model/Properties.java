@@ -109,18 +109,18 @@ public class Properties {
     public Properties() {
         this.isDebugActive = true;
 
-        this.ballMaxRadius = 11;
+        this.ballMaxRadius = 12;
         this.ballMinRadius = 8;
-        this.ballMinDistance = 18;
-        this.ballExpectedRadius = 10;
-        this.houghCirclesParam1 = 100;
+        this.ballMinDistance = 16;
+        this.ballExpectedRadius = 11;
+        this.houghCirclesParam1 = 180;
         this.houghCirclesParam2 = 10;
         this.whiteBallId = 0;
         this.blackBallId = 8;
         this.firstSolidBallId = 10;
         this.firstStripedBallId = 30;
         this.ballThickness = 5;
-        this.whitePixelsPercentageBorder = 16;
+        this.whitePixelsPercentageBorder = 32;
         this.prevBallsCorrectorCount = 12;
         this.previousBallsPositionsToCompare = 12;
 
