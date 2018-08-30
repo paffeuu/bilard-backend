@@ -282,9 +282,7 @@ public class TableStoryService {
             }
 
 
-            if (detector.getDebugAverageLine() != null){
-                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
-            }
+
 
             if (!detector.getDebugDetectedLines().isEmpty()) {
                 drawer.drawLines(
@@ -293,6 +291,10 @@ public class TableStoryService {
                         new Scalar(0, 0, 255),
                         5
                 );
+            }
+ 
+            if (detector.getDebugAverageLine() != null){
+                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
             }
 
             // Perpendicular debug
