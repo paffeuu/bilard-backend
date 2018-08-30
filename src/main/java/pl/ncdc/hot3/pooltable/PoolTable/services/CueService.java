@@ -1,11 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +12,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static pl.ncdc.hot3.pooltable.PoolTable.services.LineService.calculateDistanceBetweenPoints;
 
@@ -29,13 +23,12 @@ public class CueService {
     private Properties properties;
     private int counter = 0;
     private LineService lineService;
+    private BandsService bandsService;
+    public Line naszaLinia;
 
     private Line[] prevCueLines;
     private Line previousAverageLine;
     private int cueDetectDelay, detectedCueCounter;
-
-    private Point[] targetEnds;
-    private int targetEndCurrentIndex;
 
     private ArrayList<Line> previousCues = new ArrayList<Line>(32);
     private ArrayList<Line> detectionOutOfScope = new ArrayList<Line>();
@@ -43,35 +36,23 @@ public class CueService {
     public Point debugCloserToWhite;
     public Point debugFurtherToWhite;
 
-
-
     @Autowired
     public CueService(
             Properties properties,
-            LineService lineService
+            LineService lineService,
+            BandsService bandsService
     ){
         this.properties = properties;
         this.lineService = lineService;
+        this.bandsService = bandsService;
         this.detectedCueCounter = 0;
 
         cueDetectDelay = properties.getCueDetectDelay();
         prevCueLines = new Line[cueDetectDelay];
+        this.previousAverageLine = null;
 
-        this.targetEnds = new Point[properties.getTargetLineStabilizeCount()];
-        this.targetEndCurrentIndex = 0;
-        previousAverageLine = null;
     }
 
-    /**
-     * Returns prediction line after bump
-     *
-     *  aiming line
-     *
-     * @return prediction line
-     *
-     * @throws CueServiceException  if bump point is out of band
-     * @throws LineServiceException if can not extend cue line for one side
-     */
     private double calcAbsoluteDistance(double value1, double value2){
         return Math.abs(value1 - value2);
     }
@@ -133,12 +114,13 @@ public class CueService {
         double pMin = properties.getParallelTolerance();
         double bestPararell = 0;
         double distMin = properties.getMinBCoordinateForLines();
+        double distMax = properties.getMaxBCoordinateForLines();
         double[] ABCCoordinatesLine1 = new double[3];
         double[] ABCCoordinatesLine2 = new double[3];
 
         int indexOfLine_A = 0, indexOfLine_B = 0;
 
-        for (int i = 0; i < innerLines.size() - 1; i++){
+        for (int i = 0; i < innerLines.size() - 1; i++) {
             ABCCoordinatesLine1 = calcAllCoordinate(innerLines.get(i));
             for (int j = 0; j < innerLines.size(); j++){
                 if (i != j) {
@@ -154,12 +136,12 @@ public class CueService {
                         } else {
                             pMin = properties.getParallelTolerance();
                         }
-                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1-b2) <= 15) {
+
+                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1-b2) <= distMax) {
                             pMin = Math.abs(a1 - a2);
                             indexOfLine_A = i;
                             indexOfLine_B = j;
                         }
-
                 }
             }
         }
@@ -185,7 +167,7 @@ public class CueService {
         double endDist = getDistanceBetweenPoints(line.getEnd(), whiteBall);
 
         if (beginDist <=  endDist) {
-            newLineBetweenLong = LineService.switchPoints(newLineBetweenLong);
+            LineService.switchPoints(newLineBetweenLong);
         }
         debugCloserToWhite = newLineBetweenLong.getEnd();
         debugFurtherToWhite = newLineBetweenLong.getBegin();
@@ -199,11 +181,11 @@ public class CueService {
         return newLineBetweenLong;
     }
 
-
     public Line stabilizeWithPrevious(Line cueLine) {
         if (cueLine == null) {
             return null;
         }
+
         double[] stabilizedBeginning = { 0, 0};
         double[] stabilizedEnd = {0,0};
         double distanceTolerance = properties.getPreviousFramesMoveTolerance();
@@ -214,45 +196,6 @@ public class CueService {
         }
 
         for (Line line : this.previousCues) {
-            if ( line != null) {
-                stabilizedBeginning[0] += line.getBegin().x;
-                stabilizedBeginning[1] += line.getBegin().y;
-                stabilizedEnd[0] += line.getEnd().x;
-                stabilizedEnd[1] += line.getEnd().y;
-            }
-        }
-
-
-
-
-
-
-
-
-
-
-        stabilizedBeginning[0]  /= this.previousCues.size();
-        stabilizedBeginning[1] /= this.previousCues.size();
-        stabilizedEnd[0] /= this.previousCues.size();
-        stabilizedEnd[1] /= this.previousCues.size();
-
-
-
-        Line lin= new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
-        this.previousAverageLine = lin;
-        return lin;
-
-    }
-
-        private Line averageOfListOfLines(List<Line> list) {
-        if (list.isEmpty()) {
-            return new Line(new Point(-1, -1), new Point(-1, -1));
-        }
-        double[] stabilizedBeginning = { 0, 0};
-            double[] stabilizedEnd = {0,0};
-            double distanceTolerance = properties.getPreviousFramesMoveTolerance();
-
-            for (Line line : list) {
                 if ( line != null) {
                     stabilizedBeginning[0] += line.getBegin().x;
                     stabilizedBeginning[1] += line.getBegin().y;
@@ -260,10 +203,36 @@ public class CueService {
                     stabilizedEnd[1] += line.getEnd().y;
                 }
             }
-            stabilizedBeginning[0]  /= list.size();
-            stabilizedBeginning[1] /= list.size();
-            stabilizedEnd[0] /= list.size();
-            stabilizedEnd[1] /= list.size();
+
+
+            stabilizedBeginning[0]  /= this.previousCues.size();
+            stabilizedBeginning[1] /= this.previousCues.size();
+            stabilizedEnd[0] /= this.previousCues.size();
+            stabilizedEnd[1] /= this.previousCues.size();
+
+
+            Line lin= new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
+            this.previousAverageLine = lin;
+            return lin;
+        }
+
+        private Line averageOfListOfLines(List<Line> list) {
+            double[] stabilizedBeginning = { 0, 0};
+            double[] stabilizedEnd = {0,0};
+            double distanceTolerance = properties.getPreviousFramesMoveTolerance();
+
+            for (Line line : list) {
+                if (line != null) {
+                    stabilizedBeginning[0] += line.getBegin().x;
+                    stabilizedBeginning[1] += line.getBegin().y;
+                    stabilizedEnd[0] += line.getEnd().x;
+                    stabilizedEnd[1] += line.getEnd().y;
+                }
+            }
+            stabilizedBeginning[0] = stabilizedBeginning[0] / this.previousCues.size();
+            stabilizedBeginning[1] = stabilizedBeginning[1] / this.previousCues.size();
+            stabilizedEnd[0] = stabilizedEnd[0] / this.previousCues.size();
+            stabilizedEnd[1] = stabilizedEnd[1] / this.previousCues.size();
 
             return new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
         }
@@ -278,11 +247,7 @@ public class CueService {
 
         double a = Y / (X == 0 ? 0.0001 : X);
         double b = line.getBegin().y - line.getBegin().x * a;
-
-
-            return new double[]{a, -1, b};
-
-
+        return new double[]{a, -1, b};
     }
 
     /**
@@ -355,38 +320,12 @@ public class CueService {
                 )
         ));
 
-        stabilizeTargetLine(targetLine);
 
         return targetLine;
-    }
-
-    public void stabilizeTargetLine(Line targetLine){
-        targetEnds[targetEndCurrentIndex++] = targetLine.getEnd();
-        targetEndCurrentIndex = targetEndCurrentIndex % properties.getTargetLineStabilizeCount();
-
-        double sumOfXs = 0;
-        double sumOfYs = 0;
-        int approvedCounter = 0;
-
-
-        for (int i = 0; i < properties.getTargetLineStabilizeCount() - 1; i++){
-            int tempIndex = (targetEndCurrentIndex + 1) % properties.getTargetLineStabilizeCount();
-
-            if (targetEnds[tempIndex] != null) {
-                if (LineService.getDistanceBetweenPoints(targetLine.getEnd(), targetEnds[tempIndex]) <= properties.getTargetEndMoveTolerance()) {
-                    approvedCounter++;
-                    sumOfXs += targetEnds[tempIndex].x;
-                    sumOfYs += targetEnds[tempIndex].y;
-                }
-            }
-        }
-
-        if (approvedCounter >= properties.getTargetLineStabilizeCount() / 2) {
-            targetLine.setEnd(new Point(sumOfXs / approvedCounter, sumOfYs / approvedCounter));
-        }
     }
 
     public Line getPreviousAverageLine() {
         return previousAverageLine;
     }
+
 }

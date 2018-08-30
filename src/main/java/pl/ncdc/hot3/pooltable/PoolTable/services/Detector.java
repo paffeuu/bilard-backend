@@ -86,7 +86,6 @@ public class Detector {
 		} catch (DetectorException e) {
 			LOGGER.warn("Cannot make edges for empty source image.");
 		}
-
 	}
 
 	public Mat getSourceImg() {
@@ -129,21 +128,10 @@ public class Detector {
         // Sort list of balls by id
         Collections.sort(ballList);
 
-        for(Ball ball : ballList) {
-			System.out.println("ID: " + ball.getId() + "\t, WHITE: "
-					+ (ball.getWhitePixels() * 100) / Math.pow(2*(properties.getBallExpectedRadius()+2),2)
-			+ "\t, R: " + (ball.getR() * 100) / Math.pow(2*(properties.getBallExpectedRadius()+2),2)
-					+ "\t, G: " + (ball.getG() * 100) / Math.pow(2*(properties.getBallExpectedRadius()+2),2)
-					+ "\t, B: " + (ball.getB() * 100) / Math.pow(2*(properties.getBallExpectedRadius()+2),2));
-		}
-
-		System.out.println();
-
 		return ballList;
 	}
 
-	public Mat detectBalls() {
-
+	private Mat detectBalls() {
 		Mat blurredImage = new Mat();
 		Mat convertedTypeImage = new Mat();
 		Mat destinationImage = new Mat();
@@ -174,7 +162,7 @@ public class Detector {
 		return destinationImage;
 	}
 
-	public Mat filterCircles(Mat allCircles) {
+	private Mat filterCircles(Mat allCircles) {
 
 		// output mat
 		Mat filteredCircles = new Mat(1, 1, CvType.CV_64FC3);
@@ -224,7 +212,7 @@ public class Detector {
 		return filteredCircles;
 	}
 
-	public List<Rect> getBallsROI(double[] circles) {
+	private List<Rect> getBallsROI(double[] circles) {
 		double x, y, r;
 		Point topLeft = new Point();
 		Point bottomRight = new Point();
@@ -247,7 +235,7 @@ public class Detector {
 		return roiList;
 	}
 
-	public double[] convertMatToArray(Mat mat) {
+	private double[] convertMatToArray(Mat mat) {
 		double[] data = new double[0];
 		try {
 			int size = (int) mat.total() * mat.channels();
@@ -271,10 +259,10 @@ public class Detector {
 		Ball whiteBall = ballService.getWhiteBall();
 
 		if (shortCueLine == null) {
-			shortCueLine = cueService.getPreviousAverageLine();
+			//shortCueLine = cueService.getPreviousAverageLine();
 		}
 
-		if (whiteBall != null) {
+		if (shortCueLine != null && whiteBall != null) {
             Point coordinates = whiteBall.getCenter();
             if (shortCueLine != null) {
 				longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
@@ -369,16 +357,19 @@ public class Detector {
      * @throws LineServiceException if can not find ball collision line
      */
     public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
-        Ball collision = getCollisionBall(line, balls, isCue);
+		Line targetLine = null;
 
-        if (null != collision) {
-            return cueService.findBallCollisionLine(line, collision);
-        }
+    	if (!balls.isEmpty()) {
+			Ball collision = getCollisionBall(line, balls, isCue);
 
-        return null;
+			if (null != collision) {
+				targetLine = cueService.findBallCollisionLine(line, collision);
+			}
+		}
+        return targetLine;
     }
 
-    /**
+	/**
      * Get ball which is in collision with line
      *
      * @param line aiming line
