@@ -73,11 +73,7 @@ public class MainController {
                 .next()
                 .findBalls();
 
-
-        if (2 == configurableProperties.getGameMode()) {
-            this.socketSendProjector();
-        }
-
+        this.socketSendProjectorView();
         this.socketSendDynamicTable();
     }
 
@@ -93,10 +89,10 @@ public class MainController {
         this.template.convertAndSend("/topic/pooltable", table);
     }
 
-    public void socketSendProjector() throws Exception {
+    public void socketSendProjectorView() throws Exception {
         table = tableStoryService
                 .clone()
-                .passiveMode()
+                .projectorMode()
                 .build();
 
         this.template.convertAndSend("/topic/projector", table);

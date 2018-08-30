@@ -327,27 +327,29 @@ public class TableStoryService implements Cloneable {
         }
     }
 
-    public TableStoryService passiveMode() throws LineServiceException {
-        boolean hardcoreMode = false;
+    public TableStoryService projectorMode() throws LineServiceException {
         outputImage = Imgcodecs.imread("src\\main\\resources\\black.png");
-        List<Ball> balls = current().getBalls();
 
-        if (!balls.isEmpty()) {
-            Ball cueBall = balls.get(0);
+        if (0 != configurableProperties.getGameMode()) {
+            List<Ball> balls = current().getBalls();
 
-            if (0 == cueBall.getId() && null != properties.getSelectedBall()) {
-                Ball objectBall = properties.getSelectedBall();
-                Point pocket = properties.getPocketPoint(properties.getSelectedPocket());
+            if (null != balls && !balls.isEmpty()) {
+                Ball cueBall = balls.get(0);
 
-                Point ghostBall = detector.getGhostBall(objectBall, pocket);
-                Line aimingLine = new Line(ghostBall, cueBall.getCenter());
-                Line targetLine = new Line(objectBall.getCenter(), pocket);
+                if (0 == cueBall.getId() && null != properties.getSelectedBall()) {
+                    Ball objectBall = properties.getSelectedBall();
+                    Point pocket = properties.getPocketPoint(properties.getSelectedPocket());
 
-                if (!hardcoreMode) {
-                    drawer.drawLine(outputImage, targetLine, new Scalar(0, 255, 255), 6);
-                    drawer.drawLine(outputImage, aimingLine, new Scalar(0, 255, 255), 6);
+                    Point ghostBall = detector.getGhostBall(objectBall, pocket);
+                    Line aimingLine = new Line(ghostBall, cueBall.getCenter());
+                    Line targetLine = new Line(objectBall.getCenter(), pocket);
+
+//                    if (1 == configurableProperties.getGameMode()) {
+//                        drawer.drawLine(outputImage, targetLine, new Scalar(0, 255, 255), 6);
+                        drawer.drawLine(outputImage, aimingLine, new Scalar(0, 255, 255), 6);
+//                    }
+//                    drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
                 }
-                drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
             }
         }
 
