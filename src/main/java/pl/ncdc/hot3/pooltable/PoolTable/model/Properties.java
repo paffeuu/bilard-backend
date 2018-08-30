@@ -139,9 +139,9 @@ public class Properties {
         this.bumpPointDelta = 2;
 
         this.cueThickness = 60;
-        this.parallelTolerance = 0.9;
+        this.parallelTolerance = 30 ;
         this.minBCoordinateForLines = 5;
-        this.maxBCoordinateForLines = 15;
+        this.maxBCoordinateForLines = 25;
         this.previousFramesMoveTolerance = 100;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
