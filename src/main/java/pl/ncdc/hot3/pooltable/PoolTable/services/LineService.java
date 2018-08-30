@@ -35,18 +35,29 @@ public class LineService {
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
+    public  static boolean distanceBetweenLinesCheck(Line line1, Line line2, double tolerance) {
+        return (LineService.calculateDistanceBetweenPoints(line1.getBegin(), line2.getBegin()) < tolerance
+                && LineService.calculateDistanceBetweenPoints(line1.getEnd(), line2.getEnd()) < tolerance);
+    }
+
+
     /**
      * Switch points in line (begin, end)
      *
      * @param a line
      */
-    public static void switchPoints(Line a) {
+    public static Line switchPoints(Line a) {
         Point tmp = a.getBegin();
         a.setBegin(a.getEnd());
         a.setEnd(tmp);
+        return a;
     }
 
     public Line getExtendedStickLineForOneSide(Line stickLine) throws LineServiceException {
+        if (stickLine == null) {
+            return null;
+        }
+
         safeMoveLineForVertical(stickLine);
 
         double horizontalMove = stickLine.getEnd().x - stickLine.getBegin().x; // - < 0

@@ -21,6 +21,7 @@ public class CueService {
     final static Logger LOGGER = LoggerFactory.getLogger(CueService.class);
 
     private Properties properties;
+    private int counter = 0;
     private LineService lineService;
     private BandsService bandsService;
     public Line naszaLinia;
@@ -137,11 +138,9 @@ public class CueService {
                         }
 
                         if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1-b2) <= distMax) {
-                            if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1 - b2) <= distMax) {
-                                pMin = Math.abs(a1 - a2);
-                                indexOfLine_A = i;
-                                indexOfLine_B = j;
-                            }
+                            pMin = Math.abs(a1 - a2);
+                            indexOfLine_A = i;
+                            indexOfLine_B = j;
                         }
                 }
             }
@@ -157,7 +156,6 @@ public class CueService {
             Point newEnd = new Point(X2, Y2);
             newLineBetweenShort = new Line(newBegin, newEnd);
         }
-
 
         return newLineBetweenShort;
     }
@@ -247,7 +245,7 @@ public class CueService {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
 
-        double a = Y / (X == 0 ? 0.1 : X);
+        double a = Y / (X == 0 ? 0.0001 : X);
         double b = line.getBegin().y - line.getBegin().x * a;
         return new double[]{a, -1, b};
     }
@@ -328,11 +326,6 @@ public class CueService {
 
     public Line getPreviousAverageLine() {
         return previousAverageLine;
-    }
-
-
-    public void resetTargetLines() {
-
     }
 
 }

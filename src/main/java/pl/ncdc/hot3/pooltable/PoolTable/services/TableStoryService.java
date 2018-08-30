@@ -109,9 +109,8 @@ public class TableStoryService {
     }
 
     public TableStoryService findCue(){
-        Line cue;
         try {
-            cue = detector.findStickLine();
+            Line cue = detector.findStickLine();
 
             if (cue != null) {
                 previousCue = cue;
@@ -177,7 +176,6 @@ public class TableStoryService {
                             current().getBalls(),
                             isCue
                     );
-
 
                     if (null != targetLine) {
                         current().setTargetLine(targetLine);
@@ -273,6 +271,17 @@ public class TableStoryService {
                 drawer.drawPoint(outputImage, detector.getPointFurtherToWhiteBall(), new Scalar(0, 0, 0), 2);
             }
 
+
+            if (!detector.getDebugDetectedLines().isEmpty()) {
+                drawer.drawLines(
+                        outputImage,
+                        detector.getDebugDetectedLines(),
+                        new Scalar(0, 0, 255),
+                        5
+                );
+            }
+
+
             if (detector.getDebugAverageLine() != null){
                 drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
             }
@@ -293,10 +302,6 @@ public class TableStoryService {
 
             if (null != detector.debugLineEndPoint) {
                 drawer.drawCircle(outputImage, detector.debugLineEndPoint, 4, new Scalar(155, 155, 155), 6);
-            }
-
-            if (detector.getDebugAverageLine() != null){
-                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 20);
             }
         }
         return this;

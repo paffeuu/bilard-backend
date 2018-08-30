@@ -464,6 +464,8 @@ public class Detector {
      * @throws LineServiceException if can not extend cue line for one side
      */
 	public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
+		//line = new Line(new Point(62,84), new Point(456,347));
+		//ball = new Ball(20,54,20);
 		double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 		double[] coordinates = cueService.calcAllCoordinate(line);
 		double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};

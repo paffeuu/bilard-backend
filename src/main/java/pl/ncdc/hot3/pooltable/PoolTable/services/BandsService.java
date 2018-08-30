@@ -35,8 +35,12 @@ public class BandsService {
     }
 
     public boolean isPointInsideBand(Point point){
-        if (point.x >= properties.getTableBandLeft() - 5 && point.x <= properties.getTableBandRight() + 5) {
-            if (point.y >= properties.getTableBandTop() - 5 && point.y <= properties.getTableBandBottom() + 5) {
+       return isPointInsideBand(point, 5);
+    }
+
+    public boolean isPointInsideBand(Point point, int tolerance) {
+        if (point.x >= properties.getTableBandLeft()  - tolerance && point.x <= properties.getTableBandRight()  + tolerance) {
+            if (point.y >= properties.getTableBandTop() - tolerance && point.y <= properties.getTableBandBottom() + tolerance) {
                 return true;
             }
         }

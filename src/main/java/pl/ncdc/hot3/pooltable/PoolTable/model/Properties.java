@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class Properties {
 
+    private boolean isDebugActive;
+
     // Bands
     private double tableBandLeft;
     private double tableBandRight;
@@ -75,6 +77,7 @@ public class Properties {
     private double minBCoordinateForLines;
     private double maxBCoordinateForLines;
     private double previousFramesMoveTolerance;
+
     private int cueDetectDelay;
     private int cueStickLineThickness;
 
@@ -87,6 +90,7 @@ public class Properties {
     private int targetNullMaxCount;
 
     // Replays
+    private boolean showPreviousPosition;
     private int previousFramesFrequency;
 
 
@@ -103,6 +107,7 @@ public class Properties {
 
 
     public Properties() {
+        this.isDebugActive = true;
 
         this.ballMaxRadius = 11;
         this.ballMinRadius = 8;
@@ -116,14 +121,14 @@ public class Properties {
         this.firstStripedBallId = 30;
         this.ballThickness = 5;
         this.whitePixelsPercentageBorder = 16;
-        this.prevBallsCorrectorCount = 16;
+        this.prevBallsCorrectorCount = 12;
         this.previousBallsPositionsToCompare = 12;
 
-        this.tableBandLeft = 147;
-        this.tableBandRight = 1130;
-        this.tableBandTop = 131;
-        this.tableBandBottom = 628;
-        this.tablePocketRadius = 30;
+        this.tableBandLeft = 148;
+        this.tableBandRight = 1131;
+        this.tableBandTop = 135;
+        this.tableBandBottom = 630;
+        this.tablePocketRadius = 25;
 
         this.improperLeftTopCorner = new Point(151.0, 128.0);
         this.improperRightTopCorner = new Point(1131.0, 141.0);
@@ -141,13 +146,14 @@ public class Properties {
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 
-        this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 10);
-        this.rightTopPocketPoint = new Point(tableBandRight + 8, tableBandTop);
-        this.leftBotPocketPoint = new Point(tableBandLeft - 10, tableBandBottom + 10);
-        this.rightBotPocketPoint = new Point(tableBandRight + 12, tableBandBottom + 10);
-        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 2 , tableBandTop - 25);
-        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 4, tableBandBottom + 25);
+        this.leftTopPocketPoint = new Point(tableBandLeft, tableBandTop);
+        this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
+        this.leftBotPocketPoint = new Point(tableBandLeft, tableBandBottom + 10);
+        this.rightBotPocketPoint = new Point(tableBandRight, tableBandBottom);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandTop);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandBottom);
 
+        this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
 
         cameraMatrix.put(2, 2, 1);
@@ -223,6 +229,14 @@ public class Properties {
 
     public void setCueStickLineThickness(int cueStickLineThickness) {
         this.cueStickLineThickness = cueStickLineThickness;
+    }
+
+    public boolean isShowPreviousPosition() {
+        return showPreviousPosition;
+    }
+
+    public void setShowPreviousPosition(boolean showPreviousPosition) {
+        this.showPreviousPosition = showPreviousPosition;
     }
 
     public int getPreviousFramesFrequency() {
