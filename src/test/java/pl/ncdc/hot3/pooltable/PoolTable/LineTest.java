@@ -31,24 +31,65 @@ public class LineTest {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
 
-        double a = Y / (X == 0 ? 0.1 : X);
-        double b = line.getBegin().y - line.getBegin().x * a;
-        return new double[]{a, -1, b};
+        double A = Y / (X == 0 ? 0.1 : X);
+        double B = (X == 0 ? X : -1);
+        double C = line.getBegin().y - line.getBegin().x * A;
+
+        if (X == 0) {
+            C /= A;
+            A = 1;
+        }
+
+        return new double[]{A, B, C};
     }
 
     @Test
     public void testForCoordinatesForVerticalLine(){
 
+        System.out.println("==========================================================");
+        System.out.println("PIONOWA");
 
-        Point begin = new Point(20, 100);
-        Point end = new Point(20, 200);
+        Point begin = new Point(30, 100);
+        Point end = new Point(30, 400);
         Line line = new Line(begin, end);
 
-        double[] AB = LineService.calcCoordinatesAB(line);
-        System.out.println("A : " + AB[0] + "B : " + AB[1]);
+        Point begin22 = new Point(35, 100);
+        Point end22 = new Point(35, 400);
+        Line line22 = new Line(begin22, end22);
 
         double[] ABC = calcAllCoordinate(line);
+        System.out.println("A: " + ABC[0] / ABC[0] + "B: " + ABC[1] + "C: " + ABC[2] / ABC[0] );
+        ABC = calcAllCoordinate(line22);
+        System.out.println("A: " + ABC[0] / ABC[0] + "B: " + ABC[1] + "C: " + ABC[2] / ABC[0] );
+
+        System.out.println("==========================================================");
+        System.out.println("KRZYWA");
+
+        Point begin2 = new Point(30, 100);
+        Point end2 = new Point(31, 400);
+        Line line2 = new Line(begin2, end2);
+
+        ABC = calcAllCoordinate(line2);
         System.out.println("A: " + ABC[0] + "B: " + ABC[1] + "C: " + ABC[2]);
+
+        Point begin23 = new Point(20, 200);
+        Point end23 = new Point(200, 210);
+        Line line23 = new Line(begin23, end23);
+
+        ABC = calcAllCoordinate(line23);
+        System.out.println("A: " + ABC[0] + "B: " + ABC[1] + "C: " + ABC[2]);
+
+        System.out.println("==========================================================");
+        System.out.println("POZIOMA");
+
+        Point begin3 = new Point(20, 200);
+        Point end3 = new Point(200, 200);
+        Line line3 = new Line(begin3, end3);
+
+        ABC = calcAllCoordinate(line3);
+        System.out.println("A: " + ABC[0] + "B: " + ABC[1] + "C: " + ABC[2]);
+
+        System.out.println("==========================================================");
 
     }
 

@@ -112,7 +112,6 @@ public class CueService {
         }
 
         double pMin = properties.getParallelTolerance();
-        double bestPararell = 0;
         double distMin = properties.getMinBCoordinateForLines();
         double distMax = properties.getMaxBCoordinateForLines();
         double[] ABCCoordinatesLine1 = new double[3];
@@ -121,29 +120,39 @@ public class CueService {
         int indexOfLine_A = 0, indexOfLine_B = 0;
 
         for (int i = 0; i < innerLines.size() - 1; i++) {
-            ABCCoordinatesLine1 = calcAllCoordinate(innerLines.get(i));
-            for (int j = 0; j < innerLines.size(); j++){
-                if (i != j) {
-                    ABCCoordinatesLine2 = calcAllCoordinate(innerLines.get(j));
-                        double a1 = -ABCCoordinatesLine1[0];
-                        double a2 = -ABCCoordinatesLine2[0];
+            if (bandsService.isPointInsideBand(innerLines.get(i).getEnd(), -2) || bandsService.isPointInsideBand(innerLines.get(i).getBegin(), -2)){
+                ABCCoordinatesLine1 = calcABCCoordinates(innerLines.get(i));
+                for (int j = 0; j < innerLines.size(); j++){
+                    if (bandsService.isPointInsideBand(innerLines.get(j).getEnd(), -2) || bandsService.isPointInsideBand(innerLines.get(j).getBegin(), -2)) {
 
-                        double b1 = -ABCCoordinatesLine1[2];
-                        double b2 = -ABCCoordinatesLine2[2];
+                        if (i != j) {
+                            ABCCoordinatesLine2 = calcABCCoordinates(innerLines.get(j));
+                            double A1 = -ABCCoordinatesLine1[0];
+                            double A2 = -ABCCoordinatesLine2[0];
 
-                        if ( Math.abs(a1) >= 20 || Math.abs(a2) >= 20) {
-                            pMin = 1000;
-                        } else {
-                            pMin = properties.getParallelTolerance();
+                            double B1 = ABCCoordinatesLine1[1];
+                            double B2 = ABCCoordinatesLine2[1];
+
+                            double C1 = -ABCCoordinatesLine1[2];
+                            double C2 = -ABCCoordinatesLine2[2];
+
+                            double parallel = Math.abs((A1 * B2) - (A2 - B1));
+
+                            if (parallel <= pMin && parallel > 0) {
+                                double dist = Math.abs(C1 - C2);
+
+                                if (dist > distMin && dist < distMax) {
+                                    pMin = parallel;
+                                    indexOfLine_A = i;
+                                    indexOfLine_B = j;
+                                }
+                            }
                         }
+                    }
 
-                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1-b2) <= distMax) {
-                            pMin = Math.abs(a1 - a2);
-                            indexOfLine_A = i;
-                            indexOfLine_B = j;
-                        }
                 }
             }
+
         }
 
         Line newLineBetweenShort = null;
@@ -248,6 +257,22 @@ public class CueService {
         double a = Y / (X == 0 ? 0.0001 : X);
         double b = line.getBegin().y - line.getBegin().x * a;
         return new double[]{a, -1, b};
+    }
+
+    public double[] calcABCCoordinates(Line line) {
+        double Y = line.getBegin().y - line.getEnd().y;
+        double X = line.getBegin().x - line.getEnd().x;
+
+        double A = Y / (X == 0 ? 0.1 : X);
+        double B = (X == 0 ? X : -1);
+        double C = line.getBegin().y - line.getBegin().x * A;
+
+        if (X == 0) {
+            C /= A;
+            A = 1;
+        }
+
+        return new double[]{A, B, C};
     }
 
     /**
