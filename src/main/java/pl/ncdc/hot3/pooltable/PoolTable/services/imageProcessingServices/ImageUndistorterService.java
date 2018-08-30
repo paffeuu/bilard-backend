@@ -35,8 +35,6 @@ public class ImageUndistorterService {
     }
 
     private void prepareUndistortingMats() {
-
-
         Point[] srcPoints = new Point[] {
                 properties.getImproperLeftTopCorner(),
                 properties.getImproperRightTopCorner(),
@@ -58,8 +56,6 @@ public class ImageUndistorterService {
     }
 
     private void prepareProjectorUndistortingMats() {
-
-
         Point[] dstPoints = new Point[] {
                 properties.getProjectorLeftTopCorner(),
                 properties.getProjectorRightTopCorner(),

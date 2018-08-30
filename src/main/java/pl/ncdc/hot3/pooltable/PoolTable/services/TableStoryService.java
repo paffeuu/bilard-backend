@@ -21,6 +21,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupS
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
 import javax.validation.constraints.Null;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class TableStoryService implements Cloneable {
 
     private PreviousPositionService previousPositionService;
     private ImageUndistorterService imageUndistorterService;
+    private PathService pathService;
     private Line previousCue;
     private int noStickOnTableFramesCounter;
     private boolean projectorMode;
@@ -59,7 +61,8 @@ public class TableStoryService implements Cloneable {
             ConfigurableProperties configurableProperties,
             PreviousPositionService previousPositionService,
             BandsService bandsService,
-            ImageUndistorterService imageUndistorterService
+            ImageUndistorterService imageUndistorterService,
+            PathService pathService
     ) {
         this.detector = detector;
         this.cameraService = cameraService;
@@ -69,6 +72,7 @@ public class TableStoryService implements Cloneable {
         this.previousPositionService = previousPositionService;
         this.bandsService = bandsService;
         this.imageUndistorterService = imageUndistorterService;
+        this.pathService = pathService;
 
         this.prevFrameBalls = new ArrayList<>();
         this.previousCue = null;
@@ -334,8 +338,8 @@ public class TableStoryService implements Cloneable {
         }
     }
 
-    public TableStoryService projectorMode() throws LineServiceException {
-        outputImage = Imgcodecs.imread("src\\main\\resources\\black.png");
+    public TableStoryService projectorMode() throws LineServiceException, FileNotFoundException {
+        outputImage = Imgcodecs.imread(pathService.getFullPath(pathService.BLACK_SCREEN_FILE_NAME));
 
         if (0 != configurableProperties.getGameMode()) {
             List<Ball> balls = current().getBalls();
