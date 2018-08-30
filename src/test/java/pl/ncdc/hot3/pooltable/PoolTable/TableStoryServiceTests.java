@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.CameraServiceException;
+import pl.ncdc.hot3.pooltable.PoolTable.model.ConfigurableProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.*;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.when;
         CueService.class,
         LineService.class,
         Properties.class,
+        ConfigurableProperties.class,
         CameraService.class,
         ImageUndistorterService.class,
         PathService.class,
@@ -49,6 +51,9 @@ public class TableStoryServiceTests {
 
     @Autowired
     private Properties properties;
+
+    @Autowired
+    private ConfigurableProperties configurableProperties;
 
     @Autowired
     private PreviousPositionService previousPositionService;
@@ -72,7 +77,7 @@ public class TableStoryServiceTests {
 
         System.out.println(source.width());
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, configurableProperties, previousPositionService, bandsService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -101,7 +106,7 @@ public class TableStoryServiceTests {
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(source);
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, configurableProperties, previousPositionService, bandsService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -131,7 +136,7 @@ public class TableStoryServiceTests {
         CameraService cameraService = mock(CameraService.class);
         when(cameraService.getSnap()).thenReturn(source);
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, configurableProperties, previousPositionService, bandsService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -154,7 +159,7 @@ public class TableStoryServiceTests {
         CameraService cameraService = mock(CameraService.class);
             when(cameraService.getSnap()).thenReturn(null);
 
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, configurableProperties, previousPositionService, bandsService);
 
         PoolTable table = tableStoryService
                 .next()
@@ -175,7 +180,7 @@ public class TableStoryServiceTests {
 
         ImageUndistorterService undistorterService = new ImageUndistorterService(properties);
         CameraService cameraService = mock(CameraService.class);
-        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, previousPositionService, bandsService);
+        tableStoryService = new TableStoryService(detector, cameraService, drawer, properties, configurableProperties, previousPositionService, bandsService);
 
         PoolTable table = new PoolTable();
         Mat source;

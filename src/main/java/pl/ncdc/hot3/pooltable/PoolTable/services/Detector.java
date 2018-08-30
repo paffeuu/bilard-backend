@@ -1,9 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.opencv.core.*;
 import org.opencv.core.Point;
@@ -14,9 +12,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
+import pl.ncdc.hot3.pooltable.PoolTable.model.ConfigurableProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import sun.security.krb5.Config;
 
 
 @Service
@@ -45,10 +45,14 @@ public class Detector {
 	private PathService pathService;
 	private BandsService bandsService;
 	private Properties properties;
+	private ConfigurableProperties configurableProperties;
 	private LineService lineService;
 
 	private List<Line> debugDetectedLines;
 	private Line debugAverageLine;
+
+	public Line debugPerpendicular;
+	public Point debugLineEndPoint;
 
 	@Autowired
 	public Detector(
@@ -57,12 +61,14 @@ public class Detector {
 			PathService pathService,
 			BandsService bandsService,
 			Properties properties,
+            ConfigurableProperties configurableProperties,
             LineService lineService
 			) {
 
 		this.ballService = ballService;
 		this.cueService = cueService;
 		this.properties = properties;
+		this.configurableProperties = configurableProperties;
 		this.pathService = pathService;
 		this.bandsService = bandsService;
         this.lineService = lineService;
@@ -261,12 +267,13 @@ public class Detector {
 
 		if (whiteBall != null) {
             Point coordinates = whiteBall.getCenter();
-
-			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
-			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+            if (shortCueLine != null) {
+				longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
+				longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+			}
 		}
 
-		if (properties.isDebugActive()) {
+		if (configurableProperties.isDebugActive()) {
 			this.debugDetectedLines = linesList;
 			this.debugAverageLine = shortCueLine;
 		}
@@ -367,23 +374,82 @@ public class Detector {
      *
      * @param line aiming line
      * @param balls list of balls
-     * @param skipFirst do not return cue ball if it is a cue line
+     * @param isCueLine do not return cue ball if it is a cue line
      *
      * @return single ball
      */
-	public Ball getCollisionBall(Line line, List<Ball> balls, boolean skipFirst) {
-		double counter = 0;
+	public Ball getCollisionBall(Line line, List<Ball> balls, boolean isCueLine) {
+		// TODO Usunąć linijke poniżej jeżeli bile będą sortowane w createListOfBalls
+		Collections.sort(balls);
+
+		List<Ball> ballsInCollision = new ArrayList<>();
+		Map<Double, Integer> distances = new HashMap<>();
+		Ball cueBall = balls.get(0);
+		double minDistance = 100;
+		boolean aboveLine = false;
+		double perpendicularCoordinateA = 0;
+		double perpendicularCoordinateB = 0;
+
+		if (0 != cueBall.getId()) {
+			cueBall = null;
+		} else if (isCueLine) {
+			// Calculate line perpendicular to cue line
+			perpendicularCoordinateA = LineService.calcPerpendicularCoordinate(line);
+			perpendicularCoordinateB = -perpendicularCoordinateA * cueBall.getX() + cueBall.getY();
+			aboveLine = LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, line.getEnd());
+
+			// Debug
+			this.debugPerpendicular = new Line(
+					cueBall.getCenter(),
+					new Point(
+							cueBall.getX() + 100,
+							(cueBall.getX() + 100) * perpendicularCoordinateA +  perpendicularCoordinateB
+					)
+			);
+			this.debugLineEndPoint = line.getEnd();
+	}
 
 		for (Ball ball : balls) {
-			double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
+			// Ignore cue ball if it is cue line
+			if (ball == cueBall && isCueLine) {
+				continue;
+			}
+
+			double distance = cueService.calculateDistanceBetweenPointAndLine(ball.getCenter(), line);
 
 			if (distance <= properties.getBallExpectedRadius() * 2) {
-				++counter;
-
-				if (!skipFirst || 2 == counter) {
-					return ball;
+				// Discard balls behind the cue ball
+				if (LineService.isPointAboveTheLine(perpendicularCoordinateA, perpendicularCoordinateB, ball.getCenter()) != aboveLine &&
+						isCueLine) {
+					continue;
 				}
+
+				double distanceBetweenPoints;
+				ballsInCollision.add(ball);
+
+				if (isCueLine && null != cueBall) {
+					// Calculate distance between object ball and cue ball
+					distanceBetweenPoints = LineService.calculateDistanceBetweenPoints(ball.getCenter(), cueBall.getCenter());
+				} else {
+					// Calculate distance between object ball and bump point
+					distanceBetweenPoints = LineService.calculateDistanceBetweenPoints(ball.getCenter(), line.getBegin());
+				}
+
+				// Min distance
+				if (0 == ballsInCollision.indexOf(ball) || distanceBetweenPoints < minDistance) {
+					minDistance = distanceBetweenPoints;
+				}
+
+				// Assign distance to ball index
+				distances.put(distanceBetweenPoints, ballsInCollision.indexOf(ball));
 			}
+		}
+
+		if (!ballsInCollision.isEmpty()) {
+			// Return closest ball
+			return ballsInCollision.get(
+					distances.get(minDistance)
+			);
 		}
 
 		return null;
@@ -400,6 +466,8 @@ public class Detector {
      * @throws LineServiceException if can not extend cue line for one side
      */
 	public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
+		//line = new Line(new Point(62,84), new Point(456,347));
+		//ball = new Ball(20,54,20);
 		double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 		double[] coordinates = cueService.calcAllCoordinate(line);
 		double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};

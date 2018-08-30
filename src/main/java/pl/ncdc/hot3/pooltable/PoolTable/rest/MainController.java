@@ -3,6 +3,7 @@ package pl.ncdc.hot3.pooltable.PoolTable.rest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
+import pl.ncdc.hot3.pooltable.PoolTable.model.ConfigurableProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 import pl.ncdc.hot3.pooltable.PoolTable.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import java.lang.reflect.Field;
 public class MainController {
 
     @Autowired
-    private Properties properties;
+    private ConfigurableProperties properties;
 
     @Autowired
     private TableStoryService tableStoryService;
@@ -44,9 +45,9 @@ public class MainController {
 
     @CrossOrigin(origins = "http://localhost:4200")
     @PutMapping("/set-properties")
-    public ResponseEntity<Properties> setProperties(@RequestBody Properties properties){
+    public ResponseEntity<ConfigurableProperties> setProperties(@RequestBody ConfigurableProperties properties){
         try {
-            for (Field field: Properties.class.getDeclaredFields())
+            for (Field field: ConfigurableProperties.class.getDeclaredFields())
             {
                 field.setAccessible(true);
                 if (!field.get(this.properties).equals(field.get(properties))) {
@@ -57,6 +58,7 @@ public class MainController {
         } catch (IllegalAccessException iaex) {
             iaex.printStackTrace();
         }
+        System.out.println("GameMode:" + this.properties.getGameMode());
         return ResponseEntity.ok(this.properties);
     }
 
@@ -65,9 +67,9 @@ public class MainController {
         System.gc();
         PoolTable table = tableStoryService
                 .next()
-               .findBalls()
+                .findBalls()
                 .findCue()
-               .makePredictions()
+                .makePredictions()
                 .detectCollision()
                 .showPrevious()
                 .build();

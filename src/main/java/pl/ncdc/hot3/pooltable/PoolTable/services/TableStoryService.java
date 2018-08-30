@@ -10,10 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
-import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
-import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
-import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
-import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.model.*;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
@@ -37,10 +34,13 @@ public class TableStoryService {
     private CameraService cameraService;
     private Drawer drawer;
     private Properties properties;
+    private ConfigurableProperties configurableProperties;
     private BandsService bandsService;
     List<Ball> prevFrameBalls;
 
     private PreviousPositionService previousPositionService;
+    private Line previousCue;
+    private int noStickOnTableFramesCounter;
 
     @Autowired
     public TableStoryService(
@@ -48,6 +48,7 @@ public class TableStoryService {
             CameraService cameraService,
             Drawer drawer,
             Properties properties,
+            ConfigurableProperties configurableProperties,
             PreviousPositionService previousPositionService,
             BandsService bandsService
     ) {
@@ -55,10 +56,14 @@ public class TableStoryService {
         this.cameraService = cameraService;
         this.drawer = drawer;
         this.properties = properties;
+        this.configurableProperties = configurableProperties;
         this.previousPositionService = previousPositionService;
         this.bandsService = bandsService;
 
         this.prevFrameBalls = new ArrayList<>();
+        this.previousCue = null;
+        this.noStickOnTableFramesCounter = 0;
+
         currentTableIndex = -1;
 
         tableStory = new ArrayList<>(LIMIT_OF_TABLES);
@@ -100,8 +105,17 @@ public class TableStoryService {
     }
 
     public TableStoryService findCue(){
+        Line cue = new Line();
         try {
-            Line cue = detector.findStickLine();
+            cue = detector.findStickLine();
+
+            if (cue != null) {
+                previousCue = cue;
+                noStickOnTableFramesCounter = 0;
+            } else {
+                if (noStickOnTableFramesCounter++ < 8)
+                cue = previousCue;
+            }
 
             if (cue instanceof Line && null != current().getBalls()) {
                 Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
@@ -208,7 +222,7 @@ public class TableStoryService {
 
     public TableStoryService showPrevious(){
 
-        if (properties.isShowPreviousPosition()) {
+        if (configurableProperties.isShowPreviousPosition()) {
             saveToPrevService();
 
             try {
@@ -233,7 +247,7 @@ public class TableStoryService {
     }
 
     public TableStoryService drawForDebug(){
-        if (properties.isDebugActive()) {
+        if (configurableProperties.isDebugActive()) {
             drawer.drawLines(outputImage, bandsService.getBandLines(), new Scalar(255, 0, 0), 4);
 
             if (detector.getPointCloserToWhiteBall() != null) {
@@ -256,7 +270,26 @@ public class TableStoryService {
 
 
             if (detector.getDebugAverageLine() != null){
-                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 6);
+                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 20);
+                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
+            }
+
+//            if (!detector.getDebugDetectedLines().isEmpty()) {
+//                drawer.drawLines(
+//                        outputImage,
+//                        detector.getDebugDetectedLines(),
+//                        new Scalar(0, 0, 255),
+//                        5
+//                );
+//            }
+
+            // Perpendicular debug
+            if (null != detector.debugPerpendicular) {
+                drawer.drawLine(outputImage, detector.debugPerpendicular, new Scalar(155, 155, 155), 6);
+            }
+
+            if (null != detector.debugLineEndPoint) {
+                drawer.drawCircle(outputImage, detector.debugLineEndPoint, 4, new Scalar(155, 155, 155), 6);
             }
         }
         return this;

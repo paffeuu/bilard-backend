@@ -83,6 +83,8 @@ public class Properties {
     // Predictions
     private int predictionDepth;
     private int bumpPointDelta;
+    private int targetLineStabilizeCount;
+    private int targetEndMoveTolerance;
 
     // Replays
     private boolean showPreviousPosition;
@@ -136,17 +138,16 @@ public class Properties {
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.minBCoordinateForLines = 5;
-        this.previousFramesMoveTolerance = 60;
+        this.previousFramesMoveTolerance = 120;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 
-
         this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 10);
-        this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
+        this.rightTopPocketPoint = new Point(tableBandRight + 8, tableBandTop);
         this.leftBotPocketPoint = new Point(tableBandLeft - 10, tableBandBottom + 10);
-        this.rightBotPocketPoint = new Point(tableBandRight + 10, tableBandBottom + 10);
-        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandTop - 25);
-        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 18, tableBandBottom + 25);
+        this.rightBotPocketPoint = new Point(tableBandRight + 12, tableBandBottom + 10);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 11, tableBandTop - 25);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 8, tableBandBottom + 25);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -159,6 +160,17 @@ public class Properties {
 
         distCoeffs.put(0, 0, -0.4110309525718729);
         distCoeffs.put(1, 0, 0.2250083648489881);
+
+        targetLineStabilizeCount = 32;
+        targetEndMoveTolerance = 60;
+    }
+
+    public int getTargetEndMoveTolerance() {
+        return targetEndMoveTolerance;
+    }
+
+    public void setTargetEndMoveTolerance(int targetEndMoveTolerance) {
+        this.targetEndMoveTolerance = targetEndMoveTolerance;
     }
 
     public static String getWindowsOpencvPath() {
@@ -637,13 +649,6 @@ public class Properties {
     public void setBumpPointDelta(int bumpPointDelta) {
         this.bumpPointDelta = bumpPointDelta;
     }
-    public boolean isDebugActive() {
-        return isDebugActive;
-    }
-
-    public void setDebugActive(boolean debugActive) {
-        isDebugActive = debugActive;
-    }
 
     public Point getImproperLeftTopCorner() {
         return improperLeftTopCorner;
@@ -675,5 +680,18 @@ public class Properties {
 
     public void setImproperLeftBottomCorner(Point improperLeftBottomCorner) {
         this.improperLeftBottomCorner = improperLeftBottomCorner;
+    }
+
+
+    public int getPrevBallsCorrectorCount() {
+        return prevBallsCorrectorCount;
+    }
+
+    public int getTargetLineStabilizeCount() {
+        return targetLineStabilizeCount;
+    }
+
+    public void setTargetLineStabilizeCount(int targetLineStabilizeCount) {
+        this.targetLineStabilizeCount = targetLineStabilizeCount;
     }
 }

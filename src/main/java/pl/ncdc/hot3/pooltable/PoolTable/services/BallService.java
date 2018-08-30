@@ -29,22 +29,8 @@ public class BallService {
     private Mat mask;
 
     // masks to differentiate and set unique id of every ball
-    private Scalar blackLowerMask = new Scalar(0, 0, 0);
-    private Scalar blackHigherMask = new Scalar(50, 21, 17);
-    private Scalar purpleLowerMask = new Scalar(90, 5, 0);
-    private Scalar purpleHigherMask = new Scalar(205, 30, 85);
-    private Scalar orangeLowerMask = new Scalar(0,25,200);
-    private Scalar orangeHigherMask = new Scalar(90,80,255);
-    private Scalar blueLowerMask = new Scalar(140, 0, 0);
-    private Scalar blueHigherMask = new Scalar(255, 99, 5);
-    private Scalar yellowLowerMask = new Scalar(0, 180, 170);
-    private Scalar yellowHigherMask = new Scalar(99, 255, 255);
-    private Scalar redLowerMask = new Scalar(0, 0, 190);
-    private Scalar redHigherMask = new Scalar(65, 25, 255);
-    private Scalar brownLowerMask = new Scalar(0, 0, 0);
-    private Scalar brownHigherMask = new Scalar(80, 15, 188);
-    private Scalar greenLowerMask = new Scalar(20,30,0);
-    private Scalar greenHigherMask = new Scalar(110,100,5);
+    private Scalar blackLowerMask;
+    private Scalar blackHigherMask;
 
     private final int THRESH = 200;
     private final int MAX_VAL_THRESH = 255;
@@ -67,6 +53,8 @@ public class BallService {
         channels = new MatOfInt(0);
         histSize = new MatOfInt(2);
         mask = new Mat();
+        blackLowerMask = new Scalar(0, 0, 0);
+        blackHigherMask = new Scalar(50, 21, 17);
 
         previousBalls = new ArrayList<List<Ball>>(properties.getPreviousBallsPositionsToCompare());
 
@@ -80,7 +68,7 @@ public class BallService {
         return whiteBall;
     }
 
-    public void setWhiteAndBlackBall(List<Ball> balls, List<Mat> ballImgList) {
+    private void setWhiteAndBlackBall(List<Ball> balls, List<Mat> ballImgList) {
         try {
             whiteBall = balls
                     .stream()
@@ -94,7 +82,7 @@ public class BallService {
         setIndexOfBall(balls, ballImgList, blackLowerMask, blackHigherMask, properties.getBlackBallId());
     }
 
-    public List<Ball> convertMatToListOfBalls(Mat circles) {
+    private List<Ball> convertMatToListOfBalls(Mat circles) {
         int x;
         int y;
         int r;
@@ -115,7 +103,7 @@ public class BallService {
         return balls;
     }
 
-    public List<Mat> cropImage(List<Rect> roi, Mat image) {
+    private List<Mat> cropImage(List<Rect> roi, Mat image) {
         List<Mat> crops = new ArrayList<>();
         Mat crop;
 
@@ -147,18 +135,17 @@ public class BallService {
 
         int rectangleSideLength = 2 * (2 + properties.getBallExpectedRadius());
 
-
         int solidId = properties.getFirstSolidBallId();
         int stripedId = properties.getFirstStripedBallId();
 
         // Set id of every ball excluding white and black ball
-        for(int i = 0 ; i < detectedBalls.size() ; i ++) {
-            if(detectedBalls.get(i).getId() == Ball.DEFAULT_ID) {
-                if ((detectedBalls.get(i).getWhitePixels() * 100) / Math.pow(rectangleSideLength, 2) >= properties.getWhitePixelsPercentageBorder()) {
-                    detectedBalls.get(i).setId(stripedId);
+        for(Ball ball : detectedBalls) {
+            if(ball.getId() == Ball.DEFAULT_ID) {
+                if ((ball.getWhitePixels() * 100) / Math.pow(rectangleSideLength, 2) >= properties.getWhitePixelsPercentageBorder()) {
+                    ball.setId(stripedId);
                     stripedId++;
                 } else {
-                    detectedBalls.get(i).setId(solidId);
+                    ball.setId(solidId);
                     solidId++;
                 }
             }
@@ -247,7 +234,13 @@ public class BallService {
         for (Ball currentBall : currentBallList) {
             int idx = indexOfBallInPreviousList(currentBall, staticBalls);
             if (idx >= 0){
-                currentBall.setCenter(staticBalls.get(idx).getCenter());
+                Point newCenter = staticBalls.get(idx).getCenter();
+                if (staticBalls.get(idx).getStaticCounter() < properties.getPrevBallsCorrectorCount()) {
+                    newCenter = new Point((staticBalls.get(idx).getCenter().x + currentBall.getCenter().x) / 2, (staticBalls.get(idx).getCenter().y + currentBall.getCenter().y) / 2);
+                    staticBalls.get(idx).setCenter(newCenter);
+                }
+                currentBall.setCenter(newCenter);
+                staticBalls.get(idx).increaseStaticCounter();
             } else {
                 staticBalls.add(currentBall);
             }
@@ -266,7 +259,7 @@ public class BallService {
     }
 
     private int indexOfBallInPreviousList(Ball ball, List<Ball> listOfPreviousBallsPosition) {
-        double prevPositionTolerance = properties.getBallExpectedRadius() * 0.75;
+        double prevPositionTolerance = properties.getBallExpectedRadius();
 
         int index = -1;
         for (Ball currentBall : listOfPreviousBallsPosition) {
