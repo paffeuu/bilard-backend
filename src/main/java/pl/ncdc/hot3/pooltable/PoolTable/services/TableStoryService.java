@@ -48,6 +48,7 @@ public class TableStoryService implements Cloneable {
     private ImageUndistorterService imageUndistorterService;
     private Line previousCue;
     private int noStickOnTableFramesCounter;
+    private boolean projectorMode;
 
     @Autowired
     public TableStoryService(
@@ -304,7 +305,7 @@ public class TableStoryService implements Cloneable {
         return this;
     }
 
-    private TableStoryService makeView(){
+    private TableStoryService makeView() {
         try {
             drawer.draw(
                     outputImage,
@@ -313,13 +314,19 @@ public class TableStoryService implements Cloneable {
                     current().getPredictions(),
                     current().getTargetLine()
             );
-            Mat output = new Mat();
-            output = imageUndistorterService.projectorWarp(outputImage);
             MatOfByte matOfByte = new MatOfByte();
-            Imgcodecs.imencode(".jpg", output, matOfByte);
+
+            if (this.projectorMode) {
+                Mat output = new Mat();
+                output = imageUndistorterService.projectorWarp(outputImage);
+                Imgcodecs.imencode(".jpg", output, matOfByte);
+                output.release();
+            } else {
+                Imgcodecs.imencode(".jpg", outputImage, matOfByte);
+            }
+
             current().setTableImage(matOfByte.toArray());
             outputImage.release();
-            output.release();
         } catch (DrawerException e) {
             LOGGER.error("Cannot prepere the view image.", e);
         } finally {
@@ -344,11 +351,11 @@ public class TableStoryService implements Cloneable {
                     Line aimingLine = new Line(ghostBall, cueBall.getCenter());
                     Line targetLine = new Line(objectBall.getCenter(), pocket);
 
-//                    if (1 == configurableProperties.getGameMode()) {
-//                        drawer.drawLine(outputImage, targetLine, new Scalar(0, 255, 255), 6);
+                    if (1 == configurableProperties.getGameMode()) {
+                        drawer.drawLine(outputImage, targetLine, new Scalar(0, 255, 255), 6);
                         drawer.drawLine(outputImage, aimingLine, new Scalar(0, 255, 255), 6);
-//                    }
-//                    drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
+                    }
+                    drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
                 }
             }
         }
@@ -359,5 +366,13 @@ public class TableStoryService implements Cloneable {
     @Override
     public TableStoryService clone() throws CloneNotSupportedException {
         return (TableStoryService) super.clone();
+    }
+
+    public boolean isProjectorMode() {
+        return projectorMode;
+    }
+
+    public void setProjectorMode(boolean projectorMode) {
+        this.projectorMode = projectorMode;
     }
 }

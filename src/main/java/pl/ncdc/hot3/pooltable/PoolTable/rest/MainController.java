@@ -90,8 +90,9 @@ public class MainController {
     }
 
     public void socketSendProjectorView() throws Exception {
-        table = tableStoryService
-                .clone()
+        TableStoryService tss = this.tableStoryService.clone();
+        tss.setProjectorMode(true);
+        table = tss
                 .projectorMode()
                 .build();
 
