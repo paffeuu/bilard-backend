@@ -27,6 +27,11 @@ public class Properties {
     private Point improperRightBottomCorner;
     private Point improperLeftBottomCorner;
 
+    private Point projectorLeftTopCorner;
+    private Point projectorRightTopCorner;
+    private Point projectorRightBottomCorner;
+    private Point projectorLeftBottomCorner;
+
     // Pocket
     private int tablePocketRadius;
     private double tablePocketMinRadius;
@@ -114,14 +119,13 @@ public class Properties {
     }
     private Pocket selectedPocket;
 
-
     public Properties() {
         this.isDebugActive = true;
 
         this.ballMaxRadius = 11;
         this.ballMinRadius = 8;
         this.ballMinDistance = 18;
-        this.ballExpectedRadius = 10;
+        this.ballExpectedRadius = 20;
         this.houghCirclesParam1 = 100;
         this.houghCirclesParam2 = 10;
         this.whiteBallId = 0;
@@ -133,16 +137,11 @@ public class Properties {
         this.prevBallsCorrectorCount = 12;
         this.previousBallsPositionsToCompare = 12;
 
-        this.tableBandLeft = 148;
-        this.tableBandRight = 1131;
-        this.tableBandTop = 135;
-        this.tableBandBottom = 630;
-        this.tablePocketRadius = 45;
-
-        this.improperLeftTopCorner = new Point(151.0, 128.0);
-        this.improperRightTopCorner = new Point(1131.0, 141.0);
-        this.improperRightBottomCorner = new Point(1133.0, 628.0);
-        this.improperLeftBottomCorner = new Point(142.5, 631.0);
+        this.tableBandLeft = 147;
+        this.tableBandRight = 1130;
+        this.tableBandTop = 131;
+        this.tableBandBottom = 628;
+        this.tablePocketRadius = 30;
 
         this.predictionDepth = 1;
         this.bumpPointDelta = 2;
@@ -175,6 +174,16 @@ public class Properties {
 
         targetLineStabilizeCount = 32;
         targetEndMoveTolerance = 60;
+
+        this.improperLeftTopCorner = new Point(151.0, 128.0);
+        this.improperRightTopCorner = new Point(1131.0, 141.0);
+        this.improperRightBottomCorner = new Point(1133.0, 628.0);
+        this.improperLeftBottomCorner = new Point(142.5, 631.0);
+
+        this.projectorLeftTopCorner = new Point(30, 30);
+        this.projectorRightTopCorner = new Point(1204.0, 77.0);
+        this.projectorRightBottomCorner = new Point(1198.0, 642.0);
+        this.projectorLeftBottomCorner = new Point(52, 656);
     }
 
     public int getTargetEndMoveTolerance() {
@@ -351,7 +360,7 @@ public class Properties {
     }
 
     /**
-     * Get table Pocket min radius
+     * Get table pocket min radius
      *
      * @return
      */
@@ -360,7 +369,7 @@ public class Properties {
     }
 
     /**
-     * Set table Pocket min radius
+     * Set table pocket min radius
      *
      * @param tablePocketMinRadius
      */
@@ -369,7 +378,7 @@ public class Properties {
     }
 
     /**
-     * Get table Pocket max radius
+     * Get table pocket max radius
      *
      * @return
      */
@@ -378,7 +387,7 @@ public class Properties {
     }
 
     /**
-     * Set table Pocket max radius
+     * Set table pocket max radius
      *
      * @param tablePocketMaxRadius
      */
@@ -387,7 +396,7 @@ public class Properties {
     }
 
     /**
-     * Get table Pocket min distance
+     * Get table pocket min distance
      *
      * @return
      */
@@ -396,7 +405,7 @@ public class Properties {
     }
 
     /**
-     * Set table Pocket min distance
+     * Set table pocket min distance
      *
      * @param tablePocketMinDistance
      */
@@ -785,5 +794,37 @@ public class Properties {
             default:
                 return this.getLeftBotPocketPoint();
         }
+    }
+
+    public Point getProjectorLeftTopCorner() {
+        return projectorLeftTopCorner;
+    }
+
+    public void setProjectorLeftTopCorner(Point projectorLeftTopCorner) {
+        this.projectorLeftTopCorner = projectorLeftTopCorner;
+    }
+
+    public Point getProjectorRightTopCorner() {
+        return projectorRightTopCorner;
+    }
+
+    public void setProjectorRightTopCorner(Point projectorRightTopCorner) {
+        this.projectorRightTopCorner = projectorRightTopCorner;
+    }
+
+    public Point getProjectorRightBottomCorner() {
+        return projectorRightBottomCorner;
+    }
+
+    public void setProjectorRightBottomCorner(Point projectorRightBottomCorner) {
+        this.projectorRightBottomCorner = projectorRightBottomCorner;
+    }
+
+    public Point getProjectorLeftBottomCorner() {
+        return projectorLeftBottomCorner;
+    }
+
+    public void setProjectorLeftBottomCorner(Point projectorLeftBottomCorner) {
+        this.projectorLeftBottomCorner = projectorLeftBottomCorner;
     }
 }
