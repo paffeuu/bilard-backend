@@ -193,7 +193,7 @@ public class TableStoryService {
             current().setBalls(balls);
             prevFrameBalls = balls;
         } catch (Exception e) {
-            LOGGER.error("Unknow exception for no balls on table, returned previous.");
+            LOGGER.error("Unknow exception for no balls on table, returned previous.", e);
             current().setBalls(prevFrameBalls);
         }
 

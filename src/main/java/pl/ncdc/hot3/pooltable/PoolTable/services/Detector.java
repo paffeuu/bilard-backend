@@ -132,8 +132,7 @@ public class Detector {
 		Mat blurredImage = new Mat();
 		Mat convertedTypeImage = new Mat();
 		Mat destinationImage = new Mat();
-		Mat cannyImg = new Mat();
-		Size blurSize = new Size(1, 1);
+		Size blurSize = new Size(3, 3);
 
 		// blur convertedImage
 		Imgproc.blur(sourceImg, blurredImage, blurSize);

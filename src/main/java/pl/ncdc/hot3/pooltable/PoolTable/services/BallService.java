@@ -212,13 +212,13 @@ public class BallService {
                 for (int i = 0; i < properties.getPreviousBallsPositionsToCompare() - 1; i++) {
                     int tempBallListIndex = (prevBallsIndexCounter + i) % properties.getPreviousBallsPositionsToCompare();
 
-                    if (previousBalls.get(tempBallListIndex) != null &&
+                    if (previousBalls.size() > tempBallListIndex && previousBalls.get(tempBallListIndex) != null &&
                             indexOfBallInPreviousList(currentBall, previousBalls.get(tempBallListIndex)) != -1){
                         ballsApprovePoints[currentBallIndex] += 1;
                     }
                 }
 
-                if (ballsApprovePoints[currentBallIndex] >= Math.floor(previousBalls.size() * 0.8)){
+                if (ballsApprovePoints[currentBallIndex] >= Math.floor(previousBalls.size() / 3)){
                     listOfApprovedBalls.add(currentBall);
                 }
                 currentBallIndex++;
@@ -253,11 +253,10 @@ public class BallService {
             }
         }
 
-        Iterator<Ball> iterator = staticBalls.iterator();
-
         if (staticBalls.size() > currentBallList.size()) {
-            for (Ball currentBall : staticBalls){
-                if (indexOfBallInPreviousList(currentBall, currentBallList) == -1){
+            for (Iterator<Ball> iterator = staticBalls.iterator(); iterator.hasNext(); ) {
+                Ball ball = iterator.next();
+                if (indexOfBallInPreviousList(ball, currentBallList) == -1) {
                     iterator.remove();
                 }
             }
@@ -267,7 +266,7 @@ public class BallService {
     }
 
     private int indexOfBallInPreviousList(Ball ball, List<Ball> listOfPreviousBallsPosition) {
-        double prevPositionTolerance = properties.getBallExpectedRadius() / 2;
+        double prevPositionTolerance = properties.getBallExpectedRadius() * 0.75;
 
         int index = -1;
         for (Ball currentBall : listOfPreviousBallsPosition) {
@@ -319,9 +318,9 @@ public class BallService {
             Imgproc.calcHist(Collections.singletonList(listOfB.get(k)), channels, mask, histB, histSize ,ranges);
             Imgproc.calcHist(Collections.singletonList(listOfG.get(k)), channels, mask, histG, histSize ,ranges);
 
-            if(histB.get(1,0)[0] > 3 * histG.get(1,0)[0]) {
+            if(histB.get(1,0)[0] > 2 * histG.get(1,0)[0]) {
                 detectedBalls.get(k).setWhitePixels(histG.get(1,0)[0]);
-            }else if(histG.get(1,0)[0] > 3 * histB.get(1,0)[0]) {
+            }else if(histG.get(1,0)[0] > 2 * histB.get(1,0)[0]) {
                 detectedBalls.get(k).setWhitePixels(histB.get(1,0)[0]);
             } else {
                 detectedBalls.get(k).setWhitePixels((histB.get(1,0)[0] + histG.get(1,0)[0]) / 2);

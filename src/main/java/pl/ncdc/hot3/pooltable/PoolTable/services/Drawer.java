@@ -49,14 +49,12 @@ public class Drawer {
 			Point center = new Point(ball.getX(), ball.getY());
 
 			if(color == null){
-				if(ball.getId() >= properties.getFirstSolidBallId() && ball.getId() < properties.getFirstStripedBallId()) {
-					Imgproc.circle(img, center, properties.getBallExpectedRadius(), SOLID_DRAW_COLOR, properties.getBallThickness());
-				} else if(ball.getId() >= properties.getFirstStripedBallId()){
-					Imgproc.circle(img, center, properties.getBallExpectedRadius(), STRIPED_DRAW_COLOR, properties.getBallThickness());
-				} else if(ball.getId() == properties.getBlackBallId()) {
-					Imgproc.circle(img, center, properties.getBallExpectedRadius(), BLACK_BALL_COLOR, properties.getBallThickness());
+				if(ball.getId() == properties.getBlackBallId()) {
+					Imgproc.circle(img, center, 2*properties.getBallExpectedRadius(), BLACK_BALL_COLOR, properties.getBallThickness());
 				} else if(ball.getId() == properties.getWhiteBallId()) {
-					Imgproc.circle(img, center, properties.getBallExpectedRadius(), WHITE_BALL_COLOR, properties.getBallThickness());
+					Imgproc.circle(img, center, 2*properties.getBallExpectedRadius(), WHITE_BALL_COLOR, properties.getBallThickness());
+				} else if(ball.getId() != Ball.DEFAULT_ID) {
+					Imgproc.circle(img, center, 2*properties.getBallExpectedRadius(), STRIPED_DRAW_COLOR, properties.getBallThickness());
 				}
 			} else {
 				Imgproc.circle(img, center, properties.getBallExpectedRadius(), color, properties.getBallThickness());
