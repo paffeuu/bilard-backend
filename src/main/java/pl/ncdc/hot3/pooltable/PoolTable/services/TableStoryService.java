@@ -323,11 +323,9 @@ public class TableStoryService {
         Ball cueBall = balls.get(0);
 
         if (!balls.isEmpty() && 0 == cueBall.getId()) {
-            // TODO Wybieranie bili przez użytkownika
             Ball objectBall = properties.getSelectedBall();
 
-            // TODO Wybieranie łuzy przez użytkownika
-            Point pocket = properties.getLeftBotPocketPoint();
+            Point pocket = properties.getPocketPoint(properties.getSelectedPocket());
 
             Point ghostBall = detector.getGhostBall(objectBall, pocket);
             Line aimingLine = new Line(ghostBall, cueBall.getCenter());

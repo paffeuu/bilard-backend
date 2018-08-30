@@ -743,6 +743,13 @@ public class Properties {
         this.selectedPocket = selectedPocket;
     }
 
+    /**
+     * Transform integer to Pocket
+     *
+     * @param pocketNumber pocket number
+     *
+     * @return Enum Pocket
+     */
     public Pocket transformToEnum(int pocketNumber) {
         switch (pocketNumber) {
             case 0:
@@ -759,6 +766,24 @@ public class Properties {
                 return Pocket.BOTTOM_LEFT;
             default:
                 return Pocket.TOP_LEFT;
+        }
+    }
+
+    public Point getPocketPoint(Pocket pocket) {
+        switch (pocket) {
+            case TOP_LEFT:
+                return this.getLeftTopPocketPoint();
+            case TOP_MID:
+                return this.getMidTopPocketPoint();
+            case TOP_RIGHT:
+                return this.getRightTopPocketPoint();
+            case BOTTOM_RIGHT:
+                return this.getRightBotPocketPoint();
+            case BOTTOM_MID:
+                return this.getMidBotPocketPoint();
+            case BOTTOM_LEFT:
+            default:
+                return this.getLeftBotPocketPoint();
         }
     }
 }
