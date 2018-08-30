@@ -388,7 +388,7 @@ public class TableStoryService implements Cloneable {
                     }
 
                     // Ghost ball
-                    drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
+                    drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius() - 2, new Scalar(0, 255, 255), 4);
                 }
             }
         }

@@ -193,10 +193,10 @@ public class Properties {
         this.improperRightBottomCorner = new Point(1133.0, 628.0);
         this.improperLeftBottomCorner = new Point(142.5, 631.0);
 
-        this.projectorLeftTopCorner = new Point(30, 30);
-        this.projectorRightTopCorner = new Point(1204.0, 77.0);
-        this.projectorRightBottomCorner = new Point(1198.0, 642.0);
-        this.projectorLeftBottomCorner = new Point(52, 656);
+        this.projectorLeftTopCorner = new Point(60, 67);
+        this.projectorRightTopCorner = new Point(1214.0, 112.0);
+        this.projectorRightBottomCorner = new Point(1210.0, 672.0);
+        this.projectorLeftBottomCorner = new Point(56, 666);
 
         this.setSelectedPocket(Pocket.TOP_LEFT);
     }
