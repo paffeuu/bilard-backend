@@ -21,6 +21,12 @@ public class Properties {
     private double tableBandTop;
     private double tableBandBottom;
 
+    // Initially undistorted improper edges
+    private Point improperLeftTopCorner;
+    private Point improperRightTopCorner;
+    private Point improperRightBottomCorner;
+    private Point improperLeftBottomCorner;
+
     // Pocket
     private int tablePocketRadius;
     private double tablePocketMinRadius;
@@ -70,6 +76,7 @@ public class Properties {
     private double parallelTolerance;
     private double minBCoordinateForLines;
     private double previousFramesMoveTolerance;
+
     private int cueDetectDelay;
     private int cueStickLineThickness;
 
@@ -111,14 +118,19 @@ public class Properties {
         this.firstStripedBallId = 30;
         this.ballThickness = 5;
         this.whitePixelsPercentageBorder = 16;
-        this.prevBallsCorrectorCount = 16;
+        this.prevBallsCorrectorCount = 12;
         this.previousBallsPositionsToCompare = 12;
 
-        this.tableBandLeft = 147;
-        this.tableBandRight = 1130;
-        this.tableBandTop = 131;
-        this.tableBandBottom = 628;
-        this.tablePocketRadius = 30;
+        this.tableBandLeft = 148;
+        this.tableBandRight = 1131;
+        this.tableBandTop = 135;
+        this.tableBandBottom = 630;
+        this.tablePocketRadius = 45;
+
+        this.improperLeftTopCorner = new Point(151.0, 128.0);
+        this.improperRightTopCorner = new Point(1131.0, 141.0);
+        this.improperRightBottomCorner = new Point(1133.0, 628.0);
+        this.improperLeftBottomCorner = new Point(142.5, 631.0);
 
         this.predictionDepth = 1;
         this.bumpPointDelta = 2;
@@ -126,7 +138,7 @@ public class Properties {
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.minBCoordinateForLines = 5;
-        this.previousFramesMoveTolerance = 100;
+        this.previousFramesMoveTolerance = 120;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 
@@ -637,12 +649,37 @@ public class Properties {
     public void setBumpPointDelta(int bumpPointDelta) {
         this.bumpPointDelta = bumpPointDelta;
     }
-    public boolean isDebugActive() {
-        return isDebugActive;
+
+    public Point getImproperLeftTopCorner() {
+        return improperLeftTopCorner;
     }
 
-    public void setDebugActive(boolean debugActive) {
-        isDebugActive = debugActive;
+    public void setImproperLeftTopCorner(Point improperLeftTopCorner) {
+        this.improperLeftTopCorner = improperLeftTopCorner;
+    }
+
+    public Point getImproperRightTopCorner() {
+        return improperRightTopCorner;
+    }
+
+    public void setImproperRightTopCorner(Point improperRightTopCorner) {
+        this.improperRightTopCorner = improperRightTopCorner;
+    }
+
+    public Point getImproperRightBottomCorner() {
+        return improperRightBottomCorner;
+    }
+
+    public void setImproperRightBottomCorner(Point improperRightBottomCorner) {
+        this.improperRightBottomCorner = improperRightBottomCorner;
+    }
+
+    public Point getImproperLeftBottomCorner() {
+        return improperLeftBottomCorner;
+    }
+
+    public void setImproperLeftBottomCorner(Point improperLeftBottomCorner) {
+        this.improperLeftBottomCorner = improperLeftBottomCorner;
     }
 
 

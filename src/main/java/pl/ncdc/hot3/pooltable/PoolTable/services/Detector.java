@@ -12,9 +12,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
+import pl.ncdc.hot3.pooltable.PoolTable.model.ConfigurableProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import sun.security.krb5.Config;
 
 
 @Service
@@ -40,6 +42,7 @@ public class Detector {
 	private PathService pathService;
 	private BandsService bandsService;
 	private Properties properties;
+	private ConfigurableProperties configurableProperties;
 	private LineService lineService;
 
 	private List<Line> debugDetectedLines;
@@ -55,12 +58,14 @@ public class Detector {
 			PathService pathService,
 			BandsService bandsService,
 			Properties properties,
+            ConfigurableProperties configurableProperties,
             LineService lineService
 			) {
 
 		this.ballService = ballService;
 		this.cueService = cueService;
 		this.properties = properties;
+		this.configurableProperties = configurableProperties;
 		this.pathService = pathService;
 		this.bandsService = bandsService;
         this.lineService = lineService;
@@ -258,12 +263,13 @@ public class Detector {
 
 		if (whiteBall != null) {
             Point coordinates = whiteBall.getCenter();
-
-			longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
-			longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+            if (shortCueLine != null) {
+				longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
+				longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+			}
 		}
 
-		if (properties.isDebugActive()) {
+		if (configurableProperties.isDebugActive()) {
 			this.debugDetectedLines = linesList;
 			this.debugAverageLine = shortCueLine;
 		}
@@ -457,6 +463,8 @@ public class Detector {
      * @throws LineServiceException if can not extend cue line for one side
      */
 	public Line refactorCueLine(Line line, Ball ball) throws LineServiceException {
+		//line = new Line(new Point(62,84), new Point(456,347));
+		//ball = new Ball(20,54,20);
 		double distance = cueService.calculateDistanceBetweenPointAndLine(new Point(ball.getX(), ball.getY()), line);
 		double[] coordinates = cueService.calcAllCoordinate(line);
 		double[] newCoordinates = {coordinates[0], coordinates[1], coordinates[2] + distance};
