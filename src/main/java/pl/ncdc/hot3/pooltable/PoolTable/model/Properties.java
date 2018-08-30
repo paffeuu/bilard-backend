@@ -80,6 +80,7 @@ public class Properties {
     private double cueThickness;
     private double parallelTolerance;
     private double minBCoordinateForLines;
+    private double maxBCoordinateForLines;
     private double previousFramesMoveTolerance;
 
     private int cueDetectDelay;
@@ -90,6 +91,8 @@ public class Properties {
     private int bumpPointDelta;
     private int targetLineStabilizeCount;
     private int targetEndMoveTolerance;
+    private int countOfTargetLines;
+    private int targetNullMaxCount;
 
     // Replays
     private boolean showPreviousPosition;
@@ -122,26 +125,31 @@ public class Properties {
     public Properties() {
         this.isDebugActive = true;
 
-        this.ballMaxRadius = 11;
+        this.ballMaxRadius = 12;
         this.ballMinRadius = 8;
-        this.ballMinDistance = 18;
-        this.ballExpectedRadius = 20;
-        this.houghCirclesParam1 = 100;
+        this.ballMinDistance = 16;
+        this.ballExpectedRadius = 11;
+        this.houghCirclesParam1 = 180;
         this.houghCirclesParam2 = 10;
         this.whiteBallId = 0;
         this.blackBallId = 8;
         this.firstSolidBallId = 10;
         this.firstStripedBallId = 30;
         this.ballThickness = 5;
-        this.whitePixelsPercentageBorder = 16;
+        this.whitePixelsPercentageBorder = 32;
         this.prevBallsCorrectorCount = 12;
         this.previousBallsPositionsToCompare = 12;
 
-        this.tableBandLeft = 147;
-        this.tableBandRight = 1130;
-        this.tableBandTop = 131;
-        this.tableBandBottom = 628;
-        this.tablePocketRadius = 30;
+        this.tableBandLeft = 148;
+        this.tableBandRight = 1131;
+        this.tableBandTop = 135;
+        this.tableBandBottom = 630;
+        this.tablePocketRadius = 25;
+
+        this.improperLeftTopCorner = new Point(151.0, 128.0);
+        this.improperRightTopCorner = new Point(1131.0, 141.0);
+        this.improperRightBottomCorner = new Point(1133.0, 628.0);
+        this.improperLeftBottomCorner = new Point(142.5, 631.0);
 
         this.predictionDepth = 1;
         this.bumpPointDelta = 2;
@@ -149,16 +157,17 @@ public class Properties {
         this.cueThickness = 60;
         this.parallelTolerance = 0.15;
         this.minBCoordinateForLines = 5;
-        this.previousFramesMoveTolerance = 120;
+        this.maxBCoordinateForLines = 15;
+        this.previousFramesMoveTolerance = 100;
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 
-        this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 10);
-        this.rightTopPocketPoint = new Point(tableBandRight + 8, tableBandTop);
-        this.leftBotPocketPoint = new Point(tableBandLeft - 10, tableBandBottom + 10);
-        this.rightBotPocketPoint = new Point(tableBandRight + 12, tableBandBottom + 10);
-        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 11, tableBandTop - 25);
-        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 8, tableBandBottom + 25);
+        this.leftTopPocketPoint = new Point(tableBandLeft, tableBandTop);
+        this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
+        this.leftBotPocketPoint = new Point(tableBandLeft, tableBandBottom);
+        this.rightBotPocketPoint = new Point(tableBandRight, tableBandBottom);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandTop);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandBottom);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -172,6 +181,10 @@ public class Properties {
         distCoeffs.put(0, 0, -0.4110309525718729);
         distCoeffs.put(1, 0, 0.2250083648489881);
 
+        targetLineStabilizeCount = 16;
+        targetEndMoveTolerance = 30;
+        countOfTargetLines = 16;
+        targetNullMaxCount = 8;
         targetLineStabilizeCount = 32;
         targetEndMoveTolerance = 60;
 
@@ -644,6 +657,14 @@ public class Properties {
         this.minBCoordinateForLines = minBCoordinateForLines;
     }
 
+    public double getMaxBCoordinateForLines() {
+        return maxBCoordinateForLines;
+    }
+
+    public void setMaxBCoordinateForLines(double maxBCoordinateForLines) {
+        this.maxBCoordinateForLines = maxBCoordinateForLines;
+    }
+
     public static String getCameraUrl() {
         return cameraUrl;
     }
@@ -671,6 +692,19 @@ public class Properties {
      */
     public void setBumpPointDelta(int bumpPointDelta) {
         this.bumpPointDelta = bumpPointDelta;
+    }
+
+
+    public int getPrevBallsCorrectorCount() {
+        return prevBallsCorrectorCount;
+    }
+
+    public int getTargetLineStabilizeCount() {
+        return targetLineStabilizeCount;
+    }
+
+    public void setTargetLineStabilizeCount(int targetLineStabilizeCount) {
+        this.targetLineStabilizeCount = targetLineStabilizeCount;
     }
 
     public Point getImproperLeftTopCorner() {
@@ -705,17 +739,20 @@ public class Properties {
         this.improperLeftBottomCorner = improperLeftBottomCorner;
     }
 
-
-    public int getPrevBallsCorrectorCount() {
-        return prevBallsCorrectorCount;
+    public int getCountOfTargetLines() {
+        return countOfTargetLines;
     }
 
-    public int getTargetLineStabilizeCount() {
-        return targetLineStabilizeCount;
+    public void setCountOfTargetLines(int countOfTargetLines) {
+        this.countOfTargetLines = countOfTargetLines;
     }
 
-    public void setTargetLineStabilizeCount(int targetLineStabilizeCount) {
-        this.targetLineStabilizeCount = targetLineStabilizeCount;
+    public int getTargetNullMaxCount() {
+        return targetNullMaxCount;
+    }
+
+    public void setTargetNullMaxCount(int targetNullMaxCount) {
+        this.targetNullMaxCount = targetNullMaxCount;
     }
 
     /**

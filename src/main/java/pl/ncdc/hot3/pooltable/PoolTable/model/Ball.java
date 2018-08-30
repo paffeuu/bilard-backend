@@ -12,6 +12,9 @@ public class Ball implements Comparable<Ball> {
     private double radius;
     private double x;
     private double y;
+    private double G;
+    private double B;
+    private double R;
 
     private int isInStaticCounter;
 
@@ -42,6 +45,30 @@ public class Ball implements Comparable<Ball> {
 
     public void setWhitePixels(double whitePixels) {
         this.whitePixels = whitePixels;
+    }
+
+    public double getR() {
+        return R;
+    }
+
+    public void setR(double r) {
+        R = r;
+    }
+
+    public double getG() {
+        return G;
+    }
+
+    public void setG(double g) {
+        G = g;
+    }
+
+    public double getB() {
+        return B;
+    }
+
+    public void setB(double b) {
+        B = b;
     }
 
     private double whitePixels;

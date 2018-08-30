@@ -29,12 +29,15 @@ public class Detector {
     final int TRESHOLD_FOR_CANNY_FIRST = 100;
     final int TRESHOLD_FOR_CANNY_SECOND = 40;
 
+    private int counter = 0;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Detector.class);
 
 	private Mat emptyTableImage;
 	private Mat sourceImg;
 	private Mat outputImg;
+
+	public static int count = 1;
 
 	private CueService cueService;
 	private BallService ballService;
@@ -83,7 +86,6 @@ public class Detector {
 		} catch (DetectorException e) {
 			LOGGER.warn("Cannot make edges for empty source image.");
 		}
-
 	}
 
 	public Mat getSourceImg() {
@@ -133,7 +135,7 @@ public class Detector {
 		Mat blurredImage = new Mat();
 		Mat convertedTypeImage = new Mat();
 		Mat destinationImage = new Mat();
-		Size blurSize = new Size(5, 5);
+		Size blurSize = new Size(3, 3);
 
 		// blur convertedImage
 		Imgproc.blur(sourceImg, blurredImage, blurSize);
@@ -220,7 +222,7 @@ public class Detector {
 		for (int i = 0; i < circles.length; i += 3) {
 			x = circles[i];
 			y = circles[i + 1];
-			r = properties.getBallExpectedRadius();
+			r = properties.getBallExpectedRadius() + 2;
 
 			topLeft.x = x - r;
 			topLeft.y = y - r;
@@ -257,10 +259,10 @@ public class Detector {
 		Ball whiteBall = ballService.getWhiteBall();
 
 		if (shortCueLine == null) {
-			shortCueLine = cueService.getPreviousAverageLine();
+			//shortCueLine = cueService.getPreviousAverageLine();
 		}
 
-		if (whiteBall != null) {
+		if (shortCueLine != null && whiteBall != null) {
             Point coordinates = whiteBall.getCenter();
             if (shortCueLine != null) {
 				longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
@@ -295,7 +297,6 @@ public class Detector {
 		}
 		return linesList;
 	}
-
 
 	public Mat getEdges(Mat source) throws DetectorException {
 		List <Mat> layers = new ArrayList<>();
@@ -356,16 +357,19 @@ public class Detector {
      * @throws LineServiceException if can not find ball collision line
      */
     public Line createTargetLine(Line line, List<Ball> balls, boolean isCue) throws LineServiceException {
-        Ball collision = getCollisionBall(line, balls, isCue);
+		Line targetLine = null;
 
-        if (null != collision) {
-            return cueService.findBallCollisionLine(line, collision);
-        }
+    	if (!balls.isEmpty()) {
+			Ball collision = getCollisionBall(line, balls, isCue);
 
-        return null;
+			if (null != collision) {
+				targetLine = cueService.findBallCollisionLine(line, collision);
+			}
+		}
+        return targetLine;
     }
 
-    /**
+	/**
      * Get ball which is in collision with line
      *
      * @param line aiming line

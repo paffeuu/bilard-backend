@@ -1,44 +1,58 @@
-//package pl.ncdc.hot3.pooltable.PoolTable;
-//
-//import org.junit.Test;
-//import org.junit.runner.RunWith;
-//import org.opencv.core.Core;
-//import org.opencv.core.Mat;
-//import org.opencv.core.Point;
-//import org.opencv.core.Scalar;
-//import org.opencv.imgcodecs.Imgcodecs;
-//import org.opencv.imgproc.Imgproc;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.test.context.ContextConfiguration;
-//import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-//import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
-//import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
-//import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
-//import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-//import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
-//import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
-//import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//
-//@RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration(classes = {Detector.class, CueService.class, Properties.class, LineService.class})
-//public class LineTest {
-//    String BASE_PATH = "src/main/resources/";
-//
-//    @Autowired
-//    private CueService cueService;
-//
-//    @Autowired
-//    private Detector detector;
-//
-//    @Autowired
-//    private LineService lineService;
-//
-//    @Autowired
-//    private Properties properties;
-//
+package pl.ncdc.hot3.pooltable.PoolTable;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.BandsService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.CueService;
+import pl.ncdc.hot3.pooltable.PoolTable.services.Detector;
+import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+public class LineTest {
+    String BASE_PATH = "src/main/resources/";
+
+    public double[] calcAllCoordinate(Line line) {
+        double Y = line.getBegin().y - line.getEnd().y;
+        double X = line.getBegin().x - line.getEnd().x;
+
+        double a = Y / (X == 0 ? 0.1 : X);
+        double b = line.getBegin().y - line.getBegin().x * a;
+        return new double[]{a, -1, b};
+    }
+
+    @Test
+    public void testForCoordinatesForVerticalLine(){
+
+
+        Point begin = new Point(20, 100);
+        Point end = new Point(20, 200);
+        Line line = new Line(begin, end);
+
+        double[] AB = LineService.calcCoordinatesAB(line);
+        System.out.println("A : " + AB[0] + "B : " + AB[1]);
+
+        double[] ABC = calcAllCoordinate(line);
+        System.out.println("A: " + ABC[0] + "B: " + ABC[1] + "C: " + ABC[2]);
+
+    }
+
+
 //    @Test
 //    public void directedLine() throws LineServiceException, DetectorException, CueServiceException {
 //        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -167,4 +181,4 @@
 //
 //        Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
 //    }
-//}
+}

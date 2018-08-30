@@ -43,6 +43,8 @@ public class TableStoryService implements Cloneable {
     private Properties properties;
     private ConfigurableProperties configurableProperties;
     private BandsService bandsService;
+    private TargetLineService targetLineService;
+
     List<Ball> prevFrameBalls;
 
     private PreviousPositionService previousPositionService;
@@ -62,7 +64,8 @@ public class TableStoryService implements Cloneable {
             PreviousPositionService previousPositionService,
             BandsService bandsService,
             ImageUndistorterService imageUndistorterService,
-            PathService pathService
+            PathService pathService,
+            TargetLineService targetLineService
     ) {
         this.detector = detector;
         this.cameraService = cameraService;
@@ -73,6 +76,7 @@ public class TableStoryService implements Cloneable {
         this.bandsService = bandsService;
         this.imageUndistorterService = imageUndistorterService;
         this.pathService = pathService;
+        this.targetLineService = targetLineService;
 
         this.prevFrameBalls = new ArrayList<>();
         this.previousCue = null;
@@ -119,9 +123,8 @@ public class TableStoryService implements Cloneable {
     }
 
     public TableStoryService findCue(){
-        Line cue = new Line();
         try {
-            cue = detector.findStickLine();
+            Line cue = detector.findStickLine();
 
             if (cue != null) {
                 previousCue = cue;
@@ -131,7 +134,7 @@ public class TableStoryService implements Cloneable {
                 cue = previousCue;
             }
 
-            if (cue instanceof Line && null != current().getBalls()) {
+            if (cue instanceof Line && current().getBalls() != null && !current().getBalls().isEmpty()) {
                 Ball collisionBall = detector.getCollisionBall(cue, current().getBalls(), false);
 
                 if (collisionBall instanceof Ball && 0 == collisionBall.getId()) {
@@ -212,6 +215,9 @@ public class TableStoryService implements Cloneable {
             LOGGER.info("Can not find target line");
         }
 
+        targetLineService.saveLastTargetLine(current().getTargetLine());
+        current().setTargetLine(targetLineService.getAverageLine());
+
         return this;
     }
 
@@ -221,7 +227,7 @@ public class TableStoryService implements Cloneable {
             current().setBalls(balls);
             prevFrameBalls = balls;
         } catch (Exception e) {
-            LOGGER.error("Unknow exception for no balls on table, returned previous.");
+            //LOGGER.error("Unknow exception for no balls on table, returned previous.");
             current().setBalls(prevFrameBalls);
         }
 
@@ -262,6 +268,13 @@ public class TableStoryService implements Cloneable {
 
     public TableStoryService drawForDebug(){
         if (configurableProperties.isDebugActive()) {
+            drawer.drawPoint(outputImage, properties.getLeftTopPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getMidTopPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getRightTopPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getLeftBotPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getMidBotPocketPoint(), properties.getTablePocketRadius());
+            drawer.drawPoint(outputImage, properties.getRightBotPocketPoint(), properties.getTablePocketRadius());
+
             drawer.drawLines(outputImage, bandsService.getBandLines(), new Scalar(255, 0, 0), 4);
 
             if (detector.getPointCloserToWhiteBall() != null) {
@@ -284,18 +297,17 @@ public class TableStoryService implements Cloneable {
 
 
             if (detector.getDebugAverageLine() != null){
-                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 20);
                 drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
             }
 
-//            if (!detector.getDebugDetectedLines().isEmpty()) {
-//                drawer.drawLines(
-//                        outputImage,
-//                        detector.getDebugDetectedLines(),
-//                        new Scalar(0, 0, 255),
-//                        5
-//                );
-//            }
+            if (!detector.getDebugDetectedLines().isEmpty()) {
+                drawer.drawLines(
+                        outputImage,
+                        detector.getDebugDetectedLines(),
+                        new Scalar(0, 0, 255),
+                        5
+                );
+            }
 
             // Perpendicular debug
             if (null != detector.debugPerpendicular) {
@@ -316,7 +328,7 @@ public class TableStoryService implements Cloneable {
                     current().getCue(),
                     current().getBalls(),
                     current().getPredictions(),
-                    current().getTargetLine()
+                    targetLineService.getAverageLine()
             );
             MatOfByte matOfByte = new MatOfByte();
 
@@ -331,6 +343,7 @@ public class TableStoryService implements Cloneable {
 
             current().setTableImage(matOfByte.toArray());
             outputImage.release();
+
         } catch (DrawerException e) {
             LOGGER.error("Cannot prepere the view image.", e);
         } finally {
