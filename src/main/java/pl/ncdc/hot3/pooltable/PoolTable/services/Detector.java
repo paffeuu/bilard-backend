@@ -16,7 +16,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.ConfigurableProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-import sun.security.krb5.Config;
 
 
 @Service
