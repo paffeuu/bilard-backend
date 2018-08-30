@@ -1,8 +1,5 @@
 package pl.ncdc.hot3.pooltable.PoolTable.rest;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
@@ -33,6 +30,8 @@ public class MainController {
 
     @Autowired
     private SimpMessagingTemplate template;
+
+    private PoolTable table;
 
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/get-pool-table")
@@ -69,26 +68,38 @@ public class MainController {
     @Scheduled(fixedRate = 125)
     public void socketSendTable() throws Exception {
         System.gc();
-        PoolTable table;
+
+        this.tableStoryService
+                .next()
+                .findBalls();
+
 
         if (2 == configurableProperties.getGameMode()) {
-            table = tableStoryService
-                    .next()
-                    .findBalls()
-                    .passiveMode()
-                    .build();
-        } else {
-            table = tableStoryService
-                    .next()
-                    .findBalls()
-                    .findCue()
-                    .makePredictions()
-                    .detectCollision()
-                    .showPrevious()
-                    .build();
+            this.socketSendProjector();
         }
 
+        this.socketSendDynamicTable();
+    }
+
+    public void socketSendDynamicTable() throws Exception {
+        table = tableStoryService
+                .clone()
+                .findCue()
+                .makePredictions()
+                .detectCollision()
+                .showPrevious()
+                .build();
+
         this.template.convertAndSend("/topic/pooltable", table);
+    }
+
+    public void socketSendProjector() throws Exception {
+        table = tableStoryService
+                .clone()
+                .passiveMode()
+                .build();
+
+        this.template.convertAndSend("/topic/projector", table);
     }
 
     @CrossOrigin(origins = "http://localhost:4200")

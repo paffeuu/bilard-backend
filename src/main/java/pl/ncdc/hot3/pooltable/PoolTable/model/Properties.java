@@ -184,6 +184,8 @@ public class Properties {
         this.projectorRightTopCorner = new Point(1204.0, 77.0);
         this.projectorRightBottomCorner = new Point(1198.0, 642.0);
         this.projectorLeftBottomCorner = new Point(52, 656);
+
+        this.setSelectedPocket(Pocket.TOP_LEFT);
     }
 
     public int getTargetEndMoveTolerance() {

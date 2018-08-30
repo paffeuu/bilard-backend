@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class TableStoryService {
+public class TableStoryService implements Cloneable {
 
     final static int LIMIT_OF_TABLES = 32;
     final static int LIMIT_OF_VIEWS = 6;
@@ -224,8 +224,6 @@ public class TableStoryService {
     }
 
     public PoolTable build() {
-        outputImage = Imgcodecs.imread("src\\main\\resources\\black.png");
-
         return  drawForDebug()
                 .makeView()
                 .current();
@@ -331,26 +329,33 @@ public class TableStoryService {
 
     public TableStoryService passiveMode() throws LineServiceException {
         boolean hardcoreMode = false;
-
+        outputImage = Imgcodecs.imread("src\\main\\resources\\black.png");
         List<Ball> balls = current().getBalls();
-        Ball cueBall = balls.get(0);
 
-        if (!balls.isEmpty() && 0 == cueBall.getId()) {
-            Ball objectBall = properties.getSelectedBall();
+        if (!balls.isEmpty()) {
+            Ball cueBall = balls.get(0);
 
-            Point pocket = properties.getPocketPoint(properties.getSelectedPocket());
+            if (0 == cueBall.getId() && null != properties.getSelectedBall()) {
+                Ball objectBall = properties.getSelectedBall();
+                Point pocket = properties.getPocketPoint(properties.getSelectedPocket());
 
-            Point ghostBall = detector.getGhostBall(objectBall, pocket);
-            Line aimingLine = new Line(ghostBall, cueBall.getCenter());
-            Line targetLine = new Line(objectBall.getCenter(), pocket);
+                Point ghostBall = detector.getGhostBall(objectBall, pocket);
+                Line aimingLine = new Line(ghostBall, cueBall.getCenter());
+                Line targetLine = new Line(objectBall.getCenter(), pocket);
 
-            if (!hardcoreMode) {
-                drawer.drawLine(outputImage, targetLine, new Scalar(0, 255, 255), 6);
-                drawer.drawLine(outputImage, aimingLine, new Scalar(0, 255, 255), 6);
+                if (!hardcoreMode) {
+                    drawer.drawLine(outputImage, targetLine, new Scalar(0, 255, 255), 6);
+                    drawer.drawLine(outputImage, aimingLine, new Scalar(0, 255, 255), 6);
+                }
+                drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
             }
-            drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius(), new Scalar(0, 255, 255), 4);
         }
 
         return this;
+    }
+
+    @Override
+    public TableStoryService clone() throws CloneNotSupportedException {
+        return (TableStoryService) super.clone();
     }
 }
