@@ -185,38 +185,75 @@ public class CueService {
         if (cueLine == null) {
             return null;
         }
+        double distanceTolerance = 1.0;
 
-        double[] stabilizedBeginning = { 0, 0};
-        double[] stabilizedEnd = {0,0};
-        double distanceTolerance = properties.getPreviousFramesMoveTolerance();
-
-        previousCues.add(cueLine);
-        if (previousCues.size() >= 20) {
-            previousCues.remove(0);
+        if ( this.previousCues.isEmpty()) {
+            this.previousCues.add(cueLine);
+            return this.previousAverageLine = cueLine;
         }
 
-        for (Line line : this.previousCues) {
-                if ( line != null) {
-                    stabilizedBeginning[0] += line.getBegin().x;
-                    stabilizedBeginning[1] += line.getBegin().y;
-                    stabilizedEnd[0] += line.getEnd().x;
-                    stabilizedEnd[1] += line.getEnd().y;
-                }
+        if (this.calcDistance(cueLine, this.previousAverageLine) < distanceTolerance) {
+            this.previousCues.add(cueLine);
+            if ( this.previousCues.size() >= 20) {
+                this.previousCues.remove(0);
             }
-
-
-            stabilizedBeginning[0]  /= this.previousCues.size();
-            stabilizedBeginning[1] /= this.previousCues.size();
-            stabilizedEnd[0] /= this.previousCues.size();
-            stabilizedEnd[1] /= this.previousCues.size();
-
-
-            Line lin= new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
-            this.previousAverageLine = lin;
-            return lin;
+            this.previousAverageLine = this.averageOfListOfLines(this.previousCues);
+            return this.previousAverageLine;
         }
 
-        private Line averageOfListOfLines(List<Line> list) {
+        if (this.detectionOutOfScope.isEmpty()) {
+            this.detectionOutOfScope.add(cueLine);
+            return this.previousAverageLine;
+        }
+
+        if (this.calcDistance(cueLine, this.averageOfListOfLines(this.detectionOutOfScope)) < distanceTolerance) {
+            this.detectionOutOfScope.add(cueLine);
+
+            if (this.detectionOutOfScope.size() >= 3) {
+                    this.previousCues.clear();
+                    this.previousCues.addAll(this.detectionOutOfScope);
+                    this.detectionOutOfScope.clear();
+                    this.previousAverageLine = this.averageOfListOfLines(this.previousCues);
+                    return this.previousAverageLine;
+            }
+            return this.previousAverageLine;
+        }
+
+        this.detectionOutOfScope.clear();
+        return this.previousAverageLine;
+
+    }
+
+    public double[] calcABCCoordinates(Line line) {
+        double Y = line.getBegin().y - line.getEnd().y;
+        double X = line.getBegin().x - line.getEnd().x;
+
+        double A = Y / (X == 0 ? 0.1 : X);
+        double B = (X == 0 ? X : -1);
+        double C = line.getBegin().y - line.getBegin().x * A;
+
+        if (X == 0) {
+            C /= A;
+            A = 1;
+        }
+
+        return new double[]{A, B, C};
+    }
+
+    public double calcDistance(Line line1, Line line2) {
+        double[] line1Coord = this.calcABCCoordinates(line1);
+        double[] line2Coord = this.calcABCCoordinates(line2);
+
+        if (line1Coord[1] == 0 || line2Coord[1] == 0) {
+            if ( line1Coord[0] == 0 || line2Coord[0] == 0) {
+                return Math.abs(line1Coord[2] - line2Coord[2]);
+            }
+            return Math.abs((line1Coord[2]/line1Coord[0]) - (line2Coord[2]/line2Coord[0]));
+        }
+        return Math.abs((line1Coord[0]/line1Coord[1]) - (line2Coord[0]/line2Coord[1]));
+    }
+
+    private Line averageOfListOfLines(List<Line> list) {
             double[] stabilizedBeginning = { 0, 0};
             double[] stabilizedEnd = {0,0};
             double distanceTolerance = properties.getPreviousFramesMoveTolerance();
