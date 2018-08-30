@@ -20,17 +20,23 @@ public class CueService {
     final static Logger LOGGER = LoggerFactory.getLogger(CueService.class);
 
     private Properties properties;
-
+    private int counter = 0;
     private LineService lineService;
 
     private Line[] prevCueLines;
+    private Line previousAverageLine;
     private int cueDetectDelay, detectedCueCounter;
 
     private Point[] targetEnds;
     private int targetEndCurrentIndex;
 
+    private ArrayList<Line> previousCues = new ArrayList<Line>(32);
+    private ArrayList<Line> detectionOutOfScope = new ArrayList<Line>();
+    private int frameCounter = 0;
     public Point debugCloserToWhite;
     public Point debugFurtherToWhite;
+
+
 
     @Autowired
     public CueService(
@@ -46,8 +52,19 @@ public class CueService {
 
         this.targetEnds = new Point[properties.getTargetLineStabilizeCount()];
         this.targetEndCurrentIndex = 0;
+        previousAverageLine = null;
     }
 
+    /**
+     * Returns prediction line after bump
+     *
+     *  aiming line
+     *
+     * @return prediction line
+     *
+     * @throws CueServiceException  if bump point is out of band
+     * @throws LineServiceException if can not extend cue line for one side
+     */
     private double calcAbsoluteDistance(double value1, double value2){
         return Math.abs(value1 - value2);
     }
@@ -107,6 +124,7 @@ public class CueService {
         }
 
         double pMin = properties.getParallelTolerance();
+        double bestPararell = 0;
         double distMin = properties.getMinBCoordinateForLines();
         double[] ABCCoordinatesLine1 = new double[3];
         double[] ABCCoordinatesLine2 = new double[3];
@@ -114,26 +132,27 @@ public class CueService {
         int indexOfLine_A = 0, indexOfLine_B = 0;
 
         for (int i = 0; i < innerLines.size() - 1; i++){
+            ABCCoordinatesLine1 = calcAllCoordinate(innerLines.get(i));
             for (int j = 0; j < innerLines.size(); j++){
                 if (i != j) {
-                    ABCCoordinatesLine1 = calcAllCoordinate(innerLines.get(i));
                     ABCCoordinatesLine2 = calcAllCoordinate(innerLines.get(j));
+                        double a1 = -ABCCoordinatesLine1[0];
+                        double a2 = -ABCCoordinatesLine2[0];
 
-                    if (ABCCoordinatesLine1[1] != 0 && ABCCoordinatesLine2[1] != 0){
-                        double a1 = ABCCoordinatesLine1[0] / ABCCoordinatesLine1[1] * -1;
-                        double a2 = ABCCoordinatesLine2[0] / ABCCoordinatesLine2[1] * -1;
+                        double b1 = -ABCCoordinatesLine1[2];
+                        double b2 = -ABCCoordinatesLine2[2];
 
-                        double b1 = ABCCoordinatesLine1[2] / ABCCoordinatesLine1[1] * -1;
-                        double b2 = ABCCoordinatesLine2[2] / ABCCoordinatesLine2[1] * -1;
-
-
-                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin) {
+                        if ( Math.abs(a1) >= 20 || Math.abs(a2) >= 20) {
+                            pMin = 1000;
+                        } else {
+                            pMin = properties.getParallelTolerance();
+                        }
+                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1-b2) <= 15) {
                             pMin = Math.abs(a1 - a2);
                             indexOfLine_A = i;
                             indexOfLine_B = j;
                         }
 
-                    }
                 }
             }
         }
@@ -159,7 +178,7 @@ public class CueService {
         double endDist = getDistanceBetweenPoints(line.getEnd(), whiteBall);
 
         if (beginDist <=  endDist) {
-            LineService.switchPoints(newLineBetweenLong);
+            newLineBetweenLong = LineService.switchPoints(newLineBetweenLong);
         }
         debugCloserToWhite = newLineBetweenLong.getEnd();
         debugFurtherToWhite = newLineBetweenLong.getBegin();
@@ -173,46 +192,74 @@ public class CueService {
         return newLineBetweenLong;
     }
 
+
     public Line stabilizeWithPrevious(Line cueLine) {
-        Line stabileCueLine = cueLine;
-        double distMin = properties.getPreviousFramesMoveTolerance();
+        if (cueLine == null) {
+            return null;
+        }
+        double[] stabilizedBeginning = { 0, 0};
+        double[] stabilizedEnd = {0,0};
+        double distanceTolerance = properties.getPreviousFramesMoveTolerance();
 
-        prevCueLines[detectedCueCounter] = cueLine;
-        if (detectedCueCounter++ > 0){
-            detectedCueCounter = detectedCueCounter % cueDetectDelay;
+        previousCues.add(cueLine);
+        if (previousCues.size() >= 20) {
+            previousCues.remove(0);
+        }
 
-            double[] prevSumXs = { 0, 0 }, prevSumYs = { 0, 0 };
-            int prevLinesCounter = 0;
-            for (int i = 0; i < (cueDetectDelay); i++){
-                int tempIdx = (detectedCueCounter + i) % properties.getCueDetectDelay();
-
-                if (prevCueLines[tempIdx] != null){
-                    if (LineService.calculateDistanceBetweenPoints(prevCueLines[tempIdx].getBegin(), cueLine.getBegin()) <= distMin &&
-                            LineService.calculateDistanceBetweenPoints(prevCueLines[tempIdx].getEnd(), cueLine.getEnd()) <= distMin) {
-                        prevLinesCounter++;
-                        prevSumXs[0] += prevCueLines[tempIdx].getBegin().x;
-                        prevSumYs[0] += prevCueLines[tempIdx].getBegin().y;
-                        prevSumXs[1] += prevCueLines[tempIdx].getEnd().x;
-                        prevSumYs[1] += prevCueLines[tempIdx].getEnd().y;
-                    }
-                }
-            }
-
-            if (prevLinesCounter > 24) {
-                Point averageBegin = new Point(prevSumXs[0] / prevLinesCounter, prevSumYs[0] / prevLinesCounter);
-                Point averageEnd = new Point(prevSumXs[1] / prevLinesCounter, prevSumYs[1] / prevLinesCounter);
-
-                Point newBegin = new Point((averageBegin.x + cueLine.getBegin().x) / 2, (averageBegin.y + cueLine.getBegin().y) / 2);
-                Point newEnd = new Point((averageEnd.x + cueLine.getEnd().x) / 2, (averageEnd.y + cueLine.getEnd().y) / 2);
-
-
-                stabileCueLine.setBegin(newBegin);
-                stabileCueLine.setEnd(newEnd);
+        for (Line line : this.previousCues) {
+            if ( line != null) {
+                stabilizedBeginning[0] += line.getBegin().x;
+                stabilizedBeginning[1] += line.getBegin().y;
+                stabilizedEnd[0] += line.getEnd().x;
+                stabilizedEnd[1] += line.getEnd().y;
             }
         }
 
-        return stabileCueLine;
+
+
+
+
+
+
+
+
+
+        stabilizedBeginning[0]  /= this.previousCues.size();
+        stabilizedBeginning[1] /= this.previousCues.size();
+        stabilizedEnd[0] /= this.previousCues.size();
+        stabilizedEnd[1] /= this.previousCues.size();
+
+
+
+        Line lin= new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
+        this.previousAverageLine = lin;
+        return lin;
+
     }
+
+        private Line averageOfListOfLines(List<Line> list) {
+        if (list.isEmpty()) {
+            return new Line(new Point(-1, -1), new Point(-1, -1));
+        }
+        double[] stabilizedBeginning = { 0, 0};
+            double[] stabilizedEnd = {0,0};
+            double distanceTolerance = properties.getPreviousFramesMoveTolerance();
+
+            for (Line line : list) {
+                if ( line != null) {
+                    stabilizedBeginning[0] += line.getBegin().x;
+                    stabilizedBeginning[1] += line.getBegin().y;
+                    stabilizedEnd[0] += line.getEnd().x;
+                    stabilizedEnd[1] += line.getEnd().y;
+                }
+            }
+            stabilizedBeginning[0]  /= list.size();
+            stabilizedBeginning[1] /= list.size();
+            stabilizedEnd[0] /= list.size();
+            stabilizedEnd[1] /= list.size();
+
+            return new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
+        }
 
     public static double getDistanceBetweenPoints(Point point1, Point point2) {
         return Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
@@ -222,11 +269,13 @@ public class CueService {
         double Y = line.getBegin().y - line.getEnd().y;
         double X = line.getBegin().x - line.getEnd().x;
 
-
-        double a = Y / (X == 0 ? 0.1 : X);
+        double a = Y / (X == 0 ? 0.0001 : X);
         double b = line.getBegin().y - line.getBegin().x * a;
 
-        return new double[]{a, -1, b};
+
+            return new double[]{a, -1, b};
+
+
     }
 
     /**
@@ -342,5 +391,9 @@ public class CueService {
         if (approvedCounter >= properties.getTargetLineStabilizeCount() / 2) {
             targetLine.setEnd(new Point(sumOfXs / approvedCounter, sumOfYs / approvedCounter));
         }
+    }
+
+    public Line getPreviousAverageLine() {
+        return previousAverageLine;
     }
 }
