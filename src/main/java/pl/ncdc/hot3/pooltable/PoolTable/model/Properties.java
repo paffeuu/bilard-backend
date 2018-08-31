@@ -27,11 +27,6 @@ public class Properties {
     private Point improperRightBottomCorner;
     private Point improperLeftBottomCorner;
 
-    // Projector edges
-    private Point projectorLeftTopCorner;
-    private Point projectorRightTopCorner;
-    private Point projectorRightBottomCorner;
-    private Point projectorLeftBottomCorner;
 
     // Pocket
     private int tablePocketRadius;
@@ -202,11 +197,6 @@ public class Properties {
         this.improperRightTopCorner = new Point(1131.0, 141.0);
         this.improperRightBottomCorner = new Point(1133.0, 628.0);
         this.improperLeftBottomCorner = new Point(142.5, 631.0);
-
-        this.projectorLeftTopCorner = new Point(60, 67);
-        this.projectorRightTopCorner = new Point(1214.0, 112.0);
-        this.projectorRightBottomCorner = new Point(1210.0, 672.0);
-        this.projectorLeftBottomCorner = new Point(56, 666);
 
         this.aimLeftTopPocketPoint = new Point(this.leftTopPocketPoint.x + 10, this.leftTopPocketPoint.y + 10);
         this.aimMidTopPocketPoint = new Point(this.midTopPocketPoint.x, this.midTopPocketPoint.y + 10);
@@ -852,38 +842,6 @@ public class Properties {
             default:
                 return this.getAimLeftBotPocketPoint();
         }
-    }
-
-    public Point getProjectorLeftTopCorner() {
-        return projectorLeftTopCorner;
-    }
-
-    public void setProjectorLeftTopCorner(Point projectorLeftTopCorner) {
-        this.projectorLeftTopCorner = projectorLeftTopCorner;
-    }
-
-    public Point getProjectorRightTopCorner() {
-        return projectorRightTopCorner;
-    }
-
-    public void setProjectorRightTopCorner(Point projectorRightTopCorner) {
-        this.projectorRightTopCorner = projectorRightTopCorner;
-    }
-
-    public Point getProjectorRightBottomCorner() {
-        return projectorRightBottomCorner;
-    }
-
-    public void setProjectorRightBottomCorner(Point projectorRightBottomCorner) {
-        this.projectorRightBottomCorner = projectorRightBottomCorner;
-    }
-
-    public Point getProjectorLeftBottomCorner() {
-        return projectorLeftBottomCorner;
-    }
-
-    public void setProjectorLeftBottomCorner(Point projectorLeftBottomCorner) {
-        this.projectorLeftBottomCorner = projectorLeftBottomCorner;
     }
 
     public Point getAimLeftTopPocketPoint() {
