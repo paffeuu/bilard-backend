@@ -30,4 +30,5 @@
 *.jpg
 *.png
 !**/emptyTable.png
+!**/black.png
 *.log
