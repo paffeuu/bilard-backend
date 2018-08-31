@@ -374,7 +374,7 @@ public class TableStoryService implements Cloneable {
                 // If we have cue ball and selected ball
                 if (0 == cueBall.getId() && !selectedBallDisappear) {
                     Ball objectBall = properties.getSelectedBall();
-                    Point pocket = properties.getPocketPoint(properties.getSelectedPocket());
+                    Point pocket = properties.getPocketAimPoint(properties.getSelectedPocket());
 
                     Point ghostBall = detector.getGhostBall(objectBall, pocket);
                     Line aimingLine = new Line(ghostBall, cueBall.getCenter());

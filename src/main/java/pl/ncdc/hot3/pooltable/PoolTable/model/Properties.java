@@ -27,6 +27,7 @@ public class Properties {
     private Point improperRightBottomCorner;
     private Point improperLeftBottomCorner;
 
+    // Projector edges
     private Point projectorLeftTopCorner;
     private Point projectorRightTopCorner;
     private Point projectorRightBottomCorner;
@@ -43,6 +44,15 @@ public class Properties {
     private Point rightBotPocketPoint;
     private Point midTopPocketPoint;
     private Point midBotPocketPoint;
+
+    // Pocket aiming point
+
+    private Point aimLeftTopPocketPoint;
+    private Point aimRightTopPocketPoint;
+    private Point aimLeftBotPocketPoint;
+    private Point aimRightBotPocketPoint;
+    private Point aimMidTopPocketPoint;
+    private Point aimMidBotPocketPoint;
 
     // Ball parameters
     private int ballExpectedRadius;
@@ -198,8 +208,17 @@ public class Properties {
         this.projectorRightBottomCorner = new Point(1210.0, 672.0);
         this.projectorLeftBottomCorner = new Point(56, 666);
 
+        this.aimLeftTopPocketPoint = new Point(this.leftTopPocketPoint.x + 10, this.leftTopPocketPoint.y - 10);
+        this.aimMidTopPocketPoint = new Point(this.midTopPocketPoint.x, this.midTopPocketPoint.y - 10);
+        this.aimRightTopPocketPoint = new Point(this.rightTopPocketPoint.x - 10, this.rightTopPocketPoint.y - 10);
+        this.aimRightBotPocketPoint = new Point(this.rightBotPocketPoint.x - 10, this.rightBotPocketPoint.y + 10);
+        this.aimMidBotPocketPoint = new Point(this.midBotPocketPoint.x + 10, this.midBotPocketPoint.y + 10);
+        this.aimLeftBotPocketPoint = new Point(this.leftBotPocketPoint.x + 10, this.leftBotPocketPoint.y + 10);
+
         this.setSelectedPocket(Pocket.TOP_LEFT);
     }
+
+    /*****************************************************************/
 
     public int getTargetEndMoveTolerance() {
         return targetEndMoveTolerance;
@@ -817,21 +836,21 @@ public class Properties {
         }
     }
 
-    public Point getPocketPoint(Pocket pocket) {
+    public Point getPocketAimPoint(Pocket pocket) {
         switch (pocket) {
             case TOP_LEFT:
-                return this.getLeftTopPocketPoint();
+                return this.getAimLeftTopPocketPoint();
             case TOP_MID:
-                return this.getMidTopPocketPoint();
+                return this.getAimMidTopPocketPoint();
             case TOP_RIGHT:
-                return this.getRightTopPocketPoint();
+                return this.getAimRightTopPocketPoint();
             case BOTTOM_RIGHT:
-                return this.getRightBotPocketPoint();
+                return this.getAimRightBotPocketPoint();
             case BOTTOM_MID:
-                return this.getMidBotPocketPoint();
+                return this.getAimMidBotPocketPoint();
             case BOTTOM_LEFT:
             default:
-                return this.getLeftBotPocketPoint();
+                return this.getAimLeftBotPocketPoint();
         }
     }
 
@@ -865,5 +884,29 @@ public class Properties {
 
     public void setProjectorLeftBottomCorner(Point projectorLeftBottomCorner) {
         this.projectorLeftBottomCorner = projectorLeftBottomCorner;
+    }
+
+    public Point getAimLeftTopPocketPoint() {
+        return aimLeftTopPocketPoint;
+    }
+
+    public Point getAimRightTopPocketPoint() {
+        return aimRightTopPocketPoint;
+    }
+
+    public Point getAimLeftBotPocketPoint() {
+        return aimLeftBotPocketPoint;
+    }
+
+    public Point getAimRightBotPocketPoint() {
+        return aimRightBotPocketPoint;
+    }
+
+    public Point getAimMidTopPocketPoint() {
+        return aimMidTopPocketPoint;
+    }
+
+    public Point getAimMidBotPocketPoint() {
+        return aimMidBotPocketPoint;
     }
 }
