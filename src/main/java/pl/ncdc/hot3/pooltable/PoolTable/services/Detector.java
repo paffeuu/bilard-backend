@@ -252,27 +252,29 @@ public class Detector {
 		Mat substractedImg = getEdges(getSourceImg().clone());
 
 		List <Line> linesList = getInnerLines(substractedImg);
-
-		Line shortCueLine = cueService.findStickLine(linesList);
-
 		Line longCueLine = null;
-		Ball whiteBall = ballService.getWhiteBall();
 
-		if (shortCueLine == null) {
-			shortCueLine = cueService.getPreviousAverageLine();
-		}
+		if (!linesList.isEmpty()) {
+			Line shortCueLine = cueService.findStickLine(linesList);
 
-		if (shortCueLine != null && whiteBall != null) {
-            Point coordinates = whiteBall.getCenter();
-            if (shortCueLine != null) {
-				longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
-				longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+			Ball whiteBall = ballService.getWhiteBall();
+
+			if (shortCueLine == null) {
+				shortCueLine = cueService.getPreviousAverageLine();
 			}
-		}
 
-		if (configurableProperties.isDebugActive()) {
-			this.debugDetectedLines = linesList;
-			this.debugAverageLine = shortCueLine;
+			if (shortCueLine != null && whiteBall != null) {
+				Point coordinates = whiteBall.getCenter();
+				if (shortCueLine != null) {
+					longCueLine = cueService.directAndExtend(shortCueLine, coordinates);
+					longCueLine = cueService.stabilizeWithPrevious(longCueLine);
+				}
+			}
+
+			if (configurableProperties.isDebugActive()) {
+				this.debugDetectedLines = linesList;
+				this.debugAverageLine = shortCueLine;
+			}
 		}
 
 		return longCueLine;

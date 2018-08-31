@@ -124,14 +124,15 @@ public class LineService {
         }
 
         try {
-            if (bandsService.isPointInsideBand(crosscutPoint1)) {
+            if (bandsService.isPointInsideBand(crosscutPoint1, 5)) {
                 extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint1);
-            } else if (bandsService.isPointInsideBand(crosscutPoint2)) {
+            } else if (bandsService.isPointInsideBand(crosscutPoint2, 5)) {
                 extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint2);
             } else {
                 throw new ExtendLineException("Error while trying make extended line for one side. Both crosscut points out of the bands");
+                // TODO: Cannot extend when line points are ON bands
             }
         } catch (NullPointerException e) {
             throw new ExtendLineException("Make extended line for one side error. Points still null value.");

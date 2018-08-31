@@ -167,12 +167,12 @@ public class Properties {
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 
-        this.leftTopPocketPoint = new Point(tableBandLeft, tableBandTop);
-        this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
-        this.leftBotPocketPoint = new Point(tableBandLeft, tableBandBottom);
-        this.rightBotPocketPoint = new Point(tableBandRight, tableBandBottom);
-        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandTop);
-        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandBottom);
+        this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 12);
+        this.rightTopPocketPoint = new Point(tableBandRight + 7, tableBandTop - 3);
+        this.leftBotPocketPoint = new Point(tableBandLeft - 12, tableBandBottom + 10);
+        this.rightBotPocketPoint = new Point(tableBandRight + 8, tableBandBottom + 6);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 8, tableBandTop - 12);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 6, tableBandBottom + 13);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;

@@ -98,6 +98,7 @@ public class CueService {
             LOGGER.warn("Cannot extend predicted line. \n" + predictedLine + ". Nested: " + e);
         }
 
+
         return predictedLine;
     }
 
@@ -319,15 +320,18 @@ public class CueService {
     public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
         Point ghostBall = this.getGhostBall(line, ball);
 
-        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
-                ghostBall,
-                new Point(
-                        ball.getX(),
-                        ball.getY()
-                )
-        ));
+        if (ghostBall != null) {
+            Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
+                    ghostBall,
+                    new Point(
+                            ball.getX(),
+                            ball.getY()
+                    )
+            ));
+            return targetLine;
+        }
 
-        return targetLine;
+        return null;
     }
 
     /**
