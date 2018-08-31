@@ -503,6 +503,16 @@ public class Detector {
 		return emptyTableImage;
 	}
 
+	public Point getGhostBall(Ball ball, Point pocket) throws LineServiceException {
+		Line targetLine = new Line(
+				pocket,
+				ball.getCenter()
+		);
+		LineService.switchPoints(targetLine);
+
+		return cueService.getGhostBall(targetLine, ball);
+	}
+
 	public List<Line> getDebugDetectedLines() {
 		return debugDetectedLines;
 	}

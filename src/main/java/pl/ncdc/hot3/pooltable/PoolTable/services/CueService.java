@@ -322,17 +322,39 @@ public class CueService {
     }
 
     /**
-     * Magic method which calculate two points on aiming line based on distance from ball center. Ghost ball definition
-     * - http://www.easypooltutor.com/img/lessons/ghost_ball.png
+     * Create target line based on balls collision
+     *
+     * @param line aiming line
+     * @param ball collision ball
+     *
+     * @return target line
+     *
+     * @throws LineServiceException if can not get extended cue line for one side
+     */
+    public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
+        Point ghostBall = this.getGhostBall(line, ball);
+
+        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
+                ghostBall,
+                new Point(
+                        ball.getX(),
+                        ball.getY()
+                )
+        ));
+
+        return targetLine;
+    }
+
+    /**
+     * Magic method which calculate two points on aiming line based on distance from ball center and return ghost ball
+     * center point. Ghost ball definition - http://www.easypooltutor.com/img/lessons/ghost_ball.png
      *
      * @param line aiming line
      * @param ball collision ball
      *
      * @return collision line based on object ball and ghost ball
-     *
-     * @throws LineServiceException if can not get extended cue line for one side
      */
-    public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
+    public Point getGhostBall(Line line, Ball ball) {
         double[] coordinates = calcAllCoordinate(line);
         double A = coordinates[0];
         double B = coordinates[1];
@@ -368,16 +390,7 @@ public class CueService {
             point.y = y2;
         }
 
-        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
-                point,
-                new Point(
-                        ball.getX(),
-                        ball.getY()
-                )
-        ));
-
-
-        return targetLine;
+        return point;
     }
 
     public Line getPreviousAverageLine() {
