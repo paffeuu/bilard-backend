@@ -21,7 +21,7 @@ import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 @Service
 public class Detector {
 
-    final int MIN_LENGTH_FOR_INNER_LINES = 50;
+    final int MIN_LENGTH_FOR_INNER_LINES = 100;
     final int MAX_LINE_GAP_FOR_INNER_LINES = 10;
     final int TRESHOLD_FOR_INNER_LINES = 70;
 
@@ -222,7 +222,7 @@ public class Detector {
 		for (int i = 0; i < circles.length; i += 3) {
 			x = circles[i];
 			y = circles[i + 1];
-			r = properties.getBallExpectedRadius() + 2;
+			r = properties.getBallExpectedRadius() - 2;
 
 			topLeft.x = x - r;
 			topLeft.y = y - r;
@@ -259,7 +259,7 @@ public class Detector {
 		Ball whiteBall = ballService.getWhiteBall();
 
 		if (shortCueLine == null) {
-			//shortCueLine = cueService.getPreviousAverageLine();
+			shortCueLine = cueService.getPreviousAverageLine();
 		}
 
 		if (shortCueLine != null && whiteBall != null) {
@@ -291,7 +291,7 @@ public class Detector {
 			double line[] = linesData.get(x, 0);
 
 			tempLine = new Line(new Point(line[0], line[1]), new Point(line[2], line[3]));
-			if (bandsService.isPointInsideBand(tempLine.getBegin()) || bandsService.isPointInsideBand(tempLine.getEnd())){
+			if (bandsService.isPointInsideBand(tempLine.getBegin(), -5) || bandsService.isPointInsideBand(tempLine.getEnd(), -5)){
 				linesList.add(tempLine);
 			}
 		}

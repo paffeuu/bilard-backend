@@ -112,7 +112,6 @@ public class CueService {
         }
 
         double pMin = properties.getParallelTolerance();
-        double bestPararell = 0;
         double distMin = properties.getMinBCoordinateForLines();
         double distMax = properties.getMaxBCoordinateForLines();
         double[] ABCCoordinatesLine1 = new double[3];
@@ -121,29 +120,49 @@ public class CueService {
         int indexOfLine_A = 0, indexOfLine_B = 0;
 
         for (int i = 0; i < innerLines.size() - 1; i++) {
-            ABCCoordinatesLine1 = calcAllCoordinate(innerLines.get(i));
-            for (int j = 0; j < innerLines.size(); j++){
-                if (i != j) {
-                    ABCCoordinatesLine2 = calcAllCoordinate(innerLines.get(j));
-                        double a1 = -ABCCoordinatesLine1[0];
-                        double a2 = -ABCCoordinatesLine2[0];
+            if (bandsService.isPointInsideBand(innerLines.get(i).getEnd(), -2) || bandsService.isPointInsideBand(innerLines.get(i).getBegin(), -2)){
+                ABCCoordinatesLine1 = calcABCCoordinates(innerLines.get(i));
+                for (int j = 0; j < innerLines.size(); j++){
+                    if (bandsService.isPointInsideBand(innerLines.get(j).getEnd(), -2) || bandsService.isPointInsideBand(innerLines.get(j).getBegin(), -2)) {
+                        if (i != j) {
+                            ABCCoordinatesLine2 = calcABCCoordinates(innerLines.get(j));
+                            double A1 = -ABCCoordinatesLine1[0];
+                            double A2 = -ABCCoordinatesLine2[0];
 
-                        double b1 = -ABCCoordinatesLine1[2];
-                        double b2 = -ABCCoordinatesLine2[2];
+                            double B1 = ABCCoordinatesLine1[1];
+                            double B2 = ABCCoordinatesLine2[1];
 
-                        if ( Math.abs(a1) >= 20 || Math.abs(a2) >= 20) {
-                            pMin = 1000;
-                        } else {
-                            pMin = properties.getParallelTolerance();
+                            double C1 = -ABCCoordinatesLine1[2];
+                            double C2 = -ABCCoordinatesLine2[2];
+
+                            double parallel = Math.abs((A1 * B2) - (A2 - B1));
+
+                            if (parallel <= pMin) {
+                                double dist = 0;
+
+                                if (B1 == 0 || B2 == 0){
+                                    if (A1 != 0 || A2 != 0) {
+                                        dist = Math.abs((C2 / A2) - (C1 / A1));
+                                    } else {
+                                        dist = Math.abs(innerLines.get(j).getEnd().y - innerLines.get(i).getEnd().y);
+                                    }
+                                }else {
+                                    dist = Math.abs((A2 / B2) - (A1 / B1));
+                                }
+
+                                if (dist > distMin && dist < distMax) {
+                                    distMax = dist;
+                                    pMin = parallel;
+                                    indexOfLine_A = i;
+                                    indexOfLine_B = j;
+                                }
+                            }
                         }
+                    }
 
-                        if (Math.abs(a1 - a2) < pMin && Math.abs(b1 - b2) >= distMin && Math.abs(b1-b2) <= distMax) {
-                            pMin = Math.abs(a1 - a2);
-                            indexOfLine_A = i;
-                            indexOfLine_B = j;
-                        }
                 }
             }
+
         }
 
         Line newLineBetweenShort = null;
@@ -185,38 +204,75 @@ public class CueService {
         if (cueLine == null) {
             return null;
         }
+        double distanceTolerance = 0.25;
 
-        double[] stabilizedBeginning = { 0, 0};
-        double[] stabilizedEnd = {0,0};
-        double distanceTolerance = properties.getPreviousFramesMoveTolerance();
-
-        previousCues.add(cueLine);
-        if (previousCues.size() >= 20) {
-            previousCues.remove(0);
+        if ( this.previousCues.isEmpty()) {
+            this.previousCues.add(cueLine);
+            return this.previousAverageLine = cueLine;
         }
 
-        for (Line line : this.previousCues) {
-                if ( line != null) {
-                    stabilizedBeginning[0] += line.getBegin().x;
-                    stabilizedBeginning[1] += line.getBegin().y;
-                    stabilizedEnd[0] += line.getEnd().x;
-                    stabilizedEnd[1] += line.getEnd().y;
-                }
+        if (this.calcDistance(cueLine, this.previousAverageLine) < distanceTolerance) {
+            this.previousCues.add(cueLine);
+            if ( this.previousCues.size() >= 20) {
+                this.previousCues.remove(0);
             }
-
-
-            stabilizedBeginning[0]  /= this.previousCues.size();
-            stabilizedBeginning[1] /= this.previousCues.size();
-            stabilizedEnd[0] /= this.previousCues.size();
-            stabilizedEnd[1] /= this.previousCues.size();
-
-
-            Line lin= new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
-            this.previousAverageLine = lin;
-            return lin;
+            this.previousAverageLine = this.averageOfListOfLines(this.previousCues);
+            return this.previousAverageLine;
         }
 
-        private Line averageOfListOfLines(List<Line> list) {
+        if (this.detectionOutOfScope.isEmpty()) {
+            this.detectionOutOfScope.add(cueLine);
+            return this.previousAverageLine;
+        }
+       
+        if (this.calcDistance(cueLine, this.averageOfListOfLines(this.detectionOutOfScope)) < distanceTolerance) {
+            this.detectionOutOfScope.add(cueLine);
+
+            if (this.detectionOutOfScope.size() >= 3) {
+                    this.previousCues.clear();
+                    this.previousCues.addAll(this.detectionOutOfScope);
+                    this.detectionOutOfScope.clear();
+                    this.previousAverageLine = this.averageOfListOfLines(this.previousCues);
+                    return this.previousAverageLine;
+            }
+            return this.previousAverageLine;
+        }
+
+        this.detectionOutOfScope.clear();
+        return this.previousAverageLine;
+
+    }
+
+    public double[] calcABCCoordinates(Line line) {
+        double Y = line.getBegin().y - line.getEnd().y;
+        double X = line.getBegin().x - line.getEnd().x;
+
+        double A = Y / (X == 0 ? 0.1 : X);
+        double B = (X == 0 ? X : -1);
+        double C = line.getBegin().y - line.getBegin().x * A;
+
+        if (X == 0) {
+            C /= A;
+            A = 1;
+        }
+
+        return new double[]{A, B, C};
+    }
+
+    public double calcDistance(Line line1, Line line2) {
+        double[] line1Coord = this.calcABCCoordinates(line1);
+        double[] line2Coord = this.calcABCCoordinates(line2);
+
+        if (line1Coord[1] == 0 || line2Coord[1] == 0) {
+            if ( line1Coord[0] == 0 || line2Coord[0] == 0) {
+                return Math.abs(line1Coord[2] - line2Coord[2]);
+            }
+            return Math.abs((line1Coord[2]/line1Coord[0]) - (line2Coord[2]/line2Coord[0]));
+        }
+        return Math.abs((line1Coord[0]/line1Coord[1]) - (line2Coord[0]/line2Coord[1]));
+    }
+
+    private Line averageOfListOfLines(List<Line> list) {
             double[] stabilizedBeginning = { 0, 0};
             double[] stabilizedEnd = {0,0};
             double distanceTolerance = properties.getPreviousFramesMoveTolerance();
