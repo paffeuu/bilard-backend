@@ -222,7 +222,7 @@ public class Detector {
 		for (int i = 0; i < circles.length; i += 3) {
 			x = circles[i];
 			y = circles[i + 1];
-			r = properties.getBallExpectedRadius() + 2;
+			r = properties.getBallExpectedRadius() - 2;
 
 			topLeft.x = x - r;
 			topLeft.y = y - r;

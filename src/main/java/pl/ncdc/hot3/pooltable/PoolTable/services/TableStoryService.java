@@ -201,8 +201,8 @@ public class TableStoryService {
             LOGGER.info("Can not find target line");
         }
 
-        targetLineService.saveLastTargetLine(current().getTargetLine());
-        current().setTargetLine(targetLineService.getAverageLine());
+        //targetLineService.saveLastTargetLine(current().getTargetLine());
+        //current().setTargetLine(targetLineService.getAverageLine());
 
         return this;
     }
@@ -316,7 +316,8 @@ public class TableStoryService {
                     current().getCue(),
                     current().getBalls(),
                     current().getPredictions(),
-                    targetLineService.getAverageLine()
+                    //targetLineService.getAverageLine(),
+                    current().getTargetLine()
             );
             MatOfByte matOfByte = new MatOfByte();
             Imgcodecs.imencode(".jpg", outputImage, matOfByte);

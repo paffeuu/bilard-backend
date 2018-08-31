@@ -204,7 +204,7 @@ public class CueService {
         if (cueLine == null) {
             return null;
         }
-        double distanceTolerance = 1.0;
+        double distanceTolerance = 0.25;
 
         if ( this.previousCues.isEmpty()) {
             this.previousCues.add(cueLine);
@@ -224,7 +224,7 @@ public class CueService {
             this.detectionOutOfScope.add(cueLine);
             return this.previousAverageLine;
         }
-
+       
         if (this.calcDistance(cueLine, this.averageOfListOfLines(this.detectionOutOfScope)) < distanceTolerance) {
             this.detectionOutOfScope.add(cueLine);
 
@@ -304,22 +304,6 @@ public class CueService {
         double a = Y / (X == 0 ? 0.0001 : X);
         double b = line.getBegin().y - line.getBegin().x * a;
         return new double[]{a, -1, b};
-    }
-
-    public double[] calcABCCoordinates(Line line) {
-        double Y = line.getBegin().y - line.getEnd().y;
-        double X = line.getBegin().x - line.getEnd().x;
-
-        double A = Y / (X == 0 ? 0.1 : X);
-        double B = (X == 0 ? X : -1);
-        double C = line.getBegin().y - line.getBegin().x * A;
-
-        if (X == 0) {
-            C /= A;
-            A = 1;
-        }
-
-        return new double[]{A, B, C};
     }
 
     /**
