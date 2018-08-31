@@ -1,6 +1,5 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
-import jdk.management.resource.internal.inst.InitInstrumentation;
 import org.apache.commons.logging.LogFactory;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -12,8 +11,6 @@ import pl.ncdc.hot3.pooltable.PoolTable.exceptions.ExtendLineException;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.LineServiceException;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
-
-import java.util.*;
 
 @Service
 public class LineService {
@@ -196,7 +193,7 @@ public class LineService {
     }
 
     public static void safeMoveLineForVertical(Line origin) {
-        if (origin != null) {
+        if (origin != null && origin.getBegin() != null && origin.getEnd() != null) {
             if (origin.getBegin().x == origin.getEnd().x) {
                 origin.getBegin().x += 3;
             }

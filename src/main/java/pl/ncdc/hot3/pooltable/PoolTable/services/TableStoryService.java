@@ -11,15 +11,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
 import pl.ncdc.hot3.pooltable.PoolTable.model.*;
-import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.MockupService;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Ball;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Line;
+import pl.ncdc.hot3.pooltable.PoolTable.model.PoolTable;
+import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
+import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.ImageUndistorterService;
 import pl.ncdc.hot3.pooltable.PoolTable.services.imageProcessingServices.OpenCVBufforFlushService;
 
-import javax.validation.constraints.Null;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class TableStoryService {
+public class TableStoryService implements Cloneable {
 
     final static int LIMIT_OF_TABLES = 32;
     final static int LIMIT_OF_VIEWS = 6;
@@ -41,8 +45,11 @@ public class TableStoryService {
     List<Ball> prevFrameBalls;
 
     private PreviousPositionService previousPositionService;
+    private ImageUndistorterService imageUndistorterService;
+    private PathService pathService;
     private Line previousCue;
     private int noStickOnTableFramesCounter;
+    private boolean projectorMode;
 
     @Autowired
     public TableStoryService(
@@ -53,6 +60,8 @@ public class TableStoryService {
             ConfigurableProperties configurableProperties,
             PreviousPositionService previousPositionService,
             BandsService bandsService,
+            ImageUndistorterService imageUndistorterService,
+            PathService pathService,
             TargetLineService targetLineService
     ) {
         this.detector = detector;
@@ -62,6 +71,8 @@ public class TableStoryService {
         this.configurableProperties = configurableProperties;
         this.previousPositionService = previousPositionService;
         this.bandsService = bandsService;
+        this.imageUndistorterService = imageUndistorterService;
+        this.pathService = pathService;
         this.targetLineService = targetLineService;
 
         this.prevFrameBalls = new ArrayList<>();
@@ -201,8 +212,8 @@ public class TableStoryService {
             LOGGER.info("Can not find target line");
         }
 
-        targetLineService.saveLastTargetLine(current().getTargetLine());
-        current().setTargetLine(targetLineService.getAverageLine());
+        //targetLineService.saveLastTargetLine(current().getTargetLine());
+        //current().setTargetLine(targetLineService.getAverageLine());
 
         return this;
     }
@@ -309,17 +320,27 @@ public class TableStoryService {
         return this;
     }
 
-    private TableStoryService makeView(){
+    private TableStoryService makeView() {
         try {
             drawer.draw(
                     outputImage,
                     current().getCue(),
                     current().getBalls(),
                     current().getPredictions(),
-                    targetLineService.getAverageLine()
+                    //targetLineService.getAverageLine(),
+                    current().getTargetLine()
             );
             MatOfByte matOfByte = new MatOfByte();
-            Imgcodecs.imencode(".jpg", outputImage, matOfByte);
+
+            if (this.projectorMode) {
+                Mat output = new Mat();
+                output = imageUndistorterService.projectorWarp(outputImage);
+                Imgcodecs.imencode(".jpg", output, matOfByte);
+                output.release();
+            } else {
+                Imgcodecs.imencode(".jpg", outputImage, matOfByte);
+            }
+
             current().setTableImage(matOfByte.toArray());
             outputImage.release();
 
@@ -328,5 +349,66 @@ public class TableStoryService {
         } finally {
             return this;
         }
+    }
+
+    public TableStoryService projectorMode() throws LineServiceException, FileNotFoundException {
+        outputImage = Imgcodecs.imread(pathService.getFullPath(pathService.BLACK_SCREEN_FILE_NAME));
+
+        if (0 != configurableProperties.getGameMode()) {
+            List<Ball> balls = current().getBalls();
+
+            if (null != balls &&
+                    !balls.isEmpty() &&
+                    null != properties.getSelectedBall()) {
+
+                Ball cueBall = balls.get(0);
+
+                // Check if selected ball disappear
+                boolean selectedBallDisappear = true;
+
+                for (Ball ball : balls) {
+                    if (ball.getX() == properties.getSelectedBall().getX() &&
+                            ball.getY() == properties.getSelectedBall().getY()) {
+
+                        selectedBallDisappear = false;
+                    }
+                }
+
+                // If we have cue ball and selected ball
+                if (0 == cueBall.getId() && !selectedBallDisappear) {
+                    Ball objectBall = properties.getSelectedBall();
+                    Point pocket = properties.getPocketAimPoint(properties.getSelectedPocket());
+
+                    Point ghostBall = detector.getGhostBall(objectBall, pocket);
+                    Line aimingLine = new Line(ghostBall, cueBall.getCenter());
+                    Line targetLine = new Line(objectBall.getCenter(), pocket);
+
+                    if (1 == configurableProperties.getGameMode()) {
+                        // Target line
+                        drawer.drawLine(outputImage, targetLine, new Scalar(0, 255, 255), 6);
+                        // Aiming line
+                        drawer.drawLine(outputImage, aimingLine, new Scalar(0, 255, 255), 6);
+                    }
+
+                    // Ghost ball
+                    drawer.drawCircle(outputImage, ghostBall, properties.getBallExpectedRadius() - 2, new Scalar(0, 255, 255), 4);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    @Override
+    public TableStoryService clone() throws CloneNotSupportedException {
+        return (TableStoryService) super.clone();
+    }
+
+    public boolean isProjectorMode() {
+        return projectorMode;
+    }
+
+    public void setProjectorMode(boolean projectorMode) {
+        this.projectorMode = projectorMode;
     }
 }

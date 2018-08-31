@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 public class Drawer {
 
-	private final Scalar SOLID_DRAW_COLOR = new Scalar(0,0,255);
+	private final Scalar SOLID_DRAW_COLOR = new Scalar(255,0,255);
 	private final Scalar STRIPED_DRAW_COLOR = new Scalar(0,255,0);
 	private final Scalar WHITE_BALL_COLOR = new Scalar(0,0,0);
 	private final Scalar BLACK_BALL_COLOR = new Scalar(255,255,255);

@@ -204,36 +204,58 @@ public class CueService {
         if (cueLine == null) {
             return null;
         }
+        double distanceTolerance = 0.25;
 
-        double[] stabilizedBeginning = { 0, 0};
-        double[] stabilizedEnd = {0,0};
-        double distanceTolerance = properties.getPreviousFramesMoveTolerance();
-
-        previousCues.add(cueLine);
-        if (previousCues.size() >= 20) {
-            previousCues.remove(0);
+        if ( this.previousCues.isEmpty()) {
+            this.previousCues.add(cueLine);
+            return this.previousAverageLine = cueLine;
         }
 
-        for (Line line : this.previousCues) {
-                if ( line != null) {
-                    stabilizedBeginning[0] += line.getBegin().x;
-                    stabilizedBeginning[1] += line.getBegin().y;
-                    stabilizedEnd[0] += line.getEnd().x;
-                    stabilizedEnd[1] += line.getEnd().y;
-                }
+        if (this.calcDistance(cueLine, this.previousAverageLine) < distanceTolerance) {
+            this.previousCues.add(cueLine);
+            if ( this.previousCues.size() >= 20) {
+                this.previousCues.remove(0);
             }
-
-
-            stabilizedBeginning[0]  /= this.previousCues.size();
-            stabilizedBeginning[1] /= this.previousCues.size();
-            stabilizedEnd[0] /= this.previousCues.size();
-            stabilizedEnd[1] /= this.previousCues.size();
-
-
-            Line lin= new Line(new Point(stabilizedBeginning), new Point(stabilizedEnd));
-            this.previousAverageLine = lin;
-            return lin;
+            this.previousAverageLine = this.averageOfListOfLines(this.previousCues);
+            return this.previousAverageLine;
         }
+
+        if (this.detectionOutOfScope.isEmpty()) {
+            this.detectionOutOfScope.add(cueLine);
+            return this.previousAverageLine;
+        }
+
+        if (this.calcDistance(cueLine, this.averageOfListOfLines(this.detectionOutOfScope)) < distanceTolerance) {
+            this.detectionOutOfScope.add(cueLine);
+
+            if (this.detectionOutOfScope.size() >= 3) {
+                    this.previousCues.clear();
+                    this.previousCues.addAll(this.detectionOutOfScope);
+                    this.detectionOutOfScope.clear();
+                    this.previousAverageLine = this.averageOfListOfLines(this.previousCues);
+                    return this.previousAverageLine;
+            }
+            return this.previousAverageLine;
+        }
+
+        this.detectionOutOfScope.clear();
+        return this.previousAverageLine;
+
+    }
+
+    public double calcDistance(Line line1, Line line2) {
+        double[] line1Coord = lineService.calcABCCoordinates(line1);
+        double[] line2Coord = lineService.calcABCCoordinates(line2);
+
+        if (line1Coord[1] == 0 || line2Coord[1] == 0) {
+            if (line1Coord[0] == 0 || line2Coord[0] == 0) {
+                return Math.abs(line1Coord[2] - line2Coord[2]);
+            }
+            return Math.abs((line1Coord[2] / line1Coord[0]) - (line2Coord[2] / line2Coord[0]));
+        }
+        return Math.abs((line1Coord[0] / line1Coord[1]) - (line2Coord[0] / line2Coord[1]));
+    }
+
 
         private Line averageOfListOfLines(List<Line> list) {
             double[] stabilizedBeginning = { 0, 0};
@@ -268,8 +290,6 @@ public class CueService {
         double b = line.getBegin().y - line.getBegin().x * a;
         return new double[]{a, -1, b};
     }
-
-
     /**
      * Calculate distance between point and line
      *
@@ -297,6 +317,29 @@ public class CueService {
      * @throws LineServiceException if can not get extended cue line for one side
      */
     public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
+        Point ghostBall = this.getGhostBall(line, ball);
+
+        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
+                ghostBall,
+                new Point(
+                        ball.getX(),
+                        ball.getY()
+                )
+        ));
+
+        return targetLine;
+    }
+
+    /**
+     * Magic method which calculate two points on aiming line based on distance from ball center and return ghost ball
+     * center point. Ghost ball definition - http://www.easypooltutor.com/img/lessons/ghost_ball.png
+     *
+     * @param line aiming line
+     * @param ball collision ball
+     *
+     * @return collision line based on object ball and ghost ball
+     */
+    public Point getGhostBall(Line line, Ball ball) {
         double[] coordinates = calcAllCoordinate(line);
         double A = coordinates[0];
         double B = coordinates[1];
@@ -332,16 +375,7 @@ public class CueService {
             point.y = y2;
         }
 
-        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
-                point,
-                new Point(
-                        ball.getX(),
-                        ball.getY()
-                )
-        ));
-
-
-        return targetLine;
+        return point;
     }
 
     public Line getPreviousAverageLine() {

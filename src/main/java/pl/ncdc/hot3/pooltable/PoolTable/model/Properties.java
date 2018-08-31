@@ -39,6 +39,14 @@ public class Properties {
     private Point midTopPocketPoint;
     private Point midBotPocketPoint;
 
+    // Pocket aiming point
+    private Point aimLeftTopPocketPoint;
+    private Point aimRightTopPocketPoint;
+    private Point aimLeftBotPocketPoint;
+    private Point aimRightBotPocketPoint;
+    private Point aimMidTopPocketPoint;
+    private Point aimMidBotPocketPoint;
+
     // Ball parameters
     private int ballExpectedRadius;
     private int ballMaxRadius;
@@ -107,6 +115,17 @@ public class Properties {
     private static String windowsFfmpegPath = System.getProperty("user.dir") + "\\lib\\" + "opencv_ffmpeg342_64.dll";
     private static String linuxOpencvPath = "/usr/local/share/OpenCV/java/" + "libopencv_java342" + ".so";
 
+    // Passive mode
+    private Ball selectedBall;
+    public enum Pocket {
+        TOP_LEFT,
+        TOP_MID,
+        TOP_RIGHT,
+        BOTTOM_RIGHT,
+        BOTTOM_MID,
+        BOTTOM_LEFT,
+    }
+    private Pocket selectedPocket;
 
     public Properties() {
         this.isDebugActive = true;
@@ -171,6 +190,22 @@ public class Properties {
         targetEndMoveTolerance = 30;
         countOfTargetLines = 16;
         targetNullMaxCount = 8;
+        targetLineStabilizeCount = 32;
+        targetEndMoveTolerance = 60;
+
+        this.improperLeftTopCorner = new Point(151.0, 128.0);
+        this.improperRightTopCorner = new Point(1131.0, 141.0);
+        this.improperRightBottomCorner = new Point(1133.0, 628.0);
+        this.improperLeftBottomCorner = new Point(142.5, 631.0);
+
+        this.aimLeftTopPocketPoint = new Point(this.leftTopPocketPoint.x + 10, this.leftTopPocketPoint.y + 10);
+        this.aimMidTopPocketPoint = new Point(this.midTopPocketPoint.x, this.midTopPocketPoint.y + 10);
+        this.aimRightTopPocketPoint = new Point(this.rightTopPocketPoint.x - 5, this.rightTopPocketPoint.y + 5);
+        this.aimRightBotPocketPoint = new Point(this.rightBotPocketPoint.x - 10, this.rightBotPocketPoint.y - 10);
+        this.aimMidBotPocketPoint = new Point(this.midBotPocketPoint.x + 10, this.midBotPocketPoint.y - 10);
+        this.aimLeftBotPocketPoint = new Point(this.leftBotPocketPoint.x + 10, this.leftBotPocketPoint.y - 10);
+
+        this.setSelectedPocket(Pocket.TOP_LEFT);
         targetFieldMaxAngle = 45;
         targetFieldMaxEndsDist = (getTableBandBottom() - getTableBandTop()) / 2;
     }
@@ -743,5 +778,109 @@ public class Properties {
 
     public void setTargetNullMaxCount(int targetNullMaxCount) {
         this.targetNullMaxCount = targetNullMaxCount;
+    }
+
+    /**
+     * Get selected ball
+     *
+     * @return
+     */
+    public Ball getSelectedBall() {
+        return selectedBall;
+    }
+
+    /**
+     * Select ball
+     *
+     * @param selectedBall
+     */
+    public void setSelectedBall(Ball selectedBall) {
+        this.selectedBall = selectedBall;
+    }
+
+    /**
+     * Get selected pocket
+     *
+     * @return
+     */
+    public Pocket getSelectedPocket() {
+        return selectedPocket;
+    }
+
+    /**
+     * Select Pocket
+     *
+     * @param selectedPocket
+     */
+    public void setSelectedPocket(Pocket selectedPocket) {
+        this.selectedPocket = selectedPocket;
+    }
+
+    /**
+     * Transform integer to Pocket
+     *
+     * @param pocketNumber pocket number
+     *
+     * @return Enum Pocket
+     */
+    public Pocket transformToEnum(int pocketNumber) {
+        switch (pocketNumber) {
+            case 0:
+                return Pocket.TOP_LEFT;
+            case 1:
+                return Pocket.TOP_MID;
+            case 2:
+                return Pocket.TOP_RIGHT;
+            case 3:
+                return Pocket.BOTTOM_RIGHT;
+            case 4:
+                return Pocket.BOTTOM_MID;
+            case 5:
+                return Pocket.BOTTOM_LEFT;
+            default:
+                return Pocket.TOP_LEFT;
+        }
+    }
+
+    public Point getPocketAimPoint(Pocket pocket) {
+        switch (pocket) {
+            case TOP_LEFT:
+                return this.getAimLeftTopPocketPoint();
+            case TOP_MID:
+                return this.getAimMidTopPocketPoint();
+            case TOP_RIGHT:
+                return this.getAimRightTopPocketPoint();
+            case BOTTOM_RIGHT:
+                return this.getAimRightBotPocketPoint();
+            case BOTTOM_MID:
+                return this.getAimMidBotPocketPoint();
+            case BOTTOM_LEFT:
+            default:
+                return this.getAimLeftBotPocketPoint();
+        }
+    }
+
+    public Point getAimLeftTopPocketPoint() {
+        return aimLeftTopPocketPoint;
+    }
+
+    public Point getAimRightTopPocketPoint() {
+        return aimRightTopPocketPoint;
+    }
+
+    public Point getAimLeftBotPocketPoint() {
+        return aimLeftBotPocketPoint;
+    }
+
+    public Point getAimRightBotPocketPoint() {
+        return aimRightBotPocketPoint;
+    }
+
+    public Point getAimMidTopPocketPoint() {
+        return aimMidTopPocketPoint;
+    }
+
+    public Point getAimMidBotPocketPoint() {
+        return aimMidBotPocketPoint;
     }
 }

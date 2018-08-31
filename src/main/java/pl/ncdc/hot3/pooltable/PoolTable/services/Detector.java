@@ -222,7 +222,7 @@ public class Detector {
 		for (int i = 0; i < circles.length; i += 3) {
 			x = circles[i];
 			y = circles[i + 1];
-			r = properties.getBallExpectedRadius() + 2;
+			r = properties.getBallExpectedRadius() - 2;
 
 			topLeft.x = x - r;
 			topLeft.y = y - r;
@@ -501,6 +501,16 @@ public class Detector {
 		}
 
 		return emptyTableImage;
+	}
+
+	public Point getGhostBall(Ball ball, Point pocket) throws LineServiceException {
+		Line targetLine = new Line(
+				pocket,
+				ball.getCenter()
+		);
+		LineService.switchPoints(targetLine);
+
+		return cueService.getGhostBall(targetLine, ball);
 	}
 
 	public List<Line> getDebugDetectedLines() {

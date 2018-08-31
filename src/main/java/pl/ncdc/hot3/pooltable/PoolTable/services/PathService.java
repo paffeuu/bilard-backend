@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 public class PathService {
 
     public final String BASE_PATH = this.getClass().getClassLoader().getResource("emptyTable.png").toString();
+    public final String BLACK_SCREEN_FILE_NAME = "black.png";
     public final String TESTS_PATH = "src/main/resources/";
 
     public String getFullPath(String filename) throws FileNotFoundException {
