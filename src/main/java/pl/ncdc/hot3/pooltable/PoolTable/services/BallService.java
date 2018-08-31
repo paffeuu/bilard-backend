@@ -189,7 +189,8 @@ public class BallService {
             if (previousBalls.size() < properties.getPreviousBallsPositionsToCompare()){
                 previousBalls.add(currentList);
             } else {
-                previousBalls.set(prevBallsIndexCounter, currentList);
+                previousBalls.add(currentList);
+                previousBalls.remove(0);
             }
             prevBallsIndexCounter = (++prevBallsIndexCounter) % properties.getPreviousBallsPositionsToCompare();
 
@@ -235,12 +236,14 @@ public class BallService {
 
         for (Ball currentBall : currentBallList) {
             int idx = indexOfBallInPreviousList(currentBall, staticBalls);
+
             if (idx >= 0){
                 Point newCenter = staticBalls.get(idx).getCenter();
                 if (staticBalls.get(idx).getStaticCounter() < properties.getPrevBallsCorrectorCount()) {
                     newCenter = new Point((staticBalls.get(idx).getCenter().x + currentBall.getCenter().x) / 2, (staticBalls.get(idx).getCenter().y + currentBall.getCenter().y) / 2);
                     staticBalls.get(idx).setCenter(newCenter);
                 }
+                staticBalls.get(idx).setId(currentBall.getId());
                 currentBall.setCenter(newCenter);
                 staticBalls.get(idx).increaseStaticCounter();
             } else {

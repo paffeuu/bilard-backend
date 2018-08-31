@@ -212,8 +212,8 @@ public class TableStoryService implements Cloneable {
             LOGGER.info("Can not find target line");
         }
 
-        targetLineService.saveLastTargetLine(current().getTargetLine());
-        current().setTargetLine(targetLineService.getAverageLine());
+        //targetLineService.saveLastTargetLine(current().getTargetLine());
+        //current().setTargetLine(targetLineService.getAverageLine());
 
         return this;
     }
@@ -293,9 +293,7 @@ public class TableStoryService implements Cloneable {
             }
 
 
-            if (detector.getDebugAverageLine() != null){
-                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
-            }
+
 
             if (!detector.getDebugDetectedLines().isEmpty()) {
                 drawer.drawLines(
@@ -304,6 +302,10 @@ public class TableStoryService implements Cloneable {
                         new Scalar(0, 0, 255),
                         5
                 );
+            }
+ 
+            if (detector.getDebugAverageLine() != null){
+                drawer.drawLine(outputImage, detector.getDebugAverageLine(), new Scalar(0, 255, 122), 12);
             }
 
             // Perpendicular debug
@@ -325,7 +327,8 @@ public class TableStoryService implements Cloneable {
                     current().getCue(),
                     current().getBalls(),
                     current().getPredictions(),
-                    targetLineService.getAverageLine()
+                    //targetLineService.getAverageLine(),
+                    current().getTargetLine()
             );
             MatOfByte matOfByte = new MatOfByte();
 
