@@ -208,12 +208,12 @@ public class Properties {
         this.projectorRightBottomCorner = new Point(1210.0, 672.0);
         this.projectorLeftBottomCorner = new Point(56, 666);
 
-        this.aimLeftTopPocketPoint = new Point(this.leftTopPocketPoint.x + 10, this.leftTopPocketPoint.y - 10);
-        this.aimMidTopPocketPoint = new Point(this.midTopPocketPoint.x, this.midTopPocketPoint.y - 10);
-        this.aimRightTopPocketPoint = new Point(this.rightTopPocketPoint.x - 10, this.rightTopPocketPoint.y - 10);
-        this.aimRightBotPocketPoint = new Point(this.rightBotPocketPoint.x - 10, this.rightBotPocketPoint.y + 10);
-        this.aimMidBotPocketPoint = new Point(this.midBotPocketPoint.x + 10, this.midBotPocketPoint.y + 10);
-        this.aimLeftBotPocketPoint = new Point(this.leftBotPocketPoint.x + 10, this.leftBotPocketPoint.y + 10);
+        this.aimLeftTopPocketPoint = new Point(this.leftTopPocketPoint.x + 10, this.leftTopPocketPoint.y + 10);
+        this.aimMidTopPocketPoint = new Point(this.midTopPocketPoint.x, this.midTopPocketPoint.y + 10);
+        this.aimRightTopPocketPoint = new Point(this.rightTopPocketPoint.x - 5, this.rightTopPocketPoint.y + 5);
+        this.aimRightBotPocketPoint = new Point(this.rightBotPocketPoint.x - 10, this.rightBotPocketPoint.y - 10);
+        this.aimMidBotPocketPoint = new Point(this.midBotPocketPoint.x + 10, this.midBotPocketPoint.y - 10);
+        this.aimLeftBotPocketPoint = new Point(this.leftBotPocketPoint.x + 10, this.leftBotPocketPoint.y - 10);
 
         this.setSelectedPocket(Pocket.TOP_LEFT);
     }
