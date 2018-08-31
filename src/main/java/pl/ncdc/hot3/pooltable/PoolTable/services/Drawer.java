@@ -71,30 +71,19 @@ public class Drawer {
 		}
 
 		Line minTargetLine = targetLineService.getMinSideLine();
-		if (minTargetLine != null) {
-			drawLine(img, minTargetLine, TARGET_TUNNEL_COLOR, 7);
-		}
-
 		Line maxTargetLine = targetLineService.getMaxSideLine();
-		if (maxTargetLine != null) {
-			drawLine(img, maxTargetLine, TARGET_TUNNEL_COLOR, 7);
-		}
 
-		if (maxTargetLine != null && minTargetLine != null && targetLineService.getAverageLine() != null){
+		if (targetLineService.isTunnelTight() && targetLineService.getAverageLine() != null){
 			Point pocketPoint = null;
-			String firstBand = bandsService.getClosestBandName(bandsService.getDistsToBands(maxTargetLine.getEnd()));
-			String secondBand = bandsService.getClosestBandName(bandsService.getDistsToBands(minTargetLine.getEnd()));
+			String firstBand = bandsService.getClosestBandName(maxTargetLine.getEnd());
+			String secondBand = bandsService.getClosestBandName(minTargetLine.getEnd());
+			pocketPoint = bandsService.getPocketPointForBands(firstBand, secondBand);
 
-			if (firstBand != secondBand) {
-				pocketPoint = bandsService.getPointForPocketEnum(bandsService.getPocketForPoint(targetLineService.getAverageLine().getEnd()));
-			}
-
-			Point[] tunnelPoints = {
+ 			Point[] tunnelPoints = {
 					maxTargetLine.getBegin(),
 					maxTargetLine.getEnd(),
-					pocketPoint == null ? targetLineService.getAverageLine().getEnd() : pocketPoint,
+					pocketPoint == null ? maxTargetLine.getEnd() : pocketPoint,
 					minTargetLine.getEnd(),
-					minTargetLine.getBegin()
 			};
 			MatOfPoint matOfPoint = new MatOfPoint();
 			matOfPoint.fromArray(tunnelPoints);
@@ -102,11 +91,12 @@ public class Drawer {
 			tunnelPollyPoints.add(matOfPoint);
 
 			Imgproc.fillPoly(img, tunnelPollyPoints, new Scalar(94, 12, 3, 0.5));
+		} else if (targetLineService.getAverageLine() != null) {
+			drawLine(img, targetLineService.getAverageLine(), TARGET_TUNNEL_COLOR, 6);
 		}
 		tunnelPollyPoints.clear();
 
 		if (null != targetLine) {
-			drawLine(img, targetLine, TARGET_TUNNEL_COLOR, 8);
 			drawCircle(img, targetLine.getBegin(), properties.getBallExpectedRadius(), GHOST_BALL_COLOR, 4);
 			drawPocketForLine(img, targetLine);
 		}

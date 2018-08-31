@@ -88,6 +88,8 @@ public class Properties {
     private int targetEndMoveTolerance;
     private int countOfTargetLines;
     private int targetNullMaxCount;
+    private double targetFieldMaxAngle;
+    private double targetFieldMaxEndsDist;
 
     // Replays
     private boolean showPreviousPosition;
@@ -169,6 +171,24 @@ public class Properties {
         targetEndMoveTolerance = 30;
         countOfTargetLines = 16;
         targetNullMaxCount = 8;
+        targetFieldMaxAngle = 45;
+        targetFieldMaxEndsDist = (getTableBandBottom() - getTableBandTop()) / 2;
+    }
+
+    public double getTargetFieldMaxEndsDist() {
+        return targetFieldMaxEndsDist;
+    }
+
+    public void setTargetFieldMaxEndsDist(double targetFieldMaxEndsDist) {
+        this.targetFieldMaxEndsDist = targetFieldMaxEndsDist;
+    }
+
+    public double getTargetFieldMaxAngle() {
+        return targetFieldMaxAngle;
+    }
+
+    public void setTargetFieldMaxAngle(double targetFieldMaxAngle) {
+        this.targetFieldMaxAngle = targetFieldMaxAngle;
     }
 
     public int getTargetEndMoveTolerance() {

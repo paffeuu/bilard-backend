@@ -1,5 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable;
 
+import nu.pattern.OpenCV;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.opencv.core.Core;
@@ -9,6 +11,8 @@ import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.ncdc.hot3.pooltable.PoolTable.exceptions.*;
@@ -23,203 +27,77 @@ import pl.ncdc.hot3.pooltable.PoolTable.services.LineService;
 import java.util.ArrayList;
 import java.util.List;
 
+//@ContextConfiguration(classes = {
+//        LineService.class,
+//        Properties.class,
+//        BandsService.class
+//})
 @RunWith(SpringJUnit4ClassRunner.class)
 public class LineTest {
     String BASE_PATH = "src/main/resources/";
 
-    public double[] calcAllCoordinate(Line line) {
-        double Y = line.getBegin().y - line.getEnd().y;
-        double X = line.getBegin().x - line.getEnd().x;
-
-        double A = Y / (X == 0 ? 0.1 : X);
-        double B = (X == 0 ? X : -1);
-        double C = line.getBegin().y - line.getBegin().x * A;
-
-        if (X == 0) {
-            C /= A;
-            A = 1;
-        }
-
-        return new double[]{A, B, C};
+    @Before
+    public void onInit(){
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 
     @Test
     public void testForCoordinatesForVerticalLine(){
 
-        System.out.println("==========================================================");
+        Properties properties = new Properties();
+        BandsService bandsService = new BandsService(properties);
+        LineService lineService = new LineService(properties, bandsService);
+
         System.out.println("PIONOWA");
 
         Point begin = new Point(30, 100);
         Point end = new Point(30, 400);
-        Line line = new Line(begin, end);
+        Line verticalLine1 = new Line(begin, end);
 
-        Point begin22 = new Point(35, 100);
-        Point end22 = new Point(35, 400);
-        Line line22 = new Line(begin22, end22);
+        begin = new Point(35, 100);
+        end = new Point(35, 400);
+        Line verticalLine2 = new Line(begin, end);
 
-        double[] ABC = calcAllCoordinate(line);
-        System.out.println("A: " + ABC[0] / ABC[0] + "B: " + ABC[1] + "C: " + ABC[2] / ABC[0] );
-        ABC = calcAllCoordinate(line22);
-        System.out.println("A: " + ABC[0] / ABC[0] + "B: " + ABC[1] + "C: " + ABC[2] / ABC[0] );
-
-        System.out.println("==========================================================");
         System.out.println("KRZYWA");
 
-        Point begin2 = new Point(30, 100);
-        Point end2 = new Point(31, 400);
-        Line line2 = new Line(begin2, end2);
+        begin = new Point(0, 10);
+        end = new Point(5, 15);
+        Line crossLine1 = new Line(begin, end);
 
-        ABC = calcAllCoordinate(line2);
-        System.out.println("A: " + ABC[0] + "B: " + ABC[1] + "C: " + ABC[2]);
+        begin = new Point(15, 200);
+        end = new Point(25, 400);
+        Line crossLine2 = new Line(begin, end);
 
-        Point begin23 = new Point(20, 200);
-        Point end23 = new Point(200, 210);
-        Line line23 = new Line(begin23, end23);
-
-        ABC = calcAllCoordinate(line23);
-        System.out.println("A: " + ABC[0] + "B: " + ABC[1] + "C: " + ABC[2]);
-
-        System.out.println("==========================================================");
         System.out.println("POZIOMA");
 
-        Point begin3 = new Point(20, 200);
-        Point end3 = new Point(200, 200);
-        Line line3 = new Line(begin3, end3);
+        begin = new Point(0, 15);
+        end = new Point(5, 15);
+        Line horizontalLine1 = new Line(begin, end);
 
-        ABC = calcAllCoordinate(line3);
-        System.out.println("A: " + ABC[0] + "B: " + ABC[1] + "C: " + ABC[2]);
+        begin = new Point(15, 200);
+        end = new Point(25, 200);
+        Line horizontalLine2 = new Line(begin, end);
 
-        System.out.println("==========================================================");
+        System.out.println("Vertical and horizontal");
+        System.out.println(lineService.getAngleBetweenLines(verticalLine1, verticalLine2));
+        System.out.println(lineService.getAngleBetweenLines(verticalLine1, horizontalLine1));
+        System.out.println(lineService.getAngleBetweenLines(verticalLine2, horizontalLine2));
+        System.out.println(lineService.getAngleBetweenLines(horizontalLine1, horizontalLine2));
 
+        System.out.println("Cross line 1");
+        System.out.println(lineService.getAngleBetweenLines(crossLine1, horizontalLine1));
+        System.out.println(lineService.getAngleBetweenLines(crossLine1, verticalLine1));
+        System.out.println(lineService.getAngleBetweenLines(crossLine1, crossLine2));
+
+        System.out.println("Cross line 2");
+        System.out.println(lineService.getAngleBetweenLines(crossLine2, horizontalLine1));
+        System.out.println(lineService.getAngleBetweenLines(crossLine2, verticalLine1));
+        System.out.println(lineService.getAngleBetweenLines(crossLine2, crossLine1));
+
+        double[] ABCforCrossLine = lineService.calcABCCoordinates(crossLine1);
+        System.out.println("A: " + ABCforCrossLine[0] + "B: " + ABCforCrossLine[1] + "C: " + ABCforCrossLine[2]);
+
+        double[] ABCforCrossLine2 = lineService.calcABCCoordinates(crossLine2);
+        System.out.println("A: " + ABCforCrossLine2[0] + "B: " + ABCforCrossLine2[1] + "C: " + ABCforCrossLine2[2]);
     }
-
-
-//    @Test
-//    public void directedLine() throws LineServiceException, DetectorException, CueServiceException {
-//        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-//
-//        String sourceImagePath = BASE_PATH + "jacek7.png";
-//        Mat sourceImage = Imgcodecs.imread(sourceImagePath, Imgcodecs.IMREAD_COLOR);
-//
-//        detector.setSourceImg(sourceImage.clone());
-//
-//        Line asd = null;
-//        try {
-//            asd = detector.findStickLine();
-//
-//        } catch (MissingCueLineException e) {
-//            System.out.println(e.getMessage());
-//            return;
-//        }
-//
-//        Imgproc.line(sourceImage, asd.getBegin(), asd.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
-//        Imgproc.circle(sourceImage, asd.getBegin(), 50, new Scalar(0, 255, 255), 3);
-//        Imgproc.circle(sourceImage, asd.getEnd(), 50, new Scalar(0, 255, 255), 3);
-//
-//        Line prevLine = asd;
-//        for (int i = 0; i < properties.getPredictionDepth(); i++){
-//
-//            Line prediction = cueService.predictTrajectoryAfterBump(prevLine);
-//
-//            Imgproc.line(sourceImage, prediction.getBegin(), prediction.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
-//            Imgproc.circle(sourceImage, prediction.getBegin(), 30, new Scalar(0, 111, 255), 3);
-//            Imgproc.circle(sourceImage, prediction.getEnd(), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-//
-//            prevLine = prediction;
-//        }
-//
-//        Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
-//    }
-//
-//    @Test
-//    public void calculateCordinates() {
-//        Line line = new Line(
-//                new Point(0, -4),
-//                new Point(2, 0)
-//        );
-//        Point point = new Point(2, 0);
-//
-//        double[] cordinates = cueService.calcAllCordinate(line);
-//        double distance = cueService.calculateDistanceBetwenPointAndLine(point, line);
-//        System.out.print(cordinates[0] + " | " + cordinates[1] + " | " + cordinates[2] + " | " + distance);
-//    }
-//
-//    @Test
-//    public void stopLineAtFirstBall() {
-//        Line line = new Line(
-//                new Point(0, -4),
-//                new Point(2, 0)
-//        );
-//        ArrayList<Ball> balls = new ArrayList<>();
-//        balls.add(new Ball(0, 3, 0, 2));
-//
-//        Ball stoped = cueService.stopLineAtFirstBall(line, balls, false);
-//        System.out.print("asd");
-//    }
-//
-//    @Test
-//    public void ballColision() throws LineServiceException, DetectorException, CueServiceException {
-//        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-//
-//        String sourceImagePath = BASE_PATH + "jacek6.png";
-//        Mat sourceImage = Imgcodecs.imread(sourceImagePath, Imgcodecs.IMREAD_COLOR);
-//
-//        detector.setSourceImg(sourceImage.clone());
-//
-//        Line asd = null;
-//        try {
-//            asd = detector.findStickLine();
-//
-//        } catch (MissingCueLineException e) {
-//            System.out.println(e.getMessage());
-//            return;
-//        }
-//
-//        ArrayList<Ball> balls = detector.createListOfBalls();
-//
-//        Ball colision1 = cueService.stopLineAtFirstBall(asd, balls, true);
-//
-//        if (null != colision1) {
-////                Imgproc.circle(sourceImage, new Point(colision.getX(), colision.getY()), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-////                Imgproc.circle(sourceImage, c[0], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-////                Imgproc.circle(sourceImage, c[1], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-//            Line celownik = cueService.findBallColisionLine(asd, colision1);
-//            celownik = lineService.getExtendedStickLineForOneSide(celownik);
-//            Imgproc.line(sourceImage, celownik.getBegin(), celownik.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
-//            Imgproc.circle(sourceImage, celownik.getBegin(), new Double(colision1.getRadius()).intValue(), new Scalar(0, 255, 255), 3);
-//        }
-//
-//        Imgproc.line(sourceImage, asd.getBegin(), asd.getEnd(), new Scalar(0, 0, 255), 3, Imgproc.LINE_AA, 0);
-//        Imgproc.circle(sourceImage, asd.getBegin(), 50, new Scalar(255, 0, 0), 3);
-//        Imgproc.circle(sourceImage, asd.getEnd(), 50, new Scalar(0, 255, 255), 3);
-//
-//
-//        Line prevLine = asd;
-//        for (int i = 0; i < properties.getPredictionDepth(); i++){
-//
-//            Line prediction = cueService.predictTrajectoryAfterBump(prevLine);
-//            Ball colision = cueService.stopLineAtFirstBall(prediction, balls, false);
-//
-//            if (null != colision) {
-////                Imgproc.circle(sourceImage, new Point(colision.getX(), colision.getY()), 30, new Scalar(0, 111, 255), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-////                Imgproc.circle(sourceImage, c[0], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-////                Imgproc.circle(sourceImage, c[1], 30, new Scalar(255, 0, 0), 3); prediction = lineService.getExtendedStickLineForOneSide(prediction);
-//                Line celownik = cueService.findBallColisionLine(prediction, colision);
-//                celownik = lineService.getExtendedStickLineForOneSide(celownik);
-//                Imgproc.line(sourceImage, celownik.getBegin(), celownik.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
-//                Imgproc.circle(sourceImage, celownik.getBegin(), new Double(colision.getRadius()).intValue(), new Scalar(0, 255, 255), 3);
-//                prediction.setEnd(celownik.getBegin());
-//            }
-//
-//            Imgproc.line(sourceImage, prediction.getBegin(), prediction.getEnd(), new Scalar(0, 111, 255), 3, Imgproc.LINE_AA, 0);
-//
-//            if (null != colision) {
-//                break;
-//            }
-//
-//            prevLine = prediction;
-//        }
-//
-//        Imgcodecs.imwrite(BASE_PATH + "line.png", sourceImage);
-//    }
 }

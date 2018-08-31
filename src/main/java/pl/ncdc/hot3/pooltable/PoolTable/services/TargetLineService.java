@@ -184,4 +184,16 @@ public class TargetLineService {
         return center;
     }
 
+    public boolean isTunnelTight() {
+        if (getMaxSideLine() != null && getMinSideLine() != null) {
+            if (lineService.getAngleBetweenLines(getMaxSideLine(), getMinSideLine()) <= properties.getTargetFieldMaxAngle()) {
+                if (lineService.getDistanceBetweenPoints(getMaxSideLine().getEnd(), getMinSideLine().getEnd()) <= properties.getTargetFieldMaxEndsDist()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 }

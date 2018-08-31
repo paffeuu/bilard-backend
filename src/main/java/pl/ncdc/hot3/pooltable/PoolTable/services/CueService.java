@@ -121,11 +121,11 @@ public class CueService {
 
         for (int i = 0; i < innerLines.size() - 1; i++) {
             if (bandsService.isPointInsideBand(innerLines.get(i).getEnd(), -2) || bandsService.isPointInsideBand(innerLines.get(i).getBegin(), -2)){
-                ABCCoordinatesLine1 = calcABCCoordinates(innerLines.get(i));
+                ABCCoordinatesLine1 = lineService.calcABCCoordinates(innerLines.get(i));
                 for (int j = 0; j < innerLines.size(); j++){
                     if (bandsService.isPointInsideBand(innerLines.get(j).getEnd(), -2) || bandsService.isPointInsideBand(innerLines.get(j).getBegin(), -2)) {
                         if (i != j) {
-                            ABCCoordinatesLine2 = calcABCCoordinates(innerLines.get(j));
+                            ABCCoordinatesLine2 = lineService.calcABCCoordinates(innerLines.get(j));
                             double A1 = -ABCCoordinatesLine1[0];
                             double A2 = -ABCCoordinatesLine2[0];
 
@@ -269,21 +269,6 @@ public class CueService {
         return new double[]{a, -1, b};
     }
 
-    public double[] calcABCCoordinates(Line line) {
-        double Y = line.getBegin().y - line.getEnd().y;
-        double X = line.getBegin().x - line.getEnd().x;
-
-        double A = Y / (X == 0 ? 0.1 : X);
-        double B = (X == 0 ? X : -1);
-        double C = line.getBegin().y - line.getBegin().x * A;
-
-        if (X == 0) {
-            C /= A;
-            A = 1;
-        }
-
-        return new double[]{A, B, C};
-    }
 
     /**
      * Calculate distance between point and line
