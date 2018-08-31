@@ -192,7 +192,7 @@ public class LineService {
     }
 
     public static void safeMoveLineForVertical(Line origin) {
-        if (origin != null) {
+        if (origin != null && origin.getBegin() != null && origin.getEnd() != null) {
             if (origin.getBegin().x == origin.getEnd().x) {
                 origin.getBegin().x += 3;
             }
