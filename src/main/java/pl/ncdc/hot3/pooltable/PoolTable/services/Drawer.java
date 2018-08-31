@@ -79,7 +79,7 @@ public class Drawer {
 			String secondBand = bandsService.getClosestBandName(minTargetLine.getEnd());
 			pocketPoint = bandsService.getPocketPointForBands(firstBand, secondBand);
 
- 			Point[] tunnelPoints = {
+ 				Point[] tunnelPoints = {
 					maxTargetLine.getBegin(),
 					maxTargetLine.getEnd(),
 					pocketPoint == null ? maxTargetLine.getEnd() : pocketPoint,

@@ -212,8 +212,8 @@ public class TableStoryService implements Cloneable {
             LOGGER.info("Can not find target line");
         }
 
-        //targetLineService.saveLastTargetLine(current().getTargetLine());
-        //current().setTargetLine(targetLineService.getAverageLine());
+        targetLineService.saveLastTargetLine(current().getTargetLine());
+        current().setTargetLine(targetLineService.getAverageLine());
 
         return this;
     }
