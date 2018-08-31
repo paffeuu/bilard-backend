@@ -4,10 +4,12 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.ncdc.hot3.pooltable.PoolTable.model.ConfigurableProperties;
 import pl.ncdc.hot3.pooltable.PoolTable.model.Properties;
 
 @Service
 public class ImageUndistorterService {
+    private ConfigurableProperties configurableProperties;
     private Properties properties;
     private Mat cameraMatrix;
     private Mat distCoeffs;
@@ -16,8 +18,12 @@ public class ImageUndistorterService {
 
 
     @Autowired
-    public ImageUndistorterService(Properties properties) {
+    public ImageUndistorterService(
+            Properties properties,
+            ConfigurableProperties configurableProperties
+    ) {
         this.properties = properties;
+        this.configurableProperties = configurableProperties;
         this.cameraMatrix = properties.getCameraMatrix();
         this.distCoeffs = properties.getDistCoeffs();
     }
@@ -57,10 +63,10 @@ public class ImageUndistorterService {
 
     private void prepareProjectorUndistortingMats() {
         Point[] dstPoints = new Point[] {
-                properties.getProjectorLeftTopCorner(),
-                properties.getProjectorRightTopCorner(),
-                properties.getProjectorRightBottomCorner(),
-                properties.getProjectorLeftBottomCorner()
+                configurableProperties.getProjectorLeftTopCorner(),
+                configurableProperties.getProjectorRightTopCorner(),
+                configurableProperties.getProjectorRightBottomCorner(),
+                configurableProperties.getProjectorLeftBottomCorner()
         };
 
         Point[] srcPoints = new Point[] {
