@@ -250,9 +250,8 @@ public class Detector {
 
 	public Line findStickLine() throws MissingCueLineException, DetectorException {
 		Mat substractedImg = getEdges(getSourceImg().clone());
-
-		List <Line> linesList = getInnerLines(substractedImg);
 		Line longCueLine = null;
+		List <Line> linesList = getInnerLines(substractedImg);
 
 		if (!linesList.isEmpty()) {
 			Line shortCueLine = cueService.findStickLine(linesList);

@@ -32,7 +32,6 @@ public class TableStoryService implements Cloneable {
     private int currentTableIndex;
     private List<PoolTable> tableStory;
     private Mat outputImage;
-    private int counter = 0;
 
     private Detector detector;
     private CameraService cameraService;
