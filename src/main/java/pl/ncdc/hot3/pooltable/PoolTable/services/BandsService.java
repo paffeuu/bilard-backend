@@ -1,5 +1,6 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
+import com.sun.org.glassfish.external.probe.provider.PluginPoint;
 import org.opencv.core.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,15 +48,41 @@ public class BandsService {
         return false;
     }
 
+    public Point getPocketPointForBands(String firstBandName, String secondBandName) {
+        if (!firstBandName.equals(secondBandName)){
+            if (firstBandName.equals("LEFT") && secondBandName.equals("TOP") ||
+                    firstBandName.equals("TOP") && secondBandName.equals("LEFT")) {
+                return properties.getLeftTopPocketPoint();
+            } else if (firstBandName.equals("TOP") && secondBandName.equals("RIGHT") ||
+                    firstBandName.equals("RIGHT") && secondBandName.equals("TOP")) {
+                return properties.getRightTopPocketPoint();
+            } else if (firstBandName.equals("RIGHT") && secondBandName.equals("BOT") ||
+                    firstBandName.equals("BOT") && secondBandName.equals("RIGHT")) {
+                return properties.getRightBotPocketPoint();
+            } else if (firstBandName.equals("BOT") && secondBandName.equals("LEFT") ||
+                    firstBandName.equals("LEFT") && secondBandName.equals("BOT")) {
+                return properties.getLeftBotPocketPoint();
+            }
+        }
+        return null;
+    }
+
     public Map<String, Double> getDistsToBands(Point point) {
         Map<String, Double> distances = new HashMap<>();
 
         distances.put("LEFT", Math.abs(point.x - properties.getTableBandLeft()));
         distances.put("RIGHT", Math.abs(point.x - properties.getTableBandRight()));
         distances.put("TOP", Math.abs(point.y - properties.getTableBandTop()));
-        distances.put("BOTTOM", Math.abs(point.y - properties.getTableBandBottom()));
+        distances.put("BOT", Math.abs(point.y - properties.getTableBandBottom()));
 
         return distances;
+    }
+
+    public String getClosestBandName(Point point) {
+        if (point != null) {
+            return getClosestBandName(getDistsToBands(point));
+        }
+        return null;
     }
 
     public String getClosestBandName(Map<String, Double> dists) {

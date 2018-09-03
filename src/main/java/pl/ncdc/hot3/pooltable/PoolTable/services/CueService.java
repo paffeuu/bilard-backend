@@ -98,6 +98,7 @@ public class CueService {
             LOGGER.warn("Cannot extend predicted line. \n" + predictedLine + ". Nested: " + e);
         }
 
+
         return predictedLine;
     }
 
@@ -121,11 +122,11 @@ public class CueService {
 
         for (int i = 0; i < innerLines.size() - 1; i++) {
             if (bandsService.isPointInsideBand(innerLines.get(i).getEnd(), -2) || bandsService.isPointInsideBand(innerLines.get(i).getBegin(), -2)){
-                ABCCoordinatesLine1 = calcABCCoordinates(innerLines.get(i));
+                ABCCoordinatesLine1 = lineService.calcABCCoordinates(innerLines.get(i));
                 for (int j = 0; j < innerLines.size(); j++){
                     if (bandsService.isPointInsideBand(innerLines.get(j).getEnd(), -2) || bandsService.isPointInsideBand(innerLines.get(j).getBegin(), -2)) {
                         if (i != j) {
-                            ABCCoordinatesLine2 = calcABCCoordinates(innerLines.get(j));
+                            ABCCoordinatesLine2 = lineService.calcABCCoordinates(innerLines.get(j));
                             double A1 = -ABCCoordinatesLine1[0];
                             double A2 = -ABCCoordinatesLine2[0];
 
@@ -224,7 +225,7 @@ public class CueService {
             this.detectionOutOfScope.add(cueLine);
             return this.previousAverageLine;
         }
-       
+
         if (this.calcDistance(cueLine, this.averageOfListOfLines(this.detectionOutOfScope)) < distanceTolerance) {
             this.detectionOutOfScope.add(cueLine);
 
@@ -243,36 +244,21 @@ public class CueService {
 
     }
 
-    public double[] calcABCCoordinates(Line line) {
-        double Y = line.getBegin().y - line.getEnd().y;
-        double X = line.getBegin().x - line.getEnd().x;
-
-        double A = Y / (X == 0 ? 0.1 : X);
-        double B = (X == 0 ? X : -1);
-        double C = line.getBegin().y - line.getBegin().x * A;
-
-        if (X == 0) {
-            C /= A;
-            A = 1;
-        }
-
-        return new double[]{A, B, C};
-    }
-
     public double calcDistance(Line line1, Line line2) {
-        double[] line1Coord = this.calcABCCoordinates(line1);
-        double[] line2Coord = this.calcABCCoordinates(line2);
+        double[] line1Coord = lineService.calcABCCoordinates(line1);
+        double[] line2Coord = lineService.calcABCCoordinates(line2);
 
         if (line1Coord[1] == 0 || line2Coord[1] == 0) {
-            if ( line1Coord[0] == 0 || line2Coord[0] == 0) {
+            if (line1Coord[0] == 0 || line2Coord[0] == 0) {
                 return Math.abs(line1Coord[2] - line2Coord[2]);
             }
-            return Math.abs((line1Coord[2]/line1Coord[0]) - (line2Coord[2]/line2Coord[0]));
+            return Math.abs((line1Coord[2] / line1Coord[0]) - (line2Coord[2] / line2Coord[0]));
         }
-        return Math.abs((line1Coord[0]/line1Coord[1]) - (line2Coord[0]/line2Coord[1]));
+        return Math.abs((line1Coord[0] / line1Coord[1]) - (line2Coord[0] / line2Coord[1]));
     }
 
-    private Line averageOfListOfLines(List<Line> list) {
+
+        private Line averageOfListOfLines(List<Line> list) {
             double[] stabilizedBeginning = { 0, 0};
             double[] stabilizedEnd = {0,0};
             double distanceTolerance = properties.getPreviousFramesMoveTolerance();
@@ -305,7 +291,6 @@ public class CueService {
         double b = line.getBegin().y - line.getBegin().x * a;
         return new double[]{a, -1, b};
     }
-
     /**
      * Calculate distance between point and line
      *
@@ -322,27 +307,31 @@ public class CueService {
     }
 
     /**
-     * Create target line based on balls collision
+     * Magic method which calculate two points on aiming line based on distance from ball center. Ghost ball definition
+     * - http://www.easypooltutor.com/img/lessons/ghost_ball.png
      *
      * @param line aiming line
      * @param ball collision ball
      *
-     * @return target line
+     * @return collision line based on object ball and ghost ball
      *
      * @throws LineServiceException if can not get extended cue line for one side
      */
     public Line findBallCollisionLine(Line line, Ball ball) throws LineServiceException {
         Point ghostBall = this.getGhostBall(line, ball);
 
-        Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
-                ghostBall,
-                new Point(
-                        ball.getX(),
-                        ball.getY()
-                )
-        ));
+        if (ghostBall != null) {
+            Line targetLine = lineService.getExtendedStickLineForOneSide(new Line(
+                    ghostBall,
+                    new Point(
+                            ball.getX(),
+                            ball.getY()
+                    )
+            ));
+            return targetLine;
+        }
 
-        return targetLine;
+        return null;
     }
 
     /**

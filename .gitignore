@@ -27,6 +27,7 @@
 /tests/
 /src/main/resources/mock/
 
+
 *.jpg
 *.png
 !**/emptyTable.png

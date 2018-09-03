@@ -1,6 +1,7 @@
 package pl.ncdc.hot3.pooltable.PoolTable.services;
 
 import org.apache.commons.logging.LogFactory;
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,14 +124,15 @@ public class LineService {
         }
 
         try {
-            if (bandsService.isPointInsideBand(crosscutPoint1)) {
+            if (bandsService.isPointInsideBand(crosscutPoint1, 5)) {
                 extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint1);
-            } else if (bandsService.isPointInsideBand(crosscutPoint2)) {
+            } else if (bandsService.isPointInsideBand(crosscutPoint2, 5)) {
                 extendedLine.setBegin(stickLine.getBegin());
                 extendedLine.setEnd(crosscutPoint2);
             } else {
                 throw new ExtendLineException("Error while trying make extended line for one side. Both crosscut points out of the bands");
+                // TODO: Cannot extend when line points are ON bands
             }
         } catch (NullPointerException e) {
             throw new ExtendLineException("Make extended line for one side error. Points still null value.");
@@ -283,5 +285,47 @@ public class LineService {
         }
 
         return extended;
+    }
+
+    public double[] calcABCCoordinates(Line line) {
+        double Y = line.getBegin().y - line.getEnd().y;
+        double X = line.getBegin().x - line.getEnd().x;
+
+        double A = Y / (X == 0 ? 0.1 : X);
+        double B = (X == 0 ? X : -1);
+        double C = line.getBegin().y - line.getBegin().x * A;
+
+        if (X == 0) {
+            C /= A;
+            A = 1;
+        }
+
+        return new double[]{A, B, C};
+    }
+
+    public double getAngleBetweenLines(Line line1, Line line2) {
+        double[] line1Coordinates = calcABCCoordinates(line1);
+        double[] line2Coordinates = calcABCCoordinates(line2);
+
+
+        double alphaAngleRadians = 0;
+        double betaAngleRadians = 0;
+        double gammaAngleRadians = 0;
+
+        if (line1Coordinates[1] == 0) {
+            alphaAngleRadians = Math.toRadians(90);
+        } else {
+            alphaAngleRadians = Math.atan(-1 * (line1Coordinates[0] / line1Coordinates[1]));
+        }
+
+        if (line2Coordinates[1] == 0) {
+            betaAngleRadians = Math.toRadians(90);
+        } else {
+            betaAngleRadians = Math.atan(-1 * (line2Coordinates[0] / line2Coordinates[1]));
+        }
+
+        gammaAngleRadians = Math.abs(alphaAngleRadians - betaAngleRadians);
+
+        return Math.toDegrees(gammaAngleRadians);
     }
 }

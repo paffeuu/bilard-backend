@@ -27,7 +27,6 @@ public class Properties {
     private Point improperRightBottomCorner;
     private Point improperLeftBottomCorner;
 
-
     // Pocket
     private int tablePocketRadius;
     private double tablePocketMinRadius;
@@ -41,7 +40,6 @@ public class Properties {
     private Point midBotPocketPoint;
 
     // Pocket aiming point
-
     private Point aimLeftTopPocketPoint;
     private Point aimRightTopPocketPoint;
     private Point aimLeftBotPocketPoint;
@@ -98,6 +96,8 @@ public class Properties {
     private int targetEndMoveTolerance;
     private int countOfTargetLines;
     private int targetNullMaxCount;
+    private double targetFieldMaxAngle;
+    private double targetFieldMaxEndsDist;
 
     // Replays
     private boolean showPreviousPosition;
@@ -167,12 +167,12 @@ public class Properties {
         this.cueDetectDelay = 32;
         this.cueStickLineThickness = 8;
 
-        this.leftTopPocketPoint = new Point(tableBandLeft, tableBandTop);
-        this.rightTopPocketPoint = new Point(tableBandRight, tableBandTop);
-        this.leftBotPocketPoint = new Point(tableBandLeft, tableBandBottom);
-        this.rightBotPocketPoint = new Point(tableBandRight, tableBandBottom);
-        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandTop);
-        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2), tableBandBottom);
+        this.leftTopPocketPoint = new Point(tableBandLeft - 10, tableBandTop - 12);
+        this.rightTopPocketPoint = new Point(tableBandRight + 7, tableBandTop - 3);
+        this.leftBotPocketPoint = new Point(tableBandLeft - 12, tableBandBottom + 10);
+        this.rightBotPocketPoint = new Point(tableBandRight + 8, tableBandBottom + 6);
+        this.midTopPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 8, tableBandTop - 12);
+        this.midBotPocketPoint = new Point(((tableBandLeft + tableBandRight) / 2) + 6, tableBandBottom + 13);
 
         this.showPreviousPosition = true;
         this.previousFramesFrequency = 4;
@@ -206,9 +206,25 @@ public class Properties {
         this.aimLeftBotPocketPoint = new Point(this.leftBotPocketPoint.x + 10, this.leftBotPocketPoint.y - 10);
 
         this.setSelectedPocket(Pocket.TOP_LEFT);
+        targetFieldMaxAngle = 45;
+        targetFieldMaxEndsDist = (getTableBandBottom() - getTableBandTop()) / 2;
     }
 
-    /*****************************************************************/
+    public double getTargetFieldMaxEndsDist() {
+        return targetFieldMaxEndsDist;
+    }
+
+    public void setTargetFieldMaxEndsDist(double targetFieldMaxEndsDist) {
+        this.targetFieldMaxEndsDist = targetFieldMaxEndsDist;
+    }
+
+    public double getTargetFieldMaxAngle() {
+        return targetFieldMaxAngle;
+    }
+
+    public void setTargetFieldMaxAngle(double targetFieldMaxAngle) {
+        this.targetFieldMaxAngle = targetFieldMaxAngle;
+    }
 
     public int getTargetEndMoveTolerance() {
         return targetEndMoveTolerance;

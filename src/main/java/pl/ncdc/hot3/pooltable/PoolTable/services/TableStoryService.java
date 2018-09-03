@@ -32,7 +32,6 @@ public class TableStoryService implements Cloneable {
     private int currentTableIndex;
     private List<PoolTable> tableStory;
     private Mat outputImage;
-    private int counter = 0;
 
     private Detector detector;
     private CameraService cameraService;
@@ -48,7 +47,7 @@ public class TableStoryService implements Cloneable {
     private ImageUndistorterService imageUndistorterService;
     private PathService pathService;
     private Line previousCue;
-    private int noStickOnTableFramesCounter;
+    private static int noStickOnTableFramesCounter;
     private boolean projectorMode;
 
     @Autowired
@@ -119,16 +118,23 @@ public class TableStoryService implements Cloneable {
         return this;
     }
 
+
     public TableStoryService findCue(){
         try {
             Line cue = detector.findStickLine();
 
             if (cue != null) {
                 previousCue = cue;
-                noStickOnTableFramesCounter = 0;
+                this.noStickOnTableFramesCounter = 0;
             } else {
-                if (noStickOnTableFramesCounter++ < 8)
-                cue = previousCue;
+                this.noStickOnTableFramesCounter++;
+                if (this.noStickOnTableFramesCounter < 8) {
+                    cue = previousCue;
+                } else {
+                    this.noStickOnTableFramesCounter = 0;
+                    cue = null;
+                    previousCue = null;
+                }
             }
 
             if (cue instanceof Line && current().getBalls() != null && !current().getBalls().isEmpty()) {
@@ -212,8 +218,8 @@ public class TableStoryService implements Cloneable {
             LOGGER.info("Can not find target line");
         }
 
-        //targetLineService.saveLastTargetLine(current().getTargetLine());
-        //current().setTargetLine(targetLineService.getAverageLine());
+        targetLineService.saveLastTargetLine(current().getTargetLine());
+        current().setTargetLine(targetLineService.getAverageLine());
 
         return this;
     }
