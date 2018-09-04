@@ -33,8 +33,11 @@ public class ImageUndistorterService {
             Mat initiallyUndistorted = new Mat();
             Imgproc.undistort(distorted, initiallyUndistorted, properties.getCameraMatrix(), properties.getDistCoeffs());
             distorted.release();
-
-            return initiallyUndistorted;
+            Mat undistorted = new Mat();
+            prepareUndistortingMats();
+            Imgproc.warpPerspective(initiallyUndistorted, undistorted, transformPerspective, new Size(1280,720));
+            initiallyUndistorted.release();
+            return undistorted;
         } catch (Exception e) {
             return null;
         }
